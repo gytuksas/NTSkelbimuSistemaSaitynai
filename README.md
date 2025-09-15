@@ -41,6 +41,7 @@ NT Brokeris galės:
 - Nusistatyti, kada jis yra laisvas apžiūroms;
 - Peržiūrėti užsakytas privačias peržiūras.
 - Patvirtinti/atmesti privačių peržiūrų užklausas.
+
 Administratorius galės:
 - Peržiūrėti sistemos naudotojus;
 - Blokuoti sistemos naudotojus;
