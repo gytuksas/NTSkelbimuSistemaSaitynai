@@ -19,12 +19,14 @@ Neregistruotas vartotojas galės:
 - Prisijungti prie sistemos;
 - Užsiregistruoti prie sistemos kaip registruotas naudotojas.
 - Užsiregistruoti prie sistemos kaip NT brokeris.
+
 Registruotas vartotojas galės:
 - Atsijungti nuo sistemos;
 - Patvirtinti savo tapatybę;
 - Peržiūrėti pardavėjo kontaktus;
 - Užsisakyti privačią apžiūrą.
 - Peržiūrėti užsakytas privačias apžiūras.
+
 NT Brokeris galės:
 - Atsijungti nuo sistemos;
 - Atnaujinti savo kontaktinę informaciją;
