@@ -1,0 +1,9 @@
+services:
+  ntskelbimusistemasaitynai:
+    image: ${DOCKER_REGISTRY-}ntskelbimusistemasaitynai
+    build:
+      context: .
+      dockerfile: NTSkelbimuSistemaSaitynai/Dockerfile
+  db:
+    image: postgres:17.6
+

@@ -1,0 +1,34 @@
+services:
+  ntskelbimusistemasaitynai:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+    ports:
+      - "8080:8080"
+    networks:
+      - bridged
+      - dbnet
+  db:
+    networks:
+      - bridged
+      - dbnet
+    volumes:
+      - dbdata:/var/lib/postgresql/
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD_FILE=/run/secrets/dbpass
+    secrets:
+      - dbpass
+
+networks:
+  bridged:
+    internal: false
+  dbnet:
+    internal: true
+secrets:
+  dbpass:
+    file: secrets/pgpass.txt
+volumes:
+  dbdata:
+    external: false  
