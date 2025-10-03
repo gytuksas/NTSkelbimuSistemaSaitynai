@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using NTSkelbimuSistemaSaitynai.DbUtils;
 using NTSkelbimuSistemaSaitynai.Models;
 
 namespace NTSkelbimuSistemaSaitynai;
@@ -47,6 +48,10 @@ public partial class PostgresContext : DbContext
     public virtual DbSet<Viewing> Viewings { get; set; }
 
     public virtual DbSet<Viewingstatus> Viewingstatuses { get; set; }
+
+    string connString = new DbConnection().GetConnectionString();
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        => optionsBuilder.UseNpgsql(connString);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
