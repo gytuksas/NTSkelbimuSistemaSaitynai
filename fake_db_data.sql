@@ -1,159 +1,205 @@
--- USERS
-INSERT INTO "user"(name, surname, email, phone, password, registrationTime, profilePicture) VALUES
-('Jonas','Petrauskas','jonas.petrauskas@example.lt','+37060011223','hashedpass1','2023-01-10','jonas.jpg'),
-('Aistė','Kazlauskaitė','aiste.kazlauskaite@example.lt','+37060011224','hashedpass2','2023-02-15','aiste.jpg'),
-('Mantas','Jankauskas','mantas.jankauskas@example.lt','+37060011225','hashedpass3','2023-03-20',NULL),
-('Rūta','Žukauskaitė','ruta.zukauskaite@example.lt','+37060011226','hashedpass4','2023-05-12','ruta.png'),
-('Dainius','Stankevičius','dainius.stankevicius@example.lt','+37060011227','hashedpass5','2023-06-23',NULL),
-('Gabija','Kavaliauskaitė','gabija.kavaliauskaite@example.lt','+37060011228','hashedpass6','2023-07-01','gabija.jpg'),
-('Tomas','Vasiliauskas','tomas.vasiliauskas@example.lt','+37060011229','hashedpass7','2023-08-10',NULL),
-('Ieva','Urbonaitė','ieva.urbonaite@example.lt','+37060011230','hashedpass8','2023-09-05','ieva.png'),
-('Paulius','Adomaitis','paulius.adomaitis@example.lt','+37060011231','hashedpass9','2023-09-20',NULL),
-('Eglė','Savickaitė','egle.savickaite@example.lt','+37060011232','hashedpass10','2023-09-28','egle.png'),
-('Aurimas','Valeika','aurimas.valeika@example.lt','+37060011233','hashedpass11','2023-10-01',NULL),
-('Simona','Šimkutė','simona.simkute@example.lt','+37060011234','hashedpass12','2023-10-03','simona.jpg');
+-- =====================================================
+-- Users (10 entries)
+-- =====================================================
+INSERT INTO "user"(name, surname, email, phone, password, registrationTime, profilePicture)
+VALUES
+('Jonas','Kazlauskas','jonas.kazlauskas@example.lt','+37060000001','hashed_pw','2023-01-10 09:15:00','/img/u1.png'),
+('Ieva','Petrauskienė','ieva.petrauskiene@example.lt','+37060000002','hashed_pw','2023-02-12 16:40:00','/img/u2.png'),
+('Marius','Jankauskas','marius.jankauskas@example.lt','+37060000003','hashed_pw','2023-03-05 10:25:00',NULL),
+('Rūta','Vaitkutė','ruta.vaitkute@example.lt','+37060000004','hashed_pw','2023-03-11 11:50:00','/img/u3.png'),
+('Tomas','Žukauskas','tomas.zukauskas@example.lt','+37060000005','hashed_pw','2023-03-18 08:05:00',NULL),
+('Aistė','Stankevičiūtė','aiste.stankeviciute@example.lt','+37060000006','hashed_pw','2023-04-22 12:35:00','/img/u4.png'),
+('Mindaugas','Jakubauskas','mindaugas.jakubauskas@example.lt','+37060000007','hashed_pw','2023-05-02 15:00:00','/img/u5.png'),
+('Simona','Butkutė','simona.butkute@example.lt','+37060000008','hashed_pw','2023-05-20 09:40:00',NULL),
+('Karolis','Grigonis','karolis.grigonis@example.lt','+37060000009','hashed_pw','2023-06-11 17:25:00','/img/u6.png'),
+('Eglė','Navickaitė','egle.navickaite@example.lt','+37060000010','hashed_pw','2023-07-14 13:15:00',NULL);
 
--- ADMIN (first 2 users)
-INSERT INTO administrator(id_User) VALUES (1),(2);
+-- =====================================================
+-- Administrator
+-- =====================================================
+INSERT INTO administrator(id_User) VALUES (1);
 
--- BROKERS (users 3-7)
+-- =====================================================
+-- Brokers (confirmed, not blocked)
+-- =====================================================
 INSERT INTO broker(confirmed, blocked, id_User) VALUES
+(true,false,2),
 (true,false,3),
 (true,false,4),
 (true,false,5),
-(true,false,6),
-(true,false,7);
+(true,false,6);
 
--- BUYERS (users 8-12)
+-- =====================================================
+-- Buyers (confirmed, not blocked)
+-- =====================================================
 INSERT INTO buyer(confirmed, blocked, id_User) VALUES
+(true,false,7),
 (true,false,8),
 (true,false,9),
-(true,false,10),
-(true,false,11),
-(true,false,12);
+(true,false,10);
 
--- AVAILABILITY
-INSERT INTO availability("from","to",fk_Brokerid_User) VALUES
-('2023-10-05','2023-10-06',3),
-('2023-10-07','2023-10-09',4),
-('2023-10-10','2023-10-11',5),
-('2023-10-12','2023-10-14',6),
-('2023-10-15','2023-10-17',7),
-('2023-10-18','2023-10-19',3),
-('2023-10-20','2023-10-21',4),
-('2023-10-22','2023-10-23',5),
-('2023-10-24','2023-10-25',6),
-('2023-10-26','2023-10-28',7);
+-- =====================================================
+-- Availabilities (10 entries)
+-- =====================================================
+INSERT INTO availability("from","to",fk_Brokerid_User)
+VALUES
+('2023-08-01 10:00','2023-08-01 14:00',2),
+('2023-08-02 09:00','2023-08-02 12:30',3),
+('2023-08-03 11:00','2023-08-03 16:00',2),
+('2023-08-04 14:00','2023-08-04 18:00',4),
+('2023-08-05 08:00','2023-08-05 11:30',6),
+('2023-08-06 09:30','2023-08-06 12:00',5),
+('2023-08-07 10:00','2023-08-07 15:00',3),
+('2023-08-08 13:00','2023-08-08 17:00',2),
+('2023-08-09 10:00','2023-08-09 12:00',6),
+('2023-08-10 15:00','2023-08-10 18:00',4);
 
--- BUILDINGS (20 total, distributed between brokers)
-INSERT INTO building(city,address,area,year,lastRenovationYear,floors,energy,fk_Brokerid_User) VALUES
-('Vilnius','Gedimino pr. 10',120.5,1990,2018,5,2,3),
-('Kaunas','Laisvės al. 50',200.0,1980,2015,4,3,4),
-('Vilnius','Pilies g. 7',85.7,2005,NULL,3,1,5),
-('Kaunas','Savanorių pr. 120',300.0,1975,2020,6,4,6),
-('Vilnius','Naugarduko g. 15',150.3,1999,NULL,4,2,7),
-('Panevėžys','Respublikos g. 3',220.0,1985,2019,5,5,3),
-('Vilnius','Šnipiškių g. 45',175.0,1992,NULL,4,1,4),
-('Klaipėda','Liepų g. 30',265.0,1978,2010,6,2,5),
-('Vilnius','Švitrigailos g. 8',140.0,2004,NULL,3,3,6),
-('Kaunas','Žemaičių g. 20',195.0,1996,2016,4,2,7),
-('Šiauliai','Tilžės g. 11',230.0,1990,2021,5,2,3),
-('Vilnius','Antakalnio g. 55',160.0,2008,NULL,3,1,4),
-('Kaunas','Kęstučio g. 17',210.0,1983,2013,4,4,5),
-('Klaipėda','Taikos pr. 72',250.0,1977,NULL,8,3,6),
-('Vilnius','Žirmūnų g. 89',90.0,2002,NULL,2,1,7),
-('Panevėžys','Kniaudiškių g. 25',100.0,1995,2018,3,2,3),
-('Kaunas','Raudondvario pl. 140',310.0,1981,NULL,5,4,4),
-('Vilnius','Ozo g. 15',400.0,1999,2019,7,1,5),
-('Klaipėda','Baltijos pr. 99',350.0,2005,NULL,6,2,6),
-('Vilnius','Kalvarijų g. 150',270.0,1993,2012,5,3,7);
+-- =====================================================
+-- Buildings (10 entries)
+-- =====================================================
+INSERT INTO building(city,address,area,year,lastRenovationYear,floors,energy,fk_Brokerid_User)
+VALUES
+('Vilnius','Gedimino pr. 10',250.5,1972,2015,5,4,2),
+('Kaunas','Laisvės al. 55',180.0,1988,NULL,4,5,3),
+('Klaipėda','Taikos pr. 145',320.2,1995,2020,7,3,2),
+('Šiauliai','Tilžės g. 89',150.7,2001,NULL,3,6,6),
+('Panevėžys','Respublikos g. 12',210.5,1978,2010,6,4,4),
+('Vilnius','Šnipiškių g. 3',95.0,2010,NULL,2,2,3),
+('Kaunas','Savanorių pr. 200',305.3,1992,NULL,9,7,5),
+('Klaipėda','Baltijos pr. 8',400.0,1980,2018,10,3,6),
+('Šiauliai','Aušros al. 25',175.4,2005,NULL,5,2,2),
+('Panevėžys','Knypavos g. 4',230.1,1999,NULL,4,5,3);
 
--- CONFIRMATIONS
-INSERT INTO confirmation(id,expires,fk_Buyerid_User) VALUES
-('conf1','2023-12-01',8),
-('conf2','2023-12-05',9),
-('conf3','2023-12-10',10),
-('conf4','2023-12-15',11),
-('conf5','2023-12-20',12);
+-- =====================================================
+-- Confirmations (4 buyers)
+-- =====================================================
+INSERT INTO confirmation(id,expires,fk_Buyerid_User)
+VALUES
+('conf_1','2023-09-01 12:00',7),
+('conf_2','2023-09-02 12:00',8),
+('conf_3','2023-09-03 12:00',9),
+('conf_4','2023-09-04 12:00',10);
 
--- APARTMENTS (25 entries, some whole buildings)
-INSERT INTO apartment(apartmentNumber,area,floor,rooms,notes,heating,finish,fk_Buildingid_Building,isWholeBuilding) VALUES
-(12,60.0,2,3,'Erdvus butas su balkonu',1,1,1,false),
-(5,45.0,1,2,'Renovuotas vonios kambarys',2,2,1,false),
-(8,95.0,3,4,'Su parkavimo vieta',1,1,2,false),
-(NULL,200.0,NULL,8,'Visas pastatas komercijai',3,1,2,true),
-(7,70.0,2,3,'Gražus vaizdas pro langą',4,2,3,false),
-(3,85.0,1,3,'Arti miesto centro',5,3,4,false),
-(10,55.0,4,2,'Su balkonu ir sandėliuku',2,1,5,false),
-(NULL,150.0,NULL,6,'Nuomojamas visas pastatas',1,2,6,true),
-(22,65.0,5,3,'Tvarkingas, šviesus butas',3,1,7,false),
-(15,120.0,2,5,'Didelė svetainė',2,1,8,false),
-(2,40.0,1,1,'Mažas pigus butas',4,3,9,false),
-(NULL,220.0,NULL,10,'Visas namas su kiemu',2,1,10,true),
-(18,75.0,3,3,'Buto langai į parką',1,2,11,false),
-(25,80.0,4,3,'Nauji baldai',2,1,12,false),
-(6,68.0,2,3,'Su sandėliuku',3,1,13,false),
-(9,95.0,5,4,'Arti jūros',1,2,14,false),
-(NULL,90.0,NULL,2,'Visas kotedžas',4,1,15,true),
-(11,55.0,3,2,'Šviesus kambarys',2,2,16,false),
-(14,105.0,4,4,'Didelė virtuvė',5,3,17,false),
-(NULL,400.0,NULL,12,'Biurų pastatas',1,1,18,true),
-(3,85.0,1,3,'Patogus išplanavimas',2,1,19,false),
-(7,130.0,6,5,'Penthaus su terasa',1,2,20,false),
-(1,42.0,1,2,'Tvarkingas ir pigus',5,2,11,false),
-(4,58.0,2,2,'Su erdviu balkonu',3,1,12,false),
-(NULL,160.0,NULL,7,'Visas pastatas su ofisais',2,1,13,true);
+-- =====================================================
+-- Apartments (25 entries)
+-- =====================================================
+INSERT INTO apartment(apartmentNumber,area,floor,rooms,notes,heating,finish,fk_Buildingid_Building,isWholeBuilding)
+VALUES
+(1,55.5,1,2,'Jaukus butas su balkonu',1,1,1,false),
+(2,42.0,3,1,'Tvarkingas, šalia centro',2,2,1,false),
+(3,68.2,2,3,'Didelė svetainė',3,3,2,false),
+(4,90.1,5,4,'Puikus vaizdas į miestą',1,1,3,false),
+(5,37.7,1,1,'Mažas studijos tipo butas',4,2,4,false),
+(6,120.0,NULL,5,'Visas pastatas',5,1,5,true),
+(7,48.1,2,2,'Renovuotas',2,1,6,false),
+(8,72.2,4,3,'Su terasa',1,2,7,false),
+(9,95.3,6,4,'Šeimos būstas',3,1,8,false),
+(10,35.8,1,1,'Ekonomiškas variantas',4,2,9,false),
+(11,52.9,2,2,'Rami vieta',2,3,10,false),
+(12,65.5,3,3,'Šviesus butas',1,1,1,false),
+(13,78.6,4,3,'Netoli parko',5,2,2,false),
+(14,44.7,2,1,'Tvarkingas',3,2,3,false),
+(15,81.0,5,3,'Centro širdyje',1,3,4,false),
+(16,36.6,1,1,'Mažytis butas',4,2,5,false),
+(17,110.5,7,5,'Didelis šeimos butas',2,1,6,false),
+(18,59.2,2,2,'Modernus dizainas',1,1,7,false),
+(19,66.4,3,2,'Erdvus koridorius',5,2,8,false),
+(20,45.8,1,1,'Netoli universiteto',4,3,9,false),
+(21,73.0,4,3,'Renovuotas namas',2,1,10,false),
+(22,50.5,2,2,'Su parkavimo vieta',2,2,1,false),
+(23,82.1,5,3,'Puikus išplanavimas',1,3,2,false),
+(24,64.2,3,2,'Pigus variantas',3,2,3,false),
+(25,NULL,NULL,8,'Visas pastatas',5,1,4,true);
 
--- VIEWINGS (use 10 availabilities only)
-INSERT INTO viewing("from","to",status,fk_Availabilityid_Availability) VALUES
-('2023-10-06','2023-10-06',2,1),
-('2023-10-08','2023-10-08',1,2),
-('2023-10-11','2023-10-11',2,3),
-('2023-10-14','2023-10-14',3,4),
-('2023-10-17','2023-10-17',2,5),
-('2023-10-19','2023-10-19',1,6),
-('2023-10-21','2023-10-21',5,7),
-('2023-10-23','2023-10-23',2,8),
-('2023-10-25','2023-10-25',4,9),
-('2023-10-27','2023-10-27',1,10);
+-- =====================================================
+-- Viewings (25 entries, one per apartment for demo)
+-- =====================================================
+INSERT INTO viewing("from","to",status,fk_Availabilityid_Availability)
+VALUES
+('2023-09-11 10:00','2023-09-11 11:00',1,1),
+('2023-09-12 14:00','2023-09-12 15:00',2,2),
+('2023-09-13 09:00','2023-09-13 10:00',3,3),
+('2023-09-14 11:00','2023-09-14 12:00',4,4),
+('2023-09-15 16:00','2023-09-15 17:00',1,5),
+('2023-09-16 10:00','2023-09-16 11:00',2,6),
+('2023-09-17 13:00','2023-09-17 14:00',5,7),
+('2023-09-18 09:30','2023-09-18 10:30',1,8),
+('2023-09-19 10:00','2023-09-19 11:00',2,9),
+('2023-09-20 15:00','2023-09-20 16:00',3,10),
+('2023-09-21 10:00','2023-09-21 11:00',1,1),
+('2023-09-22 14:00','2023-09-22 15:00',2,2),
+('2023-09-23 09:00','2023-09-23 10:00',3,3),
+('2023-09-24 11:00','2023-09-24 12:00',4,4),
+('2023-09-25 16:00','2023-09-25 17:00',1,5),
+('2023-09-26 10:00','2023-09-26 11:00',2,6),
+('2023-09-27 13:00','2023-09-27 14:00',5,7),
+('2023-09-28 09:30','2023-09-28 10:30',1,8),
+('2023-09-29 10:00','2023-09-29 11:00',2,9),
+('2023-09-30 15:00','2023-09-30 16:00',3,10),
+('2023-10-01 09:00','2023-10-01 10:00',1,1),
+('2023-10-02 09:00','2023-10-02 10:00',1,2),
+('2023-10-03 09:00','2023-10-03 10:00',2,3),
+('2023-10-04 09:00','2023-10-04 10:00',3,4),
+('2023-10-05 09:00','2023-10-05 10:00',4,5);
 
--- PICTURES
-INSERT INTO picture(id,public,fk_Apartmentid_Apartment) VALUES
-('pic1',true,1),
-('pic2',true,2),
-('pic3',false,3),
-('pic4',true,4),
-('pic5',true,5),
-('pic6',false,6),
-('pic7',true,7),
-('pic8',true,8),
-('pic9',false,9),
-('pic10',true,10),
-('pic11',true,11),
-('pic12',false,12),
-('pic13',true,13),
-('pic14',false,14),
-('pic15',true,15),
-('pic16',true,16),
-('pic17',false,17),
-('pic18',true,18),
-('pic19',true,19),
-('pic20',false,20),
-('pic21',true,21),
-('pic22',false,22),
-('pic23',true,23),
-('pic24',true,24),
-('pic25',false,25);
+-- =====================================================
+-- Pictures (25 entries, one per apartment)
+-- =====================================================
+INSERT INTO picture(id,public,fk_Apartmentid_Apartment)
+VALUES
+('pic_1',true,1),
+('pic_2',true,2),
+('pic_3',true,3),
+('pic_4',false,4),
+('pic_5',true,5),
+('pic_6',true,6),
+('pic_7',false,7),
+('pic_8',true,8),
+('pic_9',true,9),
+('pic_10',false,10),
+('pic_11',true,11),
+('pic_12',true,12),
+('pic_13',true,13),
+('pic_14',true,14),
+('pic_15',true,15),
+('pic_16',true,16),
+('pic_17',true,17),
+('pic_18',true,18),
+('pic_19',true,19),
+('pic_20',true,20),
+('pic_21',true,21),
+('pic_22',true,22),
+('pic_23',true,23),
+('pic_24',true,24),
+('pic_25',true,25);
 
--- LISTINGS (first 10 tied to viewings)
-INSERT INTO listing(description,askingPrice,rent,fk_Viewingid_Viewing,fk_Pictureid) VALUES
-('Parduodamas tvarkingas 3 kambarių butas miesto centre',150000,false,1,'pic1'),
-('Nuomojamas erdvus 2 kambarių butas',600,true,2,'pic2'),
-('Parduodamas butas su parkavimo vieta garaže',200000,false,3,'pic3'),
-('Nuomojamas visas pastatas komercijai',3000,true,4,'pic4'),
-('Butas su gražiu vaizdu į parką',120000,false,5,'pic5'),
-('Parduodamas 3 kambarių butas arti senamiesčio',135000,false,6,'pic6'),
-('Nuomojamas 2 kambarių butas ilgalaikei nuomai',500,true,7,'pic7'),
-('Butas su balkonu ir sandėliuku',145000,false,8,'pic8'),
-('Nuomojamas šviesus 3 kambarių butas',650,true,9,'pic9'),
-('Parduodamas erdvus 5 kambarių butas šeimai',250000,false,10,'pic10');
+-- =====================================================
+-- Listings (25 entries, covers all apartments; rent prices=monthly)
+-- =====================================================
+INSERT INTO listing(description,askingPrice,rent,fk_Viewingid_Viewing,fk_Pictureid)
+VALUES
+('Butas Vilniaus centre',120000,false,1,'pic_1'),
+('Mažas butas studentams',450,true,2,'pic_2'),
+('Šeimos būstas Kaune',150000,false,3,'pic_3'),
+('Prabangus apartamentas Klaipėdoje',250000,false,4,'pic_4'),
+('Ekonomiškas variantas Šiauliuose',380,true,5,'pic_5'),
+('Visas pastatas nuomai Panevėžyje',1500,true,6,'pic_6'),
+('Renovuotas butas Vilniuje',135000,false,7,'pic_7'),
+('Erdvus apartamentas Kaune',170000,false,8,'pic_8'),
+('Butas prie jūros',200000,false,9,'pic_9'),
+('Pigus butas',320,true,10,'pic_10'),
+('Šviesus butas',120000,false,11,'pic_11'),
+('Netoli miesto parko',500,true,12,'pic_12'),
+('Centro rajonas',160000,false,13,'pic_13'),
+('Studentų butas',350,true,14,'pic_14'),
+('Modernus loftas',190000,false,15,'pic_15'),
+('Studija jaunimui',400,true,16,'pic_16'),
+('Didelis šeimos butas',210000,false,17,'pic_17'),
+('Butas su terasa',650,true,18,'pic_18'),
+('Erdvus koridorius',175000,false,19,'pic_19'),
+('Butas prie universiteto',480,true,20,'pic_20'),
+('Renovuotas namas',185000,false,21,'pic_21'),
+('Parkavimas įskaičiuotas',550,true,22,'pic_22'),
+('Puikus išplanavimas',195000,false,23,'pic_23'),
+('Ekonomiškas variantas',370,true,24,'pic_24'),
+('Visas pastatas Šiauliuose',2000,true,25,'pic_25');
