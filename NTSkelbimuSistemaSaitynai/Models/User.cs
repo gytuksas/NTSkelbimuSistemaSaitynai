@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace NTSkelbimuSistemaSaitynai.Models;
 
@@ -21,11 +22,15 @@ public partial class User
 
     public long IdUser { get; set; }
 
+    [JsonIgnore]
     public virtual Administrator? Administrator { get; set; }
 
+    [JsonIgnore]
     public virtual Broker? Broker { get; set; }
 
+    [JsonIgnore]
     public virtual Buyer? Buyer { get; set; }
 
+    [JsonIgnore]
     public virtual ICollection<Session> Sessions { get; set; } = new List<Session>();
 }

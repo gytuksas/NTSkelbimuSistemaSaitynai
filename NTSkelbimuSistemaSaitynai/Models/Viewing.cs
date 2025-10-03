@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace NTSkelbimuSistemaSaitynai.Models;
 
@@ -15,9 +16,12 @@ public partial class Viewing
 
     public long FkAvailabilityidAvailability { get; set; }
 
+    [JsonIgnore]
     public virtual Availability FkAvailabilityidAvailabilityNavigation { get; set; } = null!;
 
+    [JsonIgnore]
     public virtual Listing? Listing { get; set; }
 
+    [JsonIgnore]
     public virtual Viewingstatus StatusNavigation { get; set; } = null!;
 }

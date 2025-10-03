@@ -42,6 +42,20 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return apartment;
         }
 
+        [HttpGet("building/{id}")]
+        public async Task<ActionResult<IEnumerable<Apartment>>> GetApartmentsInBuilding(long id)
+        {
+            var apartments = await _context.
+                Apartments.
+                Where(x => x.FkBuildingidBuilding == id).
+                ToListAsync();
+
+            if(apartments == null)
+                return NotFound();
+
+            return apartments;
+        }
+
         // PUT: api/Apartments/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace NTSkelbimuSistemaSaitynai.Models;
 
@@ -11,7 +12,9 @@ public partial class Buyer
 
     public long IdUser { get; set; }
 
+    [JsonIgnore]
     public virtual Confirmation? Confirmation { get; set; }
 
+    [JsonIgnore]
     public virtual User IdUserNavigation { get; set; } = null!;
 }

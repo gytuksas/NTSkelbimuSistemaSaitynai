@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace NTSkelbimuSistemaSaitynai.Models;
 
@@ -17,7 +18,9 @@ public partial class Listing
 
     public string FkPictureid { get; set; } = null!;
 
+    [JsonIgnore]
     public virtual Picture FkPicture { get; set; } = null!;
 
+    [JsonIgnore]
     public virtual Viewing FkViewingidViewingNavigation { get; set; } = null!;
 }

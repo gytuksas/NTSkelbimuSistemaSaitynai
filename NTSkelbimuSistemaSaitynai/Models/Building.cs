@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace NTSkelbimuSistemaSaitynai.Models;
 
@@ -23,9 +24,12 @@ public partial class Building
 
     public long FkBrokeridUser { get; set; }
 
+    [JsonIgnore]
     public virtual ICollection<Apartment> Apartments { get; set; } = new List<Apartment>();
 
+    [JsonIgnore]
     public virtual Energyclass? EnergyNavigation { get; set; }
 
+    [JsonIgnore]
     public virtual Broker FkBrokeridUserNavigation { get; set; } = null!;
 }

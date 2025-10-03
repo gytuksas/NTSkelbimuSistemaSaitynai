@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace NTSkelbimuSistemaSaitynai.Models;
 
@@ -15,5 +16,6 @@ public partial class Session
 
     public long FkUseridUser { get; set; }
 
+    [JsonIgnore]
     public virtual User FkUseridUserNavigation { get; set; } = null!;
 }
