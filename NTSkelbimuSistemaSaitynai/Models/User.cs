@@ -16,7 +16,7 @@ public partial class User
 
     public string Password { get; set; } = null!;
 
-    public DateOnly Registrationtime { get; set; }
+    public DateTime Registrationtime { get; set; }
 
     public string? Profilepicture { get; set; }
 

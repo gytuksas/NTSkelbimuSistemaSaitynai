@@ -6,9 +6,9 @@ namespace NTSkelbimuSistemaSaitynai.Models;
 
 public partial class Availability
 {
-    public DateOnly From { get; set; }
+    public DateTime From { get; set; }
 
-    public DateOnly To { get; set; }
+    public DateTime To { get; set; }
 
     public long IdAvailability { get; set; }
 
