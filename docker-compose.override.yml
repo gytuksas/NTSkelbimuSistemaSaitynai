@@ -19,7 +19,7 @@ services:
       - bridged
       - dbnet
     volumes:
-      - dbdata:/var/lib/postgresql/
+      - dbdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     environment:
