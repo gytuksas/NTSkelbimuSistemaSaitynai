@@ -3,11 +3,17 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
+      - DB_HOST=db
+      - DB_USER=postgres
+      - DB_PASS_FILE=/run/secrets/dbpass
+      - DB_NAME=postgres
     ports:
       - "8080:8080"
     networks:
       - bridged
       - dbnet
+    secrets:
+      - dbpass
   db:
     networks:
       - bridged
