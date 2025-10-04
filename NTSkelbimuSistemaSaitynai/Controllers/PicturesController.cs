@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using NTSkelbimuSistemaSaitynai;
 using NTSkelbimuSistemaSaitynai.Models;
+using NTSkelbimuSistemaSaitynai;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
@@ -69,6 +69,17 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                     throw;
                 }
             }
+            catch (DbUpdateException)
+            {
+                if (!ApartmentExists(picture.FkApartmentidApartment))
+                {
+                    return UnprocessableEntity("Invalid fk");
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return NoContent();
         }
@@ -88,6 +99,10 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 if (PictureExists(picture.Id))
                 {
                     return Conflict();
+                }
+                else if (!ApartmentExists(picture.FkApartmentidApartment))
+                {
+                    return UnprocessableEntity("Invalid fk");
                 }
                 else
                 {
@@ -117,6 +132,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         private bool PictureExists(string id)
         {
             return _context.Pictures.Any(e => e.Id == id);
+        }
+
+        private bool ApartmentExists(long id)
+        {
+            return _context.Apartments.Any(e => e.IdApartment == id);
         }
     }
 }

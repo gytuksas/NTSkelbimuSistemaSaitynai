@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using NTSkelbimuSistemaSaitynai;
 using NTSkelbimuSistemaSaitynai.DbUtils;
+using NTSkelbimuSistemaSaitynai;
 
 var builder = WebApplication.CreateBuilder(args);
 

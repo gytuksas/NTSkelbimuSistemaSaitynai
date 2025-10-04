@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using NTSkelbimuSistemaSaitynai;
 using NTSkelbimuSistemaSaitynai.Models;
+using NTSkelbimuSistemaSaitynai;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
@@ -69,6 +69,17 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                     throw;
                 }
             }
+            catch (DbUpdateException)
+            {
+                if (listing.FkPictureid != null && !PictureExists(listing.FkPictureid))
+                {
+                    return UnprocessableEntity("Invalid fk");
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return NoContent();
         }
@@ -95,7 +106,21 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             }
 
             _context.Listings.Remove(listing);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                if (listing.FkPictureid != null && !PictureExists(listing.FkPictureid))
+                {
+                    return UnprocessableEntity("Invalid fk");
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return NoContent();
         }
@@ -103,6 +128,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         private bool ListingExists(long id)
         {
             return _context.Listings.Any(e => e.IdListing == id);
+        }
+
+        private bool PictureExists(string id)
+        {
+            return _context.Pictures.Any(e => e.Id == id);
         }
     }
 }

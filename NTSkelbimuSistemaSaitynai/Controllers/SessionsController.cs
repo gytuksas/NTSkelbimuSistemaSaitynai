@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using NTSkelbimuSistemaSaitynai;
 using NTSkelbimuSistemaSaitynai.Models;
+using NTSkelbimuSistemaSaitynai;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
@@ -98,6 +98,17 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                     throw;
                 }
             }
+            catch (DbUpdateException)
+            {
+                if (!UserExists(session.FkUseridUser))
+                {
+                    return UnprocessableEntity("Invalid fk");
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return NoContent();
         }
@@ -147,6 +158,10 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 {
                     return Conflict();
                 }
+                else if (!UserExists(session.FkUseridUser))
+                {
+                    return UnprocessableEntity("Invalid fk");
+                }
                 else
                 {
                     throw;
@@ -175,6 +190,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         private bool SessionExists(string id)
         {
             return _context.Sessions.Any(e => e.Id == id);
+        }
+
+        private bool UserExists(long id)
+        {
+            return _context.Users.Any(e => e.IdUser == id);
         }
     }
 }

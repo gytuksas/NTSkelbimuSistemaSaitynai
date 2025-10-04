@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai;
 using NTSkelbimuSistemaSaitynai.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using static System.Collections.Specialized.BitVector32;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
@@ -74,6 +75,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 To = dt2,
                 Status = viewingDto.Status,
                 FkAvailabilityidAvailability = viewingDto.FkAvailabilityidAvailability,
+                FkListingidListing = viewingDto.FkListingidListing,
             };
 
             if (id != viewing.IdViewing)
@@ -98,6 +100,17 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                     throw;
                 }
             }
+            catch (DbUpdateException)
+            {
+                if (!AvailabilityExists(viewing.FkAvailabilityidAvailability) || !ListingExists(viewing.FkListingidListing))
+                {
+                    return UnprocessableEntity("Invalid fk");
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return NoContent();
         }
@@ -108,7 +121,21 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         public async Task<ActionResult<Viewing>> PostViewing(Viewing viewing)
         {
             _context.Viewings.Add(viewing);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                if (!AvailabilityExists(viewing.FkAvailabilityidAvailability) || !ListingExists(viewing.FkListingidListing))
+                {
+                    return UnprocessableEntity("Invalid fk");
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return CreatedAtAction("GetViewing", new { id = viewing.IdViewing }, viewing);
         }
@@ -132,6 +159,16 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         private bool ViewingExists(long id)
         {
             return _context.Viewings.Any(e => e.IdViewing == id);
+        }
+
+        private bool AvailabilityExists(long id)
+        {
+            return _context.Availabilities.Any(e => e.IdAvailability == id);
+        }
+
+        private bool ListingExists(long id)
+        {
+            return _context.Listings.Any(e => e.IdListing == id);
         }
     }
 }

@@ -8,15 +8,17 @@ namespace NTSkelbimuSistemaSaitynai.Models;
 
 public partial class Viewing
 {
+    public long IdViewing { get; set; }
+
     public DateTime From { get; set; }
 
     public DateTime To { get; set; }
 
     public int Status { get; set; }
 
-    public long IdViewing { get; set; }
-
     public long FkAvailabilityidAvailability { get; set; }
+
+    public long FkListingidListing { get; set; }
 
     [BindNever]
     [ValidateNever]
@@ -26,7 +28,7 @@ public partial class Viewing
     [BindNever]
     [ValidateNever]
     [JsonIgnore]
-    public virtual Listing? Listing { get; set; }
+    public virtual Listing FkListingidListingNavigation { get; set; } = null!;
 
     [BindNever]
     [ValidateNever]
@@ -43,4 +45,6 @@ public class ViewingDto
     public required int Status { get; set; }
 
     public long FkAvailabilityidAvailability { get; set; }
+
+    public long FkListingidListing { get; set; }
 }

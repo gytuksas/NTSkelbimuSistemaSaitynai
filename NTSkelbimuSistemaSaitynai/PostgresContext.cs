@@ -77,7 +77,9 @@ public partial class PostgresContext : DbContext
 
             entity.ToTable("apartment");
 
-            entity.Property(e => e.IdApartment).HasColumnName("id_apartment");
+            entity.Property(e => e.IdApartment)
+                .UseIdentityAlwaysColumn()
+                .HasColumnName("id_apartment");
             entity.Property(e => e.Apartmentnumber).HasColumnName("apartmentnumber");
             entity.Property(e => e.Area).HasColumnName("area");
             entity.Property(e => e.Finish).HasColumnName("finish");
@@ -111,7 +113,9 @@ public partial class PostgresContext : DbContext
 
             entity.ToTable("availability");
 
-            entity.Property(e => e.IdAvailability).HasColumnName("id_availability");
+            entity.Property(e => e.IdAvailability)
+                .UseIdentityAlwaysColumn()
+                .HasColumnName("id_availability");
             entity.Property(e => e.FkBrokeridUser).HasColumnName("fk_brokerid_user");
             entity.Property(e => e.From).HasColumnName("from");
             entity.Property(e => e.To).HasColumnName("to");
@@ -146,7 +150,9 @@ public partial class PostgresContext : DbContext
 
             entity.ToTable("building");
 
-            entity.Property(e => e.IdBuilding).HasColumnName("id_building");
+            entity.Property(e => e.IdBuilding)
+                .UseIdentityAlwaysColumn()
+                .HasColumnName("id_building");
             entity.Property(e => e.Address)
                 .HasMaxLength(255)
                 .HasColumnName("address");
@@ -215,11 +221,10 @@ public partial class PostgresContext : DbContext
             entity.ToTable("energyclass");
 
             entity.Property(e => e.IdEnergyclass)
-                .ValueGeneratedNever()
+                .UseIdentityAlwaysColumn()
                 .HasColumnName("id_energyclass");
             entity.Property(e => e.Name)
                 .HasMaxLength(4)
-                .IsFixedLength()
                 .HasColumnName("name");
         });
 
@@ -230,11 +235,10 @@ public partial class PostgresContext : DbContext
             entity.ToTable("finishtypes");
 
             entity.Property(e => e.IdFinishtypes)
-                .ValueGeneratedNever()
+                .UseIdentityAlwaysColumn()
                 .HasColumnName("id_finishtypes");
             entity.Property(e => e.Name)
                 .HasMaxLength(15)
-                .IsFixedLength()
                 .HasColumnName("name");
         });
 
@@ -245,11 +249,10 @@ public partial class PostgresContext : DbContext
             entity.ToTable("heatingtypes");
 
             entity.Property(e => e.IdHeatingtypes)
-                .ValueGeneratedNever()
+                .UseIdentityAlwaysColumn()
                 .HasColumnName("id_heatingtypes");
             entity.Property(e => e.Name)
-                .HasMaxLength(10)
-                .IsFixedLength()
+                .HasMaxLength(20)
                 .HasColumnName("name");
         });
 
@@ -261,9 +264,9 @@ public partial class PostgresContext : DbContext
 
             entity.HasIndex(e => e.FkPictureid, "listing_fk_pictureid_key").IsUnique();
 
-            entity.HasIndex(e => e.FkViewingidViewing, "listing_fk_viewingid_viewing_key").IsUnique();
-
-            entity.Property(e => e.IdListing).HasColumnName("id_listing");
+            entity.Property(e => e.IdListing)
+                .UseIdentityAlwaysColumn()
+                .HasColumnName("id_listing");
             entity.Property(e => e.Askingprice).HasColumnName("askingprice");
             entity.Property(e => e.Description)
                 .HasMaxLength(10000)
@@ -271,18 +274,12 @@ public partial class PostgresContext : DbContext
             entity.Property(e => e.FkPictureid)
                 .HasMaxLength(255)
                 .HasColumnName("fk_pictureid");
-            entity.Property(e => e.FkViewingidViewing).HasColumnName("fk_viewingid_viewing");
             entity.Property(e => e.Rent).HasColumnName("rent");
 
             entity.HasOne(d => d.FkPicture).WithOne(p => p.Listing)
                 .HasForeignKey<Listing>(d => d.FkPictureid)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("listing_fk_pictureid_fkey");
-
-            entity.HasOne(d => d.FkViewingidViewingNavigation).WithOne(p => p.Listing)
-                .HasForeignKey<Listing>(d => d.FkViewingidViewing)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("listing_fk_viewingid_viewing_fkey");
         });
 
         modelBuilder.Entity<Picture>(entity =>
@@ -305,9 +302,9 @@ public partial class PostgresContext : DbContext
 
         modelBuilder.Entity<Session>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("session_pkey");
+            entity.HasKey(e => e.Id).HasName("Session_pkey");
 
-            entity.ToTable("session");
+            entity.ToTable("Session");
 
             entity.Property(e => e.Id)
                 .HasMaxLength(255)
@@ -320,16 +317,18 @@ public partial class PostgresContext : DbContext
             entity.HasOne(d => d.FkUseridUserNavigation).WithMany(p => p.Sessions)
                 .HasForeignKey(d => d.FkUseridUser)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("session_fk_userid_user_fkey");
+                .HasConstraintName("Session_fk_userid_user_fkey");
         });
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.IdUser).HasName("user_pkey");
+            entity.HasKey(e => e.IdUser).HasName("User_pkey");
 
-            entity.ToTable("user");
+            entity.ToTable("User");
 
-            entity.Property(e => e.IdUser).HasColumnName("id_user");
+            entity.Property(e => e.IdUser)
+                .UseIdentityAlwaysColumn()
+                .HasColumnName("id_user");
             entity.Property(e => e.Email)
                 .HasMaxLength(255)
                 .HasColumnName("email");
@@ -357,8 +356,13 @@ public partial class PostgresContext : DbContext
 
             entity.ToTable("viewing");
 
-            entity.Property(e => e.IdViewing).HasColumnName("id_viewing");
+            entity.HasIndex(e => e.FkListingidListing, "viewing_fk_listingid_listing_key").IsUnique();
+
+            entity.Property(e => e.IdViewing)
+                .UseIdentityAlwaysColumn()
+                .HasColumnName("id_viewing");
             entity.Property(e => e.FkAvailabilityidAvailability).HasColumnName("fk_availabilityid_availability");
+            entity.Property(e => e.FkListingidListing).HasColumnName("fk_listingid_listing");
             entity.Property(e => e.From).HasColumnName("from");
             entity.Property(e => e.Status).HasColumnName("status");
             entity.Property(e => e.To).HasColumnName("to");
@@ -367,6 +371,11 @@ public partial class PostgresContext : DbContext
                 .HasForeignKey(d => d.FkAvailabilityidAvailability)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("viewing_fk_availabilityid_availability_fkey");
+
+            entity.HasOne(d => d.FkListingidListingNavigation).WithOne(p => p.Viewing)
+                .HasForeignKey<Viewing>(d => d.FkListingidListing)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("viewing_fk_listingid_listing_fkey");
 
             entity.HasOne(d => d.StatusNavigation).WithMany(p => p.Viewings)
                 .HasForeignKey(d => d.Status)
@@ -381,11 +390,10 @@ public partial class PostgresContext : DbContext
             entity.ToTable("viewingstatus");
 
             entity.Property(e => e.IdViewingstatus)
-                .ValueGeneratedNever()
+                .UseIdentityAlwaysColumn()
                 .HasColumnName("id_viewingstatus");
             entity.Property(e => e.Name)
-                .HasMaxLength(9)
-                .IsFixedLength()
+                .HasMaxLength(20)
                 .HasColumnName("name");
         });
 
