@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -26,15 +28,23 @@ public partial class Apartment
 
     public bool Iswholebuilding { get; set; }
 
+    [BindNever]
+    [ValidateNever]
     [JsonIgnore]
     public virtual Finishtype FinishNavigation { get; set; } = null!;
 
+    [BindNever]
+    [ValidateNever]
     [JsonIgnore]
     public virtual Building FkBuildingidBuildingNavigation { get; set; } = null!;
 
+    [BindNever]
+    [ValidateNever]
     [JsonIgnore]
     public virtual Heatingtype? HeatingNavigation { get; set; }
 
+    [BindNever]
+    [ValidateNever]
     [JsonIgnore]
     public virtual ICollection<Picture> Pictures { get; set; } = new List<Picture>();
 }

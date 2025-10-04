@@ -45,8 +45,37 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         // PUT: api/Sessions/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutSession(string id, Session session)
+        public async Task<IActionResult> PutSession(string id, [FromBody] SessionDto sessionDto)
         {
+            DateTime dt1;
+            DateTime dt2;
+
+            try
+            {
+                dt1 = DateTime.Parse(sessionDto.Created);
+                dt2 = DateTime.Parse(sessionDto.Lastactivity);
+            }
+            catch (FormatException)
+            {
+                return BadRequest("Invalid date and time format - expecting yyyy-mm-dd hh:mm");
+            }
+
+            if (sessionDto.Created.Split(' ').Length < 2 || sessionDto.Lastactivity.Split(' ').Length < 2)
+            {
+                return UnprocessableEntity("Invalid date and time format - seems like there is no time value - expecting yyyy-mm-dd hh:mm");
+            }
+
+            dt1 = DateTime.SpecifyKind(dt1, DateTimeKind.Utc);
+            dt2 = DateTime.SpecifyKind(dt2, DateTimeKind.Utc);
+
+            Session session = new Session
+            {
+                Created = dt1,
+                Remember = sessionDto.Remember,
+                Lastactivity = dt2,
+                FkUseridUser = sessionDto.FkUseridUser
+            };
+
             if (id != session.Id)
             {
                 return BadRequest();
@@ -76,8 +105,37 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         // POST: api/Sessions
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Session>> PostSession(Session session)
+        public async Task<ActionResult<Session>> PostSession([FromBody] SessionDto sessionDto)
         {
+            DateTime dt1;
+            DateTime dt2;
+
+            try
+            {
+                dt1 = DateTime.Parse(sessionDto.Created);
+                dt2 = DateTime.Parse(sessionDto.Lastactivity);
+            }
+            catch (FormatException)
+            {
+                return BadRequest("Invalid date and time format - expecting yyyy-mm-dd hh:mm");
+            }
+
+            if (sessionDto.Created.Split(' ').Length < 2 || sessionDto.Lastactivity.Split(' ').Length < 2)
+            {
+                return UnprocessableEntity("Invalid date and time format - seems like there is no time value - expecting yyyy-mm-dd hh:mm");
+            }
+
+            dt1 = DateTime.SpecifyKind(dt1, DateTimeKind.Utc);
+            dt2 = DateTime.SpecifyKind(dt2, DateTimeKind.Utc);
+
+            Session session = new Session
+            {
+                Created = dt1,
+                Remember = sessionDto.Remember,
+                Lastactivity = dt2,
+                FkUseridUser = sessionDto.FkUseridUser
+            };
+
             _context.Sessions.Add(session);
             try
             {

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -18,9 +20,13 @@ public partial class Listing
 
     public string FkPictureid { get; set; } = null!;
 
+    [BindNever]
+    [ValidateNever]
     [JsonIgnore]
     public virtual Picture FkPicture { get; set; } = null!;
 
+    [BindNever]
+    [ValidateNever]
     [JsonIgnore]
     public virtual Viewing FkViewingidViewingNavigation { get; set; } = null!;
 }

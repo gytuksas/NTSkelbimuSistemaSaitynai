@@ -45,8 +45,32 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         // PUT: api/Confirmations/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutConfirmation(string id, Confirmation confirmation)
+        public async Task<IActionResult> PutConfirmation(string id, [FromBody] ConfirmationDto confirmationDto)
         {
+            DateTime dt1;
+
+            try
+            {
+                dt1 = DateTime.Parse(confirmationDto.Expires);
+            }
+            catch (FormatException)
+            {
+                return BadRequest("Invalid date and time format - expecting yyyy-mm-dd hh:mm");
+            }
+
+            if (confirmationDto.Expires.Split(' ').Length < 2)
+            {
+                return UnprocessableEntity("Invalid date and time format - seems like there is no time value - expecting yyyy-mm-dd hh:mm");
+            }
+
+            dt1 = DateTime.SpecifyKind(dt1, DateTimeKind.Utc);
+
+            Confirmation confirmation = new Confirmation
+            {
+                Expires = dt1,
+                FkBuyeridUser = confirmationDto.FkBuyeridUser
+            };
+
             if (id != confirmation.Id)
             {
                 return BadRequest();
@@ -69,6 +93,17 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                     throw;
                 }
             }
+            catch (DbUpdateException)
+            {
+                if (!BuyerExists(confirmation.FkBuyeridUser))
+                {
+                    return UnprocessableEntity("Invalid fk");
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return NoContent();
         }
@@ -76,8 +111,32 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         // POST: api/Confirmations
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Confirmation>> PostConfirmation(Confirmation confirmation)
+        public async Task<ActionResult<Confirmation>> PostConfirmation([FromBody] ConfirmationDto confirmationDto)
         {
+            DateTime dt1;
+
+            try
+            {
+                dt1 = DateTime.Parse(confirmationDto.Expires);
+            }
+            catch (FormatException)
+            {
+                return BadRequest("Invalid date and time format - expecting yyyy-mm-dd hh:mm");
+            }
+
+            if (confirmationDto.Expires.Split(' ').Length < 2)
+            {
+                return UnprocessableEntity("Invalid date and time format - seems like there is no time value - expecting yyyy-mm-dd hh:mm");
+            }
+
+            dt1 = DateTime.SpecifyKind(dt1, DateTimeKind.Utc);
+
+            Confirmation confirmation = new Confirmation
+            {
+                Expires = dt1,
+                FkBuyeridUser = confirmationDto.FkBuyeridUser
+            };
+
             _context.Confirmations.Add(confirmation);
             try
             {
@@ -89,11 +148,16 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 {
                     return Conflict();
                 }
+                else if (!BuyerExists(confirmation.FkBuyeridUser))
+                {
+                    return UnprocessableEntity("Invalid fk");
+                }
                 else
                 {
                     throw;
                 }
             }
+
 
             return CreatedAtAction("GetConfirmation", new { id = confirmation.Id }, confirmation);
         }
@@ -117,6 +181,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         private bool ConfirmationExists(string id)
         {
             return _context.Confirmations.Any(e => e.Id == id);
+        }
+
+        private bool BuyerExists(long id)
+        {
+            return _context.Buyers.Any(e => e.IdUser == id);
         }
     }
 }

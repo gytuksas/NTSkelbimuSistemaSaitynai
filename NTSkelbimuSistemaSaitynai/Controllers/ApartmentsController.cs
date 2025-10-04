@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai;
@@ -83,6 +84,17 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                     throw;
                 }
             }
+            catch (DbUpdateException)
+            {
+                if(!BuildingExists(apartment.FkBuildingidBuilding))
+                {
+                    return UnprocessableEntity("Invalid fk");
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return NoContent();
         }
@@ -93,7 +105,21 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         public async Task<ActionResult<Apartment>> PostApartment(Apartment apartment)
         {
             _context.Apartments.Add(apartment);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                if (!BuildingExists(apartment.FkBuildingidBuilding))
+                {
+                    return UnprocessableEntity("Invalid fk");
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return CreatedAtAction("GetApartment", new { id = apartment.IdApartment }, apartment);
         }
@@ -117,6 +143,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         private bool ApartmentExists(long id)
         {
             return _context.Apartments.Any(e => e.IdApartment == id);
+        }
+
+        private bool BuildingExists(long id)
+        {
+            return _context.Buildings.Any(e => e.IdBuilding == id);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -12,6 +14,15 @@ public partial class Confirmation
 
     public long FkBuyeridUser { get; set; }
 
+    [BindNever]
+    [ValidateNever]
     [JsonIgnore]
     public virtual Buyer FkBuyeridUserNavigation { get; set; } = null!;
+}
+
+public class ConfirmationDto
+{
+    public required string Expires { get; set; }
+
+    public required long FkBuyeridUser { get; set; }
 }

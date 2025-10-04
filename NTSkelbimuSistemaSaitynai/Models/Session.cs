@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -16,6 +18,19 @@ public partial class Session
 
     public long FkUseridUser { get; set; }
 
+    [BindNever]
+    [ValidateNever]
     [JsonIgnore]
     public virtual User FkUseridUserNavigation { get; set; } = null!;
+}
+
+public class SessionDto
+{
+    public required string Created { get; set; }
+
+    public required bool Remember { get; set; }
+
+    public required string Lastactivity { get; set; }
+
+    public required long FkUseridUser { get; set; }
 }

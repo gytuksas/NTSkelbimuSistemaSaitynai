@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -24,12 +26,18 @@ public partial class Building
 
     public long FkBrokeridUser { get; set; }
 
+    [BindNever]
+    [ValidateNever]
     [JsonIgnore]
     public virtual ICollection<Apartment> Apartments { get; set; } = new List<Apartment>();
 
+    [BindNever]
+    [ValidateNever]
     [JsonIgnore]
     public virtual Energyclass? EnergyNavigation { get; set; }
 
+    [BindNever]
+    [ValidateNever]
     [JsonIgnore]
     public virtual Broker FkBrokeridUserNavigation { get; set; } = null!;
 }

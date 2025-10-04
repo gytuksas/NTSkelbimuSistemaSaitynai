@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -16,12 +18,29 @@ public partial class Viewing
 
     public long FkAvailabilityidAvailability { get; set; }
 
+    [BindNever]
+    [ValidateNever]
     [JsonIgnore]
     public virtual Availability FkAvailabilityidAvailabilityNavigation { get; set; } = null!;
 
+    [BindNever]
+    [ValidateNever]
     [JsonIgnore]
     public virtual Listing? Listing { get; set; }
 
+    [BindNever]
+    [ValidateNever]
     [JsonIgnore]
     public virtual Viewingstatus StatusNavigation { get; set; } = null!;
+}
+
+public class ViewingDto
+{
+    public required string From { get; set; }
+
+    public required string To { get; set; }
+
+    public required int Status { get; set; }
+
+    public long FkAvailabilityidAvailability { get; set; }
 }

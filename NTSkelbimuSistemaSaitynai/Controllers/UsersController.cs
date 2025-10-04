@@ -45,8 +45,37 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(long id, User user)
+        public async Task<IActionResult> PutUser(long id, UserDto userDto)
         {
+            DateTime dt1;
+
+            try
+            {
+                dt1 = DateTime.Parse(userDto.Registrationtime);
+            }
+            catch (FormatException)
+            {
+                return BadRequest("Invalid date and time format - expecting yyyy-mm-dd hh:mm");
+            }
+
+            if (userDto.Registrationtime.Split(' ').Length < 2)
+            {
+                return UnprocessableEntity("Invalid date and time format - seems like there is no time value - expecting yyyy-mm-dd hh:mm");
+            }
+
+            dt1 = DateTime.SpecifyKind(dt1, DateTimeKind.Utc);
+
+            User user = new User
+            {
+                Name = userDto.Name,
+                Surname = userDto.Surname,
+                Email = userDto.Email,
+                Phone = userDto.Phone,
+                Password = userDto.Password,
+                Registrationtime = dt1,
+                Profilepicture = userDto.Profilepicture,
+            };
+
             if (id != user.IdUser)
             {
                 return BadRequest();
@@ -76,8 +105,37 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser(User user)
+        public async Task<ActionResult<User>> PostUser([FromBody] UserDto userDto)
         {
+            DateTime dt1;
+
+            try
+            {
+                dt1 = DateTime.Parse(userDto.Registrationtime);
+            }
+            catch (FormatException)
+            {
+                return BadRequest("Invalid date and time format - expecting yyyy-mm-dd hh:mm");
+            }
+
+            if (userDto.Registrationtime.Split(' ').Length < 2)
+            {
+                return UnprocessableEntity("Invalid date and time format - seems like there is no time value - expecting yyyy-mm-dd hh:mm");
+            }
+
+            dt1 = DateTime.SpecifyKind(dt1, DateTimeKind.Utc);
+
+            User user = new User
+            {
+                Name = userDto.Name,
+                Surname = userDto.Surname,
+                Email = userDto.Email,
+                Phone = userDto.Phone,
+                Password = userDto.Password,
+                Registrationtime = dt1,
+                Profilepicture = userDto.Profilepicture,
+            };
+
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 

@@ -69,6 +69,17 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                     throw;
                 }
             }
+            catch (DbUpdateException)
+            {
+                if (!BrokerExists(building.FkBrokeridUser))
+                {
+                    return UnprocessableEntity("Invalid fk");
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return NoContent();
         }
@@ -79,7 +90,21 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         public async Task<ActionResult<Building>> PostBuilding(Building building)
         {
             _context.Buildings.Add(building);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                if (!BrokerExists(building.FkBrokeridUser))
+                {
+                    return UnprocessableEntity("Invalid fk");
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return CreatedAtAction("GetBuilding", new { id = building.IdBuilding }, building);
         }
@@ -103,6 +128,10 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         private bool BuildingExists(long id)
         {
             return _context.Buildings.Any(e => e.IdBuilding == id);
+        }
+        private bool BrokerExists(long id)
+        {
+            return _context.Brokers.Any(e => e.IdUser == id);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -12,9 +14,13 @@ public partial class Picture
 
     public long FkApartmentidApartment { get; set; }
 
+    [BindNever]
+    [ValidateNever]
     [JsonIgnore]
     public virtual Apartment FkApartmentidApartmentNavigation { get; set; } = null!;
 
+    [BindNever]
+    [ValidateNever]
     [JsonIgnore]
     public virtual Listing? Listing { get; set; }
 }

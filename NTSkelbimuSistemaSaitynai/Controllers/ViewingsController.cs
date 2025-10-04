@@ -45,8 +45,37 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         // PUT: api/Viewings/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutViewing(long id, Viewing viewing)
+        public async Task<IActionResult> PutViewing(long id, [FromBody] ViewingDto viewingDto)
         {
+            DateTime dt1;
+            DateTime dt2;
+
+            try
+            {
+                dt1 = DateTime.Parse(viewingDto.From);
+                dt2 = DateTime.Parse(viewingDto.To);
+            }
+            catch (FormatException)
+            {
+                return BadRequest("Invalid date and time format - expecting yyyy-mm-dd hh:mm");
+            }
+
+            if (viewingDto.From.Split(' ').Length < 2 || viewingDto.To.Split(' ').Length < 2)
+            {
+                return UnprocessableEntity("Invalid date and time format - seems like there is no time value - expecting yyyy-mm-dd hh:mm");
+            }
+
+            dt1 = DateTime.SpecifyKind(dt1, DateTimeKind.Utc);
+            dt2 = DateTime.SpecifyKind(dt2, DateTimeKind.Utc);
+
+            Viewing viewing = new Viewing
+            {
+                From = dt1,
+                To = dt2,
+                Status = viewingDto.Status,
+                FkAvailabilityidAvailability = viewingDto.FkAvailabilityidAvailability,
+            };
+
             if (id != viewing.IdViewing)
             {
                 return BadRequest();
