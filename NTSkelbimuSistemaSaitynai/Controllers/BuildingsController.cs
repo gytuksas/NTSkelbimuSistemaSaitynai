@@ -10,6 +10,9 @@ using NTSkelbimuSistemaSaitynai;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
+    /// <summary>
+    /// Manages building resources.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class BuildingsController : ControllerBase
@@ -21,15 +24,25 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             _context = context;
         }
 
-        // GET: api/Buildings
+        /// <summary>
+        /// Get all buildings.
+        /// </summary>
+        /// <returns>List of buildings.</returns>
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Building>))]
         public async Task<ActionResult<IEnumerable<Building>>> GetBuildings()
         {
             return await _context.Buildings.ToListAsync();
         }
 
-        // GET: api/Buildings/5
+    /// <summary>
+    /// Get a building by ID.
+    /// </summary>
+    /// <param name="id">Building ID.</param>
+    /// <returns>Building or 404.</returns>
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Building))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Building>> GetBuilding(long id)
         {
             var building = await _context.Buildings.FindAsync(id);
@@ -42,9 +55,15 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return building;
         }
 
-        // PUT: api/Buildings/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    /// <summary>
+    /// Update a building.
+    /// </summary>
+    /// <param name="id">Building ID.</param>
+    /// <param name="building">Updated building payload.</param>
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<IActionResult> PutBuilding(long id, Building building)
         {
             building.IdBuilding = id;
@@ -81,9 +100,14 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return NoContent();
         }
 
-        // POST: api/Buildings
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    /// <summary>
+    /// Create a new building.
+    /// </summary>
+    /// <param name="building">Building payload.</param>
+    /// <returns>The created building.</returns>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Building))]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<ActionResult<Building>> PostBuilding(Building building)
         {
             _context.Buildings.Add(building);
@@ -106,8 +130,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return CreatedAtAction("GetBuilding", new { id = building.IdBuilding }, building);
         }
 
-        // DELETE: api/Buildings/5
+    /// <summary>
+    /// Delete a building by ID.
+    /// </summary>
+    /// <param name="id">Building ID.</param>
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteBuilding(long id)
         {
             var building = await _context.Buildings.FindAsync(id);

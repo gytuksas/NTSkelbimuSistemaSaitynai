@@ -10,6 +10,9 @@ using NTSkelbimuSistemaSaitynai;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
+    /// <summary>
+    /// Manages user resources.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
@@ -21,15 +24,25 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             _context = context;
         }
 
-        // GET: api/Users
+        /// <summary>
+        /// Get all users.
+        /// </summary>
+        /// <returns>List of users.</returns>
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<User>))]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
             return await _context.Users.ToListAsync();
         }
 
-        // GET: api/Users/5
+    /// <summary>
+    /// Get a user by ID.
+    /// </summary>
+    /// <param name="id">User ID.</param>
+    /// <returns>User or 404.</returns>
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(User))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<User>> GetUser(long id)
         {
             var user = await _context.Users.FindAsync(id);
@@ -42,9 +55,16 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return user;
         }
 
-        // PUT: api/Users/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        /// <summary>
+        /// Update a user.
+        /// </summary>
+        /// <param name="id">User ID.</param>
+        /// <param name="userDto">Updated user payload.</param>
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> PutUser(long id, UserDto userDto)
         {
             DateTime dt1;
@@ -100,9 +120,15 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return NoContent();
         }
 
-        // POST: api/Users
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    /// <summary>
+    /// Create a new user.
+    /// </summary>
+    /// <param name="userDto">User payload.</param>
+    /// <returns>The created user.</returns>
         [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(User))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<ActionResult<User>> PostUser([FromBody] UserDto userDto)
         {
             DateTime dt1;
@@ -140,8 +166,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return CreatedAtAction("GetUser", new { id = user.IdUser }, user);
         }
 
-        // DELETE: api/Users/5
+    /// <summary>
+    /// Delete a user by ID.
+    /// </summary>
+    /// <param name="id">User ID.</param>
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteUser(long id)
         {
             var user = await _context.Users.FindAsync(id);

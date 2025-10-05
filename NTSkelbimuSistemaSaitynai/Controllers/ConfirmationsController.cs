@@ -10,6 +10,9 @@ using NTSkelbimuSistemaSaitynai;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
+    /// <summary>
+    /// Manages buyer email/identity confirmations.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class ConfirmationsController : ControllerBase
@@ -21,15 +24,25 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             _context = context;
         }
 
-        // GET: api/Confirmations
+        /// <summary>
+        /// Get all confirmations.
+        /// </summary>
+        /// <returns>List of confirmations.</returns>
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Confirmation>))]
         public async Task<ActionResult<IEnumerable<Confirmation>>> GetConfirmations()
         {
             return await _context.Confirmations.ToListAsync();
         }
 
-        // GET: api/Confirmations/5
+    /// <summary>
+    /// Get a confirmation by ID.
+    /// </summary>
+    /// <param name="id">Confirmation ID.</param>
+    /// <returns>Confirmation or 404.</returns>
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Confirmation))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Confirmation>> GetConfirmation(string id)
         {
             var confirmation = await _context.Confirmations.FindAsync(id);
@@ -42,9 +55,16 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return confirmation;
         }
 
-        // PUT: api/Confirmations/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        /// <summary>
+        /// Update a confirmation.
+        /// </summary>
+        /// <param name="id">Confirmation ID.</param>
+        /// <param name="confirmationDto">Updated confirmation payload.</param>
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> PutConfirmation(string id, [FromBody] ConfirmationDto confirmationDto)
         {
             DateTime dt1;
@@ -106,9 +126,16 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return NoContent();
         }
 
-        // POST: api/Confirmations
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        /// <summary>
+        /// Create a new confirmation.
+        /// </summary>
+        /// <param name="confirmationDto">Confirmation payload.</param>
+        /// <returns>The created confirmation.</returns>
         [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Confirmation))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<ActionResult<Confirmation>> PostConfirmation([FromBody] ConfirmationDto confirmationDto)
         {
             DateTime dt1;
@@ -166,8 +193,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return CreatedAtAction("GetConfirmation", new { id = confirmation.Id }, confirmation);
         }
 
-        // DELETE: api/Confirmations/5
+    /// <summary>
+    /// Delete a confirmation by ID.
+    /// </summary>
+    /// <param name="id">Confirmation ID.</param>
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteConfirmation(string id)
         {
             var confirmation = await _context.Confirmations.FindAsync(id);

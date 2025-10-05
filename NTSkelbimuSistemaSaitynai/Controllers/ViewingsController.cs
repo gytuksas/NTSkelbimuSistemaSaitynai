@@ -11,6 +11,9 @@ using static System.Collections.Specialized.BitVector32;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
+    /// <summary>
+    /// Manages viewings of listings.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class ViewingsController : ControllerBase
@@ -22,15 +25,25 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             _context = context;
         }
 
-        // GET: api/Viewings
+        /// <summary>
+        /// Get all viewings.
+        /// </summary>
+        /// <returns>List of viewings.</returns>
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Viewing>))]
         public async Task<ActionResult<IEnumerable<Viewing>>> GetViewings()
         {
             return await _context.Viewings.ToListAsync();
         }
 
-        // GET: api/Viewings/5
+    /// <summary>
+    /// Get a viewing by ID.
+    /// </summary>
+    /// <param name="id">Viewing ID.</param>
+    /// <returns>Viewing or 404.</returns>
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Viewing))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Viewing>> GetViewing(long id)
         {
             var viewing = await _context.Viewings.FindAsync(id);
@@ -43,9 +56,16 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return viewing;
         }
 
-        // PUT: api/Viewings/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        /// <summary>
+        /// Update a viewing.
+        /// </summary>
+        /// <param name="id">Viewing ID.</param>
+        /// <param name="viewingDto">Updated viewing payload.</param>
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> PutViewing(long id, [FromBody] ViewingDto viewingDto)
         {
             DateTime dt1;
@@ -113,9 +133,14 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return NoContent();
         }
 
-        // POST: api/Viewings
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    /// <summary>
+    /// Create a new viewing.
+    /// </summary>
+    /// <param name="viewing">Viewing payload.</param>
+    /// <returns>The created viewing.</returns>
         [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Viewing))]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<ActionResult<Viewing>> PostViewing(Viewing viewing)
         {
             _context.Viewings.Add(viewing);
@@ -138,8 +163,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return CreatedAtAction("GetViewing", new { id = viewing.IdViewing }, viewing);
         }
 
-        // DELETE: api/Viewings/5
+    /// <summary>
+    /// Delete a viewing by ID.
+    /// </summary>
+    /// <param name="id">Viewing ID.</param>
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteViewing(long id)
         {
             var viewing = await _context.Viewings.FindAsync(id);

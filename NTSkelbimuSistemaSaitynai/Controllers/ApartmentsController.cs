@@ -11,6 +11,9 @@ using NTSkelbimuSistemaSaitynai;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
+    /// <summary>
+    /// Manages apartment resources.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class ApartmentsController : ControllerBase
@@ -22,15 +25,25 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             _context = context;
         }
 
-        // GET: api/Apartments
+        /// <summary>
+        /// Get all apartments.
+        /// </summary>
+        /// <returns>List of apartments.</returns>
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Apartment>))]
         public async Task<ActionResult<IEnumerable<Apartment>>> GetApartments()
         {
             return await _context.Apartments.ToListAsync();
         }
 
-        // GET: api/Apartments/5
+    /// <summary>
+    /// Get an apartment by ID.
+    /// </summary>
+    /// <param name="id">Apartment ID.</param>
+    /// <returns>Apartment resource or 404.</returns>
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Apartment))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Apartment>> GetApartment(long id)
         {
             var apartment = await _context.Apartments.FindAsync(id);
@@ -43,7 +56,14 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return apartment;
         }
 
-        [HttpGet("building/{id}")]
+    /// <summary>
+    /// Get apartments in a specific building.
+    /// </summary>
+    /// <param name="id">Building ID.</param>
+    /// <returns>List of apartments in a building or 404.</returns>
+    [HttpGet("building/{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Apartment>))]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<Apartment>>> GetApartmentsInBuilding(long id)
         {
             var apartments = await _context.
@@ -57,9 +77,15 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return apartments;
         }
 
-        // PUT: api/Apartments/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    /// <summary>
+    /// Update an apartment.
+    /// </summary>
+    /// <param name="id">Apartment ID to update.</param>
+    /// <param name="apartment">Updated apartment payload.</param>
         [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<IActionResult> PutApartment(long id, Apartment apartment)
         {
             // Ensure ID is aligned with route
@@ -97,9 +123,14 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return NoContent();
         }
 
-        // POST: api/Apartments
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    /// <summary>
+    /// Create a new apartment.
+    /// </summary>
+    /// <param name="apartment">Apartment payload.</param>
+    /// <returns>The created apartment.</returns>
         [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Apartment))]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<ActionResult<Apartment>> PostApartment(Apartment apartment)
         {
             _context.Apartments.Add(apartment);
@@ -122,8 +153,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return CreatedAtAction("GetApartment", new { id = apartment.IdApartment }, apartment);
         }
 
-        // DELETE: api/Apartments/5
+    /// <summary>
+    /// Delete an apartment by ID.
+    /// </summary>
+    /// <param name="id">Apartment ID to delete.</param>
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteApartment(long id)
         {
             var apartment = await _context.Apartments.FindAsync(id);

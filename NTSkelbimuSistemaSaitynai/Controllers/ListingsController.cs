@@ -10,6 +10,9 @@ using NTSkelbimuSistemaSaitynai;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
+    /// <summary>
+    /// Manages property listings.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class ListingsController : ControllerBase
@@ -21,15 +24,25 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             _context = context;
         }
 
-        // GET: api/Listings
+        /// <summary>
+        /// Get all listings.
+        /// </summary>
+        /// <returns>List of listings.</returns>
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Listing>))]
         public async Task<ActionResult<IEnumerable<Listing>>> GetListings()
         {
             return await _context.Listings.ToListAsync();
         }
 
-        // GET: api/Listings/5
+    /// <summary>
+    /// Get a listing by ID.
+    /// </summary>
+    /// <param name="id">Listing ID.</param>
+    /// <returns>Listing or 404.</returns>
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Listing))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Listing>> GetListing(long id)
         {
             var listing = await _context.Listings.FindAsync(id);
@@ -42,9 +55,15 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return listing;
         }
 
-        // PUT: api/Listings/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    /// <summary>
+    /// Update a listing.
+    /// </summary>
+    /// <param name="id">Listing ID.</param>
+    /// <param name="listing">Updated listing payload.</param>
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<IActionResult> PutListing(long id, Listing listing)
         {
             listing.IdListing = id;
@@ -81,9 +100,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return NoContent();
         }
 
-        // POST: api/Listings
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        /// <summary>
+        /// Create a new listing.
+        /// </summary>
+        /// <param name="listing">Listing payload.</param>
+        /// <returns>The created listing.</returns>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Listing))]
         public async Task<ActionResult<Listing>> PostListing(Listing listing)
         {
             _context.Listings.Add(listing);
@@ -92,8 +115,14 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return CreatedAtAction("GetListing", new { id = listing.IdListing }, listing);
         }
 
-        // DELETE: api/Listings/5
+    /// <summary>
+    /// Delete a listing by ID.
+    /// </summary>
+    /// <param name="id">Listing ID.</param>
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<IActionResult> DeleteListing(long id)
         {
             var listing = await _context.Listings.FindAsync(id);

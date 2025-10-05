@@ -10,6 +10,9 @@ using NTSkelbimuSistemaSaitynai;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
+    /// <summary>
+    /// Manages broker resources.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class BrokersController : ControllerBase
@@ -21,15 +24,25 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             _context = context;
         }
 
-        // GET: api/Brokers
+        /// <summary>
+        /// Get all brokers.
+        /// </summary>
+        /// <returns>List of brokers.</returns>
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Broker>))]
         public async Task<ActionResult<IEnumerable<Broker>>> GetBrokers()
         {
             return await _context.Brokers.ToListAsync();
         }
 
-        // GET: api/Brokers/5
+    /// <summary>
+    /// Get a broker by ID.
+    /// </summary>
+    /// <param name="id">User ID.</param>
+    /// <returns>Broker or 404.</returns>
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Broker))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Broker>> GetBroker(long id)
         {
             var broker = await _context.Brokers.FindAsync(id);
@@ -42,9 +55,14 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return broker;
         }
 
-        // PUT: api/Brokers/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    /// <summary>
+    /// Update a broker.
+    /// </summary>
+    /// <param name="id">User ID.</param>
+    /// <param name="broker">Updated broker payload.</param>
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> PutBroker(long id, Broker broker)
         {
             broker.IdUser = id;
@@ -70,9 +88,14 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return NoContent();
         }
 
-        // POST: api/Brokers
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    /// <summary>
+    /// Create a new broker.
+    /// </summary>
+    /// <param name="broker">Broker payload.</param>
+    /// <returns>The created broker.</returns>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Broker))]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<Broker>> PostBroker(Broker broker)
         {
             _context.Brokers.Add(broker);
@@ -95,8 +118,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return CreatedAtAction("GetBroker", new { id = broker.IdUser }, broker);
         }
 
-        // DELETE: api/Brokers/5
+    /// <summary>
+    /// Delete a broker by ID.
+    /// </summary>
+    /// <param name="id">User ID.</param>
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteBroker(long id)
         {
             var broker = await _context.Brokers.FindAsync(id);

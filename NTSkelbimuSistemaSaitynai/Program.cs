@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using NTSkelbimuSistemaSaitynai.DbUtils;
 using NTSkelbimuSistemaSaitynai;
 
@@ -14,7 +15,23 @@ string connString = new DbConnection().GetConnectionString();
 builder.Services.AddDbContext<PostgresContext>(options => options.UseNpgsql(connString));
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "NTSkelbimuSistemaSaitynai API",
+        Version = "v1",
+        Description = "OpenAPI specification for the NTSkelbimuSistemaSaitynai service"
+    });
+
+    // Include XML comments if available (enable GenerateDocumentationFile in csproj)
+    var xmlFile = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name + ".xml";
+    var xmlPath = System.IO.Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (System.IO.File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+    }
+});
 
 
 var app = builder.Build();

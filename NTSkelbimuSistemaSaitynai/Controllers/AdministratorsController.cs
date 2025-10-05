@@ -10,6 +10,9 @@ using NTSkelbimuSistemaSaitynai;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
+    /// <summary>
+    /// Manages administrator resources.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class AdministratorsController : ControllerBase
@@ -21,15 +24,25 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             _context = context;
         }
 
-        // GET: api/Administrators
+        /// <summary>
+        /// Get all administrators.
+        /// </summary>
+        /// <returns>List of administrators.</returns>
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Administrator>))]
         public async Task<ActionResult<IEnumerable<Administrator>>> GetAdministrators()
         {
             return await _context.Administrators.ToListAsync();
         }
 
-        // GET: api/Administrators/5
+        /// <summary>
+        /// Get an administrator by ID.
+        /// </summary>
+        /// <param name="id">User ID of the administrator.</param>
+        /// <returns>Administrator resource or 404 if not found.</returns>
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Administrator))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Administrator>> GetAdministrator(long id)
         {
             var administrator = await _context.Administrators.FindAsync(id);
@@ -42,9 +55,15 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return administrator;
         }
 
-        // PUT: api/Administrators/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    /// <summary>
+    /// Update an administrator.
+    /// </summary>
+    /// <param name="id">User ID of the administrator to update.</param>
+    /// <param name="administrator">Updated administrator payload.</param>
+    /// <remarks>Returns 404 if the resource does not exist.</remarks>
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> PutAdministrator(long id, Administrator administrator)
         {
             administrator.IdUser = id;
@@ -70,9 +89,15 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return NoContent();
         }
 
-        // POST: api/Administrators
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    /// <summary>
+    /// Create a new administrator.
+    /// </summary>
+    /// <param name="administrator">Administrator payload.</param>
+    /// <returns>The created administrator.</returns>
+    /// <remarks>Returns 409 if the administrator already exists.</remarks>
         [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Administrator))]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<Administrator>> PostAdministrator(Administrator administrator)
         {
             _context.Administrators.Add(administrator);
@@ -95,8 +120,14 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return CreatedAtAction("GetAdministrator", new { id = administrator.IdUser }, administrator);
         }
 
-        // DELETE: api/Administrators/5
+    /// <summary>
+    /// Delete an administrator by ID.
+    /// </summary>
+    /// <param name="id">User ID of the administrator to delete.</param>
+    /// <remarks>Returns 404 if the resource does not exist.</remarks>
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteAdministrator(long id)
         {
             var administrator = await _context.Administrators.FindAsync(id);

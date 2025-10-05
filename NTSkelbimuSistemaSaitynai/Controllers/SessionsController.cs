@@ -10,6 +10,9 @@ using NTSkelbimuSistemaSaitynai;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
+    /// <summary>
+    /// Manages user sessions.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class SessionsController : ControllerBase
@@ -21,15 +24,25 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             _context = context;
         }
 
-        // GET: api/Sessions
+        /// <summary>
+        /// Get all sessions.
+        /// </summary>
+        /// <returns>List of sessions.</returns>
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Session>))]
         public async Task<ActionResult<IEnumerable<Session>>> GetSessions()
         {
             return await _context.Sessions.ToListAsync();
         }
 
-        // GET: api/Sessions/5
+    /// <summary>
+    /// Get a session by ID.
+    /// </summary>
+    /// <param name="id">Session ID.</param>
+    /// <returns>Session or 404.</returns>
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Session))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Session>> GetSession(string id)
         {
             var session = await _context.Sessions.FindAsync(id);
@@ -42,9 +55,16 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return session;
         }
 
-        // PUT: api/Sessions/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        /// <summary>
+        /// Update a session.
+        /// </summary>
+        /// <param name="id">Session ID.</param>
+        /// <param name="sessionDto">Updated session payload.</param>
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> PutSession(string id, [FromBody] SessionDto sessionDto)
         {
             DateTime dt1;
@@ -111,9 +131,16 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return NoContent();
         }
 
-        // POST: api/Sessions
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        /// <summary>
+        /// Create a new session.
+        /// </summary>
+        /// <param name="sessionDto">Session payload.</param>
+        /// <returns>The created session.</returns>
         [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Session))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<ActionResult<Session>> PostSession([FromBody] SessionDto sessionDto)
         {
             DateTime dt1;
@@ -175,8 +202,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return CreatedAtAction("GetSession", new { id = session.Id }, session);
         }
 
-        // DELETE: api/Sessions/5
+    /// <summary>
+    /// Delete a session by ID.
+    /// </summary>
+    /// <param name="id">Session ID.</param>
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteSession(string id)
         {
             var session = await _context.Sessions.FindAsync(id);

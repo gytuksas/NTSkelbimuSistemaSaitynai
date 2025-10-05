@@ -10,6 +10,9 @@ using NTSkelbimuSistemaSaitynai;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
+    /// <summary>
+    /// Manages broker availabilities.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class AvailabilitiesController : ControllerBase
@@ -21,15 +24,25 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             _context = context;
         }
 
-        // GET: api/Availabilities
+        /// <summary>
+        /// Get all availabilities.
+        /// </summary>
+        /// <returns>List of availabilities.</returns>
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Availability>))]
         public async Task<ActionResult<IEnumerable<Availability>>> GetAvailabilities()
         {
             return await _context.Availabilities.ToListAsync();
         }
 
-        // GET: api/Availabilities/5
+    /// <summary>
+    /// Get availability by ID.
+    /// </summary>
+    /// <param name="id">Availability ID.</param>
+    /// <returns>Availability or 404.</returns>
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Availability))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Availability>> GetAvailability(long id)
         {
             var availability = await _context.Availabilities.FindAsync(id);
@@ -42,9 +55,16 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return availability;
         }
 
-        // PUT: api/Availabilities/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        /// <summary>
+        /// Update an availability.
+        /// </summary>
+        /// <param name="id">Availability ID.</param>
+        /// <param name="availabilityDto">Updated availability payload.</param>
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> PutAvailability(long id, [FromBody] AvailabilityDto availabilityDto)
         {
             DateTime dt1;
@@ -110,9 +130,15 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return NoContent();
         }
 
-        // POST: api/Availabilities
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    /// <summary>
+    /// Create a new availability.
+    /// </summary>
+    /// <param name="availabilityDto">Availability payload.</param>
+    /// <returns>The created availability.</returns>
         [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Availability))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<ActionResult<Availability>> PostAvailability(AvailabilityDto availabilityDto)
         {
             DateTime dt1;
@@ -163,8 +189,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return CreatedAtAction("GetAvailability", new { id = availability.IdAvailability }, availability);
         }
 
-        // DELETE: api/Availabilities/5
+    /// <summary>
+    /// Delete an availability by ID.
+    /// </summary>
+    /// <param name="id">Availability ID.</param>
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteAvailability(long id)
         {
             var availability = await _context.Availabilities.FindAsync(id);

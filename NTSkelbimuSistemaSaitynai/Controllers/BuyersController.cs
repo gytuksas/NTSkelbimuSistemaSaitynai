@@ -10,6 +10,9 @@ using NTSkelbimuSistemaSaitynai;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
+    /// <summary>
+    /// Manages buyer resources.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class BuyersController : ControllerBase
@@ -21,15 +24,25 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             _context = context;
         }
 
-        // GET: api/Buyers
+        /// <summary>
+        /// Get all buyers.
+        /// </summary>
+        /// <returns>List of buyers.</returns>
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Buyer>))]
         public async Task<ActionResult<IEnumerable<Buyer>>> GetBuyers()
         {
             return await _context.Buyers.ToListAsync();
         }
 
-        // GET: api/Buyers/5
+    /// <summary>
+    /// Get a buyer by ID.
+    /// </summary>
+    /// <param name="id">User ID.</param>
+    /// <returns>Buyer or 404.</returns>
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Buyer))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Buyer>> GetBuyer(long id)
         {
             var buyer = await _context.Buyers.FindAsync(id);
@@ -42,9 +55,14 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return buyer;
         }
 
-        // PUT: api/Buyers/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    /// <summary>
+    /// Update a buyer.
+    /// </summary>
+    /// <param name="id">User ID.</param>
+    /// <param name="buyer">Updated buyer payload.</param>
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> PutBuyer(long id, Buyer buyer)
         {
             buyer.IdUser = id;
@@ -70,9 +88,14 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return NoContent();
         }
 
-        // POST: api/Buyers
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    /// <summary>
+    /// Create a new buyer.
+    /// </summary>
+    /// <param name="buyer">Buyer payload.</param>
+    /// <returns>The created buyer.</returns>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Buyer))]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<Buyer>> PostBuyer(Buyer buyer)
         {
             _context.Buyers.Add(buyer);
@@ -95,8 +118,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return CreatedAtAction("GetBuyer", new { id = buyer.IdUser }, buyer);
         }
 
-        // DELETE: api/Buyers/5
+    /// <summary>
+    /// Delete a buyer by ID.
+    /// </summary>
+    /// <param name="id">User ID.</param>
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteBuyer(long id)
         {
             var buyer = await _context.Buyers.FindAsync(id);
