@@ -47,10 +47,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutBuyer(long id, Buyer buyer)
         {
-            if (id != buyer.IdUser)
-            {
-                return BadRequest();
-            }
+            buyer.IdUser = id;
 
             _context.Entry(buyer).State = EntityState.Modified;
 

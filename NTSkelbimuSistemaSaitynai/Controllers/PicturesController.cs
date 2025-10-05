@@ -47,10 +47,8 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPicture(string id, Picture picture)
         {
-            if (id != picture.Id)
-            {
-                return BadRequest();
-            }
+            // Ensure key matches route
+            picture.Id = id;
 
             _context.Entry(picture).State = EntityState.Modified;
 

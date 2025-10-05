@@ -46,7 +46,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         // PUT: api/Viewings/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutViewing(long id, [FromBody] ViewingDto viewingDto)
+    public async Task<IActionResult> PutViewing(long id, [FromBody] ViewingDto viewingDto)
         {
             DateTime dt1;
             DateTime dt2;
@@ -78,10 +78,8 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 FkListingidListing = viewingDto.FkListingidListing,
             };
 
-            if (id != viewing.IdViewing)
-            {
-                return BadRequest();
-            }
+            // Set key from route id
+            viewing.IdViewing = id;
 
             _context.Entry(viewing).State = EntityState.Modified;
 

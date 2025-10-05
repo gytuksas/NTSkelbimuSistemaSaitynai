@@ -45,7 +45,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(long id, UserDto userDto)
+    public async Task<IActionResult> PutUser(long id, UserDto userDto)
         {
             DateTime dt1;
 
@@ -76,10 +76,8 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 Profilepicture = userDto.Profilepicture,
             };
 
-            if (id != user.IdUser)
-            {
-                return BadRequest();
-            }
+            // Assign ID from route so the entity key is set correctly for update
+            user.IdUser = id;
 
             _context.Entry(user).State = EntityState.Modified;
 

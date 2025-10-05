@@ -47,10 +47,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAdministrator(long id, Administrator administrator)
         {
-            if (id != administrator.IdUser)
-            {
-                return BadRequest();
-            }
+            administrator.IdUser = id;
 
             _context.Entry(administrator).State = EntityState.Modified;
 

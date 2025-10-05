@@ -45,7 +45,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         // PUT: api/Confirmations/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutConfirmation(string id, [FromBody] ConfirmationDto confirmationDto)
+    public async Task<IActionResult> PutConfirmation(string id, [FromBody] ConfirmationDto confirmationDto)
         {
             DateTime dt1;
 
@@ -71,10 +71,8 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 FkBuyeridUser = confirmationDto.FkBuyeridUser
             };
 
-            if (id != confirmation.Id)
-            {
-                return BadRequest();
-            }
+            // Assign ID from route
+            confirmation.Id = id;
 
             _context.Entry(confirmation).State = EntityState.Modified;
 
@@ -111,7 +109,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         // POST: api/Confirmations
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Confirmation>> PostConfirmation([FromBody] ConfirmationDto confirmationDto)
+    public async Task<ActionResult<Confirmation>> PostConfirmation([FromBody] ConfirmationDto confirmationDto)
         {
             DateTime dt1;
 
@@ -136,6 +134,12 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 Expires = dt1,
                 FkBuyeridUser = confirmationDto.FkBuyeridUser
             };
+
+            // Generate an ID if not provided (PK cannot be null)
+            if (string.IsNullOrWhiteSpace(confirmation.Id))
+            {
+                confirmation.Id = Guid.NewGuid().ToString();
+            }
 
             _context.Confirmations.Add(confirmation);
             try

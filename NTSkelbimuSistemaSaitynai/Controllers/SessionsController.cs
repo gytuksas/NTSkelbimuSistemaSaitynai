@@ -45,7 +45,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         // PUT: api/Sessions/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutSession(string id, [FromBody] SessionDto sessionDto)
+    public async Task<IActionResult> PutSession(string id, [FromBody] SessionDto sessionDto)
         {
             DateTime dt1;
             DateTime dt2;
@@ -76,10 +76,8 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 FkUseridUser = sessionDto.FkUseridUser
             };
 
-            if (id != session.Id)
-            {
-                return BadRequest();
-            }
+            // Assign ID from route to properly track the entity
+            session.Id = id;
 
             _context.Entry(session).State = EntityState.Modified;
 
@@ -116,7 +114,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         // POST: api/Sessions
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Session>> PostSession([FromBody] SessionDto sessionDto)
+    public async Task<ActionResult<Session>> PostSession([FromBody] SessionDto sessionDto)
         {
             DateTime dt1;
             DateTime dt2;
@@ -146,6 +144,12 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 Lastactivity = dt2,
                 FkUseridUser = sessionDto.FkUseridUser
             };
+
+            // Ensure we generate a unique ID if not provided by client (PK cannot be null)
+            if (string.IsNullOrWhiteSpace(session.Id))
+            {
+                session.Id = Guid.NewGuid().ToString();
+            }
 
             _context.Sessions.Add(session);
             try

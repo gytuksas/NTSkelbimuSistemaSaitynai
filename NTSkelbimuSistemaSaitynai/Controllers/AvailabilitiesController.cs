@@ -45,7 +45,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         // PUT: api/Availabilities/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutAvailability(long id, [FromBody] AvailabilityDto availabilityDto)
+    public async Task<IActionResult> PutAvailability(long id, [FromBody] AvailabilityDto availabilityDto)
         {
             DateTime dt1;
             DateTime dt2;
@@ -75,10 +75,8 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 FkBrokeridUser = availabilityDto.FkBrokeridUser
             };
 
-            if (id != availability.IdAvailability)
-            {
-                return BadRequest();
-            }
+            // Set key from route id for proper update
+            availability.IdAvailability = id;
 
             _context.Entry(availability).State = EntityState.Modified;
 

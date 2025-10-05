@@ -47,10 +47,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutListing(long id, Listing listing)
         {
-            if (id != listing.IdListing)
-            {
-                return BadRequest();
-            }
+            listing.IdListing = id;
 
             _context.Entry(listing).State = EntityState.Modified;
 

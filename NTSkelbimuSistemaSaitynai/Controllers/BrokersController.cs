@@ -47,10 +47,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutBroker(long id, Broker broker)
         {
-            if (id != broker.IdUser)
-            {
-                return BadRequest();
-            }
+            broker.IdUser = id;
 
             _context.Entry(broker).State = EntityState.Modified;
 

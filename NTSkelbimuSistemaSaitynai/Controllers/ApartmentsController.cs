@@ -62,10 +62,8 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutApartment(long id, Apartment apartment)
         {
-            if (id != apartment.IdApartment)
-            {
-                return BadRequest();
-            }
+            // Ensure ID is aligned with route
+            apartment.IdApartment = id;
 
             _context.Entry(apartment).State = EntityState.Modified;
 

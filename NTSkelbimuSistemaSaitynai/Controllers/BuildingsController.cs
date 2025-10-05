@@ -47,10 +47,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutBuilding(long id, Building building)
         {
-            if (id != building.IdBuilding)
-            {
-                return BadRequest();
-            }
+            building.IdBuilding = id;
 
             _context.Entry(building).State = EntityState.Modified;
 
