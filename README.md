@@ -1,6 +1,50 @@
 
 # NT Skelbimų sistema
 
+## Paleidimo instrukcijos (Windows ir Linux)
+Reikalavimai:
+- Git;
+- Docker;
+- Duomenų bazės valdymo įrankis (pvz. DBeaver) ir mokėjimas juo naudotis.
+
+Toliau esančios komandos turėtų būti vykdomos atsidarius PowerShell (Windows) arba terminalą (Linux) ir nuėjus į norimą aplanką.
+
+1. Parsisiųskite ir išskleiskite šią repozitoriją.\
+```git clone https://github.com/gytuksas/NTSkelbimuSistemaSaitynai.git```
+1. Nueikite į parsisiųstą repozitoriją.\
+```cd NTSkelbimuSistemaSaitynai```
+1. Susikurkite aplanką slaptažodžiams ir kitai sensityviai informacijai.\
+```mkdir secrets```
+1. Nueikite į naujai sukurtą aplanką.\
+```cd secrets```
+1. Toliau reikia sukurti tokius failus (pakeiskite viską laužtiniuose skliaustuose, laužtinių skliaustų nepalikite):\
+    - Postgres duombazės slaptažodis:\
+    ```echo "[SLAPTAŽODIS]" > pgpass.txt```
+1. Grįžkite į pradinę direktoriją.\
+```cd ..```
+1. Sukompiliuokite programą. Šis veiksmas gali užtrukti iki 10min ar ilgiau priklausomai nuo Jūsų interneto ir kompiuterio spartos.\
+```docker-compose build```\
+arba, jeigu praėjusi komanda nesuveikė, kartais būna tokia sintaksė\
+```docker compose build```
+1. Paleiskite programą.\
+```docker-compose up -d```\
+arba\
+```docker compose up -d```
+1. Prisijunkite prie duomenų bazės ir įkelkite į `postgres` duomenų bazėje esančia schemą `public` `db_structure.sql` esančią struktūrą.
+    - Prisijungimo adresas: `localhost:5432`, Vartotojas: `postgres`, slaptažodis toks, kokį nurodėte kuriant `pgpass.txt` failą.
+    - Pasirinktinai, dar galima įkelti ir netikrus duomenis iš failo `fake_db_data.sql`.
+    - Po to, rekomenduojama iš failo `docker-compose.override.yml` ištrinti duomenų bazės ryšį su išore. Tai galima padarytį ištrinant šią eilutę:
+    ```  
+    db:
+      networks:
+        - bridged  <-------- IŠTRINKITE ARBA UŽKOMENTUOKITE ŠIĄ EILUTĘ
+        - dbnet
+    ```
+1. Norint išjungti programą, paleiskite šią komandą.\
+```docker-compose down```\
+arba\
+```docker compose down```
+
 ### Sistemos aprašymas
 
 Projekto tikslas – NT turto brokeriams lengvai pateikti ir valdyti nekilnojamo turto skelbimus bei pagerinti patirtį potencialiems pirkėjams leidžiant lengvai peržiūrėti visą su skelbimu susijusią informaciją, tokią, kaip atvirų durų dienas skelbimui, pardavėjo kontaktus ir leisti užsisakyti privačią turto apžiūrą patvirtinus pirkėjo informaciją, taip išvengiant potencialaus pardavėjo duomenų nutekinimo įvairiems automatiniams interneto naršymo robotams ir bereikalingo trukdymo.
