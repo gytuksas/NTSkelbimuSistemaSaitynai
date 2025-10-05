@@ -40,6 +40,9 @@ arba\
         - bridged  <-------- IŠTRINKITE ARBA UŽKOMENTUOKITE ŠIĄ EILUTĘ
         - dbnet
     ```
+1. Programa dabar turėtų būti pasiekiama.\
+    - API taškai: ```http://localhost:8080/api```
+    - Swagger sąsaja: ```http://localhost:8080/swagger```
 1. Norint išjungti programą, paleiskite šią komandą.\
 ```docker-compose down```\
 arba\
