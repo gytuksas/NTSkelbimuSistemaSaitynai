@@ -103,7 +103,9 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             }
             catch (DbUpdateException)
             {
-                if (!BuildingExists(apartment.FkBuildingidBuilding))
+                if (!BuildingExists(apartment.FkBuildingidBuilding)
+                    || !FinishTypeExists(apartment.Finish)
+                    || (apartment.Heating.HasValue && !HeatingTypeExists(apartment.Heating.Value)))
                 {
                     return UnprocessableEntity("Invalid fk");
                 }
@@ -133,7 +135,9 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             }
             catch (DbUpdateException)
             {
-                if (!BuildingExists(apartment.FkBuildingidBuilding))
+                if (!BuildingExists(apartment.FkBuildingidBuilding)
+                    || !FinishTypeExists(apartment.Finish)
+                    || (apartment.Heating.HasValue && !HeatingTypeExists(apartment.Heating.Value)))
                 {
                     return UnprocessableEntity("Invalid fk");
                 }
@@ -175,6 +179,16 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         private bool BuildingExists(long id)
         {
             return _context.Buildings.Any(e => e.IdBuilding == id);
+        }
+
+        private bool FinishTypeExists(int id)
+        {
+            return _context.Finishtypes.Any(e => e.IdFinishtypes == id);
+        }
+
+        private bool HeatingTypeExists(int id)
+        {
+            return _context.Heatingtypes.Any(e => e.IdHeatingtypes == id);
         }
     }
 }

@@ -120,7 +120,8 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             }
             catch (DbUpdateException)
             {
-                if (!BrokerExists(building.FkBrokeridUser))
+                if (!BrokerExists(building.FkBrokeridUser)
+                    || (building.Energy.HasValue && !EnergyclassExists(building.Energy.Value)))
                 {
                     return UnprocessableEntity("Invalid fk");
                 }
@@ -150,7 +151,8 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             }
             catch (DbUpdateException)
             {
-                if (!BrokerExists(building.FkBrokeridUser))
+                if (!BrokerExists(building.FkBrokeridUser)
+                    || (building.Energy.HasValue && !EnergyclassExists(building.Energy.Value)))
                 {
                     return UnprocessableEntity("Invalid fk");
                 }
@@ -191,6 +193,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         private bool BrokerExists(long id)
         {
             return _context.Brokers.Any(e => e.IdUser == id);
+        }
+
+        private bool EnergyclassExists(int id)
+        {
+            return _context.Energyclasses.Any(e => e.IdEnergyclass == id);
         }
     }
 }
