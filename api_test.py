@@ -43,6 +43,9 @@ class Client:
     def delete(self, path: str, **kw):
         return self.sess.delete(self._url(path), timeout=TIMEOUT, **kw)
 
+    def patch(self, path: str, json: Optional[dict] = None, **kw):
+        return self.sess.patch(self._url(path), json=json, timeout=TIMEOUT, **kw)
+
 
 def expect_status(name: str, resp: requests.Response, expected: Sequence[int]) -> TestResult:
     ok = resp.status_code in expected
@@ -224,11 +227,19 @@ def main() -> int:
         bid = created["building"]["idBuilding"]
         results.append(expect_status("GET /Buildings/{id} -> 200", client.get(f"Buildings/{bid}"), [200]))
         # list apartments in building custom route
-        results.append(expect_status("GET /Apartments/building/{id} -> 200", client.get(f"Apartments/building/{bid}"), [200]))
+        results.append(expect_status("GET /Buildings/apartments/{id} -> 200", client.get(f"Buildings/apartments/{bid}"), [200]))
+        # list pictures in building custom route
+        results.append(expect_status("GET /Buildings/pictures/{id} -> 200", client.get(f"Buildings/pictures/{bid}"), [200]))
 
     if "listing" in created:
         lid = created["listing"]["idListing"]
         results.append(expect_status("GET /Listings/{id} -> 200", client.get(f"Listings/{lid}"), [200]))
+        # broker-centric endpoints
+        if "broker" in created:
+            brid = created["broker"]["idUser"]
+            results.append(expect_status("GET /Brokers/listings/{id} -> 200", client.get(f"Brokers/listings/{brid}"), [200])))
+            results.append(expect_status("GET /Brokers/apartments/{id} -> 200", client.get(f"Brokers/apartments/{brid}"), [200]))
+            # viewings for broker exist after viewing creation; we'll assert later if created
 
     # Update a few resources successfully (expect 204)
     try:
@@ -262,6 +273,35 @@ def main() -> int:
             results.append(expect_status("PUT /Administrators/{id} -> 204", client.put(f"Administrators/{ad['idUser']}", json=ad), [204]))
     except Exception as e:
         results.append(TestResult(name="PUT operations block", ok=False, status=0, details=str(e)))
+
+    # New custom GET endpoints dependent on resources created
+    if "apartment" in created:
+        aid = created["apartment"]["idApartment"]
+        results.append(expect_status("GET /Apartments/listing/{id} -> 200", client.get(f"Apartments/listing/{aid}"), [200]))
+
+    # PATCH operations (expect 204)
+    try:
+        if "picture" in created:
+            pic = created["picture"]
+            results.append(expect_status("PATCH /Pictures/{id} public -> 204", client.patch(f"Pictures/{pic['id']}", json={"public": True}), [204]))
+        if "broker" in created:
+            brid = created["broker"]["idUser"]
+            results.append(expect_status("PATCH /Brokers/{id} blocked -> 204", client.patch(f"Brokers/{brid}", json={"blocked": True}), [204]))
+        if "buyer" in created:
+            byid = created["buyer"]["idUser"]
+            results.append(expect_status("PATCH /Buyers/{id} confirmed -> 204", client.patch(f"Buyers/{byid}", json={"confirmed": True}), [204]))
+        if "viewing" in created:
+            vid = created["viewing"]["idViewing"]
+            results.append(expect_status("PATCH /Viewings/{id} status -> 204", client.patch(f"Viewings/{vid}", json={"status": 1}), [204]))
+    except Exception as e:
+        results.append(TestResult(name="PATCH operations block", ok=False, status=0, details=str(e)))
+
+    # Complete broker-centric GET after all related resources created
+    if "broker" in created:
+        brid = created["broker"]["idUser"]
+        results.append(expect_status("GET /Brokers/apartments/{id} -> 200", client.get(f"Brokers/apartments/{brid}"), [200]))
+        results.append(expect_status("GET /Brokers/listings/{id} -> 200", client.get(f"Brokers/listings/{brid}"), [200]))
+        results.append(expect_status("GET /Brokers/viewings/{id} -> 200", client.get(f"Brokers/viewings/{brid}"), [200]))
 
     # DTO-based PUTs now succeed (expect 204)
     if "user_broker" in created:
