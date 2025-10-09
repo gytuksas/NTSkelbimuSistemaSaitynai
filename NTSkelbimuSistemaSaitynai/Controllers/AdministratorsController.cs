@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
-using NTSkelbimuSistemaSaitynai;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
@@ -55,12 +49,12 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return administrator;
         }
 
-    /// <summary>
-    /// Update an administrator.
-    /// </summary>
-    /// <param name="id">User ID of the administrator to update.</param>
-    /// <param name="administrator">Updated administrator payload.</param>
-    /// <remarks>Returns 404 if the resource does not exist.</remarks>
+        /// <summary>
+        /// Update an administrator.
+        /// </summary>
+        /// <param name="id">User ID of the administrator to update.</param>
+        /// <param name="administrator">Updated administrator payload.</param>
+        /// <remarks>Returns 404 if the resource does not exist.</remarks>
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -89,15 +83,15 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return NoContent();
         }
 
-    /// <summary>
-    /// Create a new administrator.
-    /// </summary>
-    /// <param name="administrator">Administrator payload.</param>
-    /// <returns>The created administrator.</returns>
-    /// <remarks>Returns 409 if the administrator already exists.</remarks>
+        /// <summary>
+        /// Create a new administrator.
+        /// </summary>
+        /// <param name="administrator">Administrator payload.</param>
+        /// <returns>The created administrator.</returns>
+        /// <remarks>Returns 409 if the administrator already exists.</remarks>
         [HttpPost]
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Administrator))]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Administrator))]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<Administrator>> PostAdministrator(Administrator administrator)
         {
             _context.Administrators.Add(administrator);
@@ -120,11 +114,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return CreatedAtAction("GetAdministrator", new { id = administrator.IdUser }, administrator);
         }
 
-    /// <summary>
-    /// Delete an administrator by ID.
-    /// </summary>
-    /// <param name="id">User ID of the administrator to delete.</param>
-    /// <remarks>Returns 404 if the resource does not exist.</remarks>
+        /// <summary>
+        /// Delete an administrator by ID.
+        /// </summary>
+        /// <param name="id">User ID of the administrator to delete.</param>
+        /// <remarks>Returns 404 if the resource does not exist.</remarks>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

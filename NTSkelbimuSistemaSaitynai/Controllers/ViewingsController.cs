@@ -1,13 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using NTSkelbimuSistemaSaitynai;
 using NTSkelbimuSistemaSaitynai.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using static System.Collections.Specialized.BitVector32;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
@@ -36,11 +29,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return await _context.Viewings.ToListAsync();
         }
 
-    /// <summary>
-    /// Get a viewing by ID.
-    /// </summary>
-    /// <param name="id">Viewing ID.</param>
-    /// <returns>Viewing or 404.</returns>
+        /// <summary>
+        /// Get a viewing by ID.
+        /// </summary>
+        /// <param name="id">Viewing ID.</param>
+        /// <returns>Viewing or 404.</returns>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Viewing))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -56,6 +49,37 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return viewing;
         }
 
+        [HttpPatch("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        public async Task<IActionResult> PatchViewing(long id, [FromBody] ViewingPatchDto dto)
+        {
+            if (!ViewingExists(id))
+            {
+                return NotFound();
+            }
+
+            var viewing = new Viewing { IdViewing = id, Status = dto.Status };
+            _context.Attach(viewing);
+            _context.Entry(viewing).Property(v => v.Status).IsModified = true;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                if (!ViewingStatusExists(dto.Status))
+                {
+                    return UnprocessableEntity("Invalid fk");
+                }
+                throw;
+            }
+
+            return NoContent();
+        }
+
         /// <summary>
         /// Update a viewing.
         /// </summary>
@@ -66,7 +90,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> PutViewing(long id, [FromBody] ViewingDto viewingDto)
+        public async Task<IActionResult> PutViewing(long id, [FromBody] ViewingDto viewingDto)
         {
             DateTime dt1;
             DateTime dt2;
@@ -120,7 +144,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             }
             catch (DbUpdateException)
             {
-                if (!AvailabilityExists(viewing.FkAvailabilityidAvailability) || !ListingExists(viewing.FkListingidListing))
+                if (!AvailabilityExists(viewing.FkAvailabilityidAvailability) || !ListingExists(viewing.FkListingidListing) || !ViewingStatusExists(viewing.Status))
                 {
                     return UnprocessableEntity("Invalid fk");
                 }
@@ -133,14 +157,14 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return NoContent();
         }
 
-    /// <summary>
-    /// Create a new viewing.
-    /// </summary>
-    /// <param name="viewing">Viewing payload.</param>
-    /// <returns>The created viewing.</returns>
+        /// <summary>
+        /// Create a new viewing.
+        /// </summary>
+        /// <param name="viewing">Viewing payload.</param>
+        /// <returns>The created viewing.</returns>
         [HttpPost]
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Viewing))]
-    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Viewing))]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<ActionResult<Viewing>> PostViewing(Viewing viewing)
         {
             _context.Viewings.Add(viewing);
@@ -150,7 +174,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             }
             catch (DbUpdateException)
             {
-                if (!AvailabilityExists(viewing.FkAvailabilityidAvailability) || !ListingExists(viewing.FkListingidListing))
+                if (!AvailabilityExists(viewing.FkAvailabilityidAvailability) || !ListingExists(viewing.FkListingidListing) || !ViewingStatusExists(viewing.Status))
                 {
                     return UnprocessableEntity("Invalid fk");
                 }
@@ -163,10 +187,10 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return CreatedAtAction("GetViewing", new { id = viewing.IdViewing }, viewing);
         }
 
-    /// <summary>
-    /// Delete a viewing by ID.
-    /// </summary>
-    /// <param name="id">Viewing ID.</param>
+        /// <summary>
+        /// Delete a viewing by ID.
+        /// </summary>
+        /// <param name="id">Viewing ID.</param>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -197,6 +221,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         private bool ListingExists(long id)
         {
             return _context.Listings.Any(e => e.IdListing == id);
+        }
+
+        private bool ViewingStatusExists(long id)
+        {
+            return _context.Viewingstatuses.Any(e => e.IdViewingstatus == id);
         }
     }
 }

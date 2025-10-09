@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using NTSkelbimuSistemaSaitynai.DbUtils;
 using NTSkelbimuSistemaSaitynai;
+using NTSkelbimuSistemaSaitynai.DbUtils;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
-using NTSkelbimuSistemaSaitynai;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
@@ -35,11 +29,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return await _context.Brokers.ToListAsync();
         }
 
-    /// <summary>
-    /// Get a broker by ID.
-    /// </summary>
-    /// <param name="id">User ID.</param>
-    /// <returns>Broker or 404.</returns>
+        /// <summary>
+        /// Get a broker by ID.
+        /// </summary>
+        /// <param name="id">User ID.</param>
+        /// <returns>Broker or 404.</returns>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Broker))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -55,11 +49,105 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return broker;
         }
 
-    /// <summary>
-    /// Update a broker.
-    /// </summary>
-    /// <param name="id">User ID.</param>
-    /// <param name="broker">Updated broker payload.</param>
+        [HttpGet("listings/{id}")]
+        public async Task<ActionResult<Listing>> GetBrokerListings(long id)
+        {
+            if (!BrokerExists(id))
+            {
+                return NotFound("No broker with this ID");
+            }
+
+            var listings = await _context.Buildings
+                .Where(b => b.FkBrokeridUser == id)
+                .SelectMany(b => b.Apartments)
+                .SelectMany(a => a.Pictures)
+                .Select(p => p.Listing)
+                .Where(l => l != null)
+                .ToListAsync();
+
+            return Ok(listings);
+        }
+
+        [HttpGet("apartments/{id}")]
+        public async Task<ActionResult<Apartment>> GetBrokerApartments(long id)
+        {
+            if (!BrokerExists(id))
+            {
+                return NotFound("No broker with this ID");
+            }
+
+            var apartments = await _context.Buildings
+                .Where(b => b.FkBrokeridUser == id)
+                .SelectMany(b => b.Apartments)
+                .Where(l => l != null)
+                .ToListAsync();
+
+            return Ok(apartments);
+        }
+
+        [HttpGet("viewings/{id}")]
+        public async Task<ActionResult<IEnumerable<Viewing>>> GetViewingsForBroker(long id)
+        {
+            if (!BrokerExists(id))
+            {
+                return NotFound("No broker with this ID");
+            }
+
+            var viewings = await _context.Availabilities
+                .Where(a => a.FkBrokeridUser == id)
+                .SelectMany(b => b.Viewings)
+                .Where(l => l != null)
+                .ToListAsync();
+
+            return Ok(viewings);
+        }
+
+        [HttpPatch("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> PatchBroker(long id, [FromBody] BrokerPatchDto dto)
+        {
+            if (dto == null)
+            {
+                return BadRequest();
+            }
+
+            var setCount = (dto.Confirmed.HasValue ? 1 : 0) + (dto.Blocked.HasValue ? 1 : 0);
+            if (setCount != 1)
+            {
+                return BadRequest("Provide exactly one of: confirmed or blocked.");
+            }
+
+            if (!BrokerExists(id))
+            {
+                return NotFound();
+            }
+
+            var broker = new Broker { IdUser = id };
+            _context.Attach(broker);
+
+            if (dto.Confirmed.HasValue)
+            {
+                broker.Confirmed = dto.Confirmed.Value;
+                _context.Entry(broker).Property(b => b.Confirmed).IsModified = true;
+            }
+            else
+            {
+                broker.Blocked = dto.Blocked!.Value;
+                _context.Entry(broker).Property(b => b.Blocked).IsModified = true;
+            }
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+
+        /// <summary>
+        /// Update a broker.
+        /// </summary>
+        /// <param name="id">User ID.</param>
+        /// <param name="broker">Updated broker payload.</param>
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -88,11 +176,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return NoContent();
         }
 
-    /// <summary>
-    /// Create a new broker.
-    /// </summary>
-    /// <param name="broker">Broker payload.</param>
-    /// <returns>The created broker.</returns>
+        /// <summary>
+        /// Create a new broker.
+        /// </summary>
+        /// <param name="broker">Broker payload.</param>
+        /// <returns>The created broker.</returns>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Broker))]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -118,10 +206,10 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return CreatedAtAction("GetBroker", new { id = broker.IdUser }, broker);
         }
 
-    /// <summary>
-    /// Delete a broker by ID.
-    /// </summary>
-    /// <param name="id">User ID.</param>
+        /// <summary>
+        /// Delete a broker by ID.
+        /// </summary>
+        /// <param name="id">User ID.</param>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

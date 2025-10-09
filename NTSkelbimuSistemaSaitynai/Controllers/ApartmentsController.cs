@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
-using NTSkelbimuSistemaSaitynai;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
@@ -36,11 +29,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return await _context.Apartments.ToListAsync();
         }
 
-    /// <summary>
-    /// Get an apartment by ID.
-    /// </summary>
-    /// <param name="id">Apartment ID.</param>
-    /// <returns>Apartment resource or 404.</returns>
+        /// <summary>
+        /// Get an apartment by ID.
+        /// </summary>
+        /// <param name="id">Apartment ID.</param>
+        /// <returns>Apartment resource or 404.</returns>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Apartment))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -56,36 +49,36 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return apartment;
         }
 
-    /// <summary>
-    /// Get apartments in a specific building.
-    /// </summary>
-    /// <param name="id">Building ID.</param>
-    /// <returns>List of apartments in a building or 404.</returns>
-    [HttpGet("building/{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Apartment>))]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<Apartment>>> GetApartmentsInBuilding(long id)
+        [HttpGet("listing/{id}")]
+        public async Task<ActionResult<Listing>> GetListingForApartment(long id)
         {
-            var apartments = await _context.
-                Apartments.
-                Where(x => x.FkBuildingidBuilding == id).
-                ToListAsync();
+            if (!ApartmentExists(id))
+            {
+                return NotFound("No apartment with this ID");
+            }
 
-            if(apartments == null)
-                return NotFound();
+            var listing = _context.Pictures.Where(p => p.FkApartmentidApartment == id)
+                .Select(l => l.Listing)
+                .Where(i => i != null)
+                .SingleOrDefaultAsync();
 
-            return apartments;
+            if (listing == null)
+            {
+                return NotFound("No listing for this apartment");
+            }
+
+            return await listing;
         }
 
-    /// <summary>
-    /// Update an apartment.
-    /// </summary>
-    /// <param name="id">Apartment ID to update.</param>
-    /// <param name="apartment">Updated apartment payload.</param>
+        /// <summary>
+        /// Update an apartment.
+        /// </summary>
+        /// <param name="id">Apartment ID to update.</param>
+        /// <param name="apartment">Updated apartment payload.</param>
         [HttpPut("{id}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<IActionResult> PutApartment(long id, Apartment apartment)
         {
             // Ensure ID is aligned with route
@@ -110,7 +103,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             }
             catch (DbUpdateException)
             {
-                if(!BuildingExists(apartment.FkBuildingidBuilding))
+                if (!BuildingExists(apartment.FkBuildingidBuilding))
                 {
                     return UnprocessableEntity("Invalid fk");
                 }
@@ -123,14 +116,14 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return NoContent();
         }
 
-    /// <summary>
-    /// Create a new apartment.
-    /// </summary>
-    /// <param name="apartment">Apartment payload.</param>
-    /// <returns>The created apartment.</returns>
+        /// <summary>
+        /// Create a new apartment.
+        /// </summary>
+        /// <param name="apartment">Apartment payload.</param>
+        /// <returns>The created apartment.</returns>
         [HttpPost]
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Apartment))]
-    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Apartment))]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<ActionResult<Apartment>> PostApartment(Apartment apartment)
         {
             _context.Apartments.Add(apartment);
@@ -153,10 +146,10 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return CreatedAtAction("GetApartment", new { id = apartment.IdApartment }, apartment);
         }
 
-    /// <summary>
-    /// Delete an apartment by ID.
-    /// </summary>
-    /// <param name="id">Apartment ID to delete.</param>
+        /// <summary>
+        /// Delete an apartment by ID.
+        /// </summary>
+        /// <param name="id">Apartment ID to delete.</param>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

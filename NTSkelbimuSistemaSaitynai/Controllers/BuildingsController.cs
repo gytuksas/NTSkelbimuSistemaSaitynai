@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
-using NTSkelbimuSistemaSaitynai;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
@@ -35,11 +29,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return await _context.Buildings.ToListAsync();
         }
 
-    /// <summary>
-    /// Get a building by ID.
-    /// </summary>
-    /// <param name="id">Building ID.</param>
-    /// <returns>Building or 404.</returns>
+        /// <summary>
+        /// Get a building by ID.
+        /// </summary>
+        /// <param name="id">Building ID.</param>
+        /// <returns>Building or 404.</returns>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Building))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -55,11 +49,50 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return building;
         }
 
-    /// <summary>
-    /// Update a building.
-    /// </summary>
-    /// <param name="id">Building ID.</param>
-    /// <param name="building">Updated building payload.</param>
+        /// <summary>
+        /// Get apartments in a specific building.
+        /// </summary>
+        /// <param name="id">Building ID.</param>
+        /// <returns>List of apartments in a building or 404.</returns>
+        [HttpGet("apartments/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Apartment>))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<IEnumerable<Apartment>>> GetApartmentsInBuilding(long id)
+        {
+            var apartments = await _context.
+                Apartments.
+                Where(x => x.FkBuildingidBuilding == id).
+                ToListAsync();
+
+            if (apartments == null)
+                return NotFound();
+
+            return apartments;
+        }
+
+        [HttpGet("pictures/{id}")]
+        public async Task<ActionResult<IEnumerable<Picture>>> GetPicturesInBuilding(long id)
+        {
+            if (!BuildingExists(id))
+            {
+                return NotFound("No building with provided id");
+            }
+
+            var pictures = await _context.
+                Apartments.
+                Where(x => x.FkBuildingidBuilding == id)
+                .SelectMany(p => p.Pictures)
+                .Where(l => l != null)
+                .ToListAsync();
+
+            return pictures;
+        }
+
+        /// <summary>
+        /// Update a building.
+        /// </summary>
+        /// <param name="id">Building ID.</param>
+        /// <param name="building">Updated building payload.</param>
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -100,11 +133,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return NoContent();
         }
 
-    /// <summary>
-    /// Create a new building.
-    /// </summary>
-    /// <param name="building">Building payload.</param>
-    /// <returns>The created building.</returns>
+        /// <summary>
+        /// Create a new building.
+        /// </summary>
+        /// <param name="building">Building payload.</param>
+        /// <returns>The created building.</returns>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Building))]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
@@ -130,10 +163,10 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return CreatedAtAction("GetBuilding", new { id = building.IdBuilding }, building);
         }
 
-    /// <summary>
-    /// Delete a building by ID.
-    /// </summary>
-    /// <param name="id">Building ID.</param>
+        /// <summary>
+        /// Delete a building by ID.
+        /// </summary>
+        /// <param name="id">Building ID.</param>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

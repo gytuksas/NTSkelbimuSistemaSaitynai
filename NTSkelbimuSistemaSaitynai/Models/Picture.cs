@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace NTSkelbimuSistemaSaitynai.Models;
@@ -23,4 +21,9 @@ public partial class Picture
     [ValidateNever]
     [JsonIgnore]
     public virtual Listing? Listing { get; set; }
+}
+
+public class PicturePublicPatchDto
+{
+    public required bool Public { get; set; }
 }

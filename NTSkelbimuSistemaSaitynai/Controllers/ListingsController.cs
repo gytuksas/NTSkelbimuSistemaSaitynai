@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
-using NTSkelbimuSistemaSaitynai;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
@@ -35,11 +29,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return await _context.Listings.ToListAsync();
         }
 
-    /// <summary>
-    /// Get a listing by ID.
-    /// </summary>
-    /// <param name="id">Listing ID.</param>
-    /// <returns>Listing or 404.</returns>
+        /// <summary>
+        /// Get a listing by ID.
+        /// </summary>
+        /// <param name="id">Listing ID.</param>
+        /// <returns>Listing or 404.</returns>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Listing))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -55,11 +49,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return listing;
         }
 
-    /// <summary>
-    /// Update a listing.
-    /// </summary>
-    /// <param name="id">Listing ID.</param>
-    /// <param name="listing">Updated listing payload.</param>
+        /// <summary>
+        /// Update a listing.
+        /// </summary>
+        /// <param name="id">Listing ID.</param>
+        /// <param name="listing">Updated listing payload.</param>
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -115,10 +109,10 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return CreatedAtAction("GetListing", new { id = listing.IdListing }, listing);
         }
 
-    /// <summary>
-    /// Delete a listing by ID.
-    /// </summary>
-    /// <param name="id">Listing ID.</param>
+        /// <summary>
+        /// Delete a listing by ID.
+        /// </summary>
+        /// <param name="id">Listing ID.</param>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

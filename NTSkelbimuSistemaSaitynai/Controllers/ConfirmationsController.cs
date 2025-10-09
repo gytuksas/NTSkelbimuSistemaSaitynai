@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
-using NTSkelbimuSistemaSaitynai;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
@@ -35,11 +29,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return await _context.Confirmations.ToListAsync();
         }
 
-    /// <summary>
-    /// Get a confirmation by ID.
-    /// </summary>
-    /// <param name="id">Confirmation ID.</param>
-    /// <returns>Confirmation or 404.</returns>
+        /// <summary>
+        /// Get a confirmation by ID.
+        /// </summary>
+        /// <param name="id">Confirmation ID.</param>
+        /// <returns>Confirmation or 404.</returns>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Confirmation))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -65,7 +59,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> PutConfirmation(string id, [FromBody] ConfirmationDto confirmationDto)
+        public async Task<IActionResult> PutConfirmation(string id, [FromBody] ConfirmationDto confirmationDto)
         {
             DateTime dt1;
 
@@ -132,11 +126,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         /// <param name="confirmationDto">Confirmation payload.</param>
         /// <returns>The created confirmation.</returns>
         [HttpPost]
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Confirmation))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<Confirmation>> PostConfirmation([FromBody] ConfirmationDto confirmationDto)
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Confirmation))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        public async Task<ActionResult<Confirmation>> PostConfirmation([FromBody] ConfirmationDto confirmationDto)
         {
             DateTime dt1;
 
@@ -193,10 +187,10 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return CreatedAtAction("GetConfirmation", new { id = confirmation.Id }, confirmation);
         }
 
-    /// <summary>
-    /// Delete a confirmation by ID.
-    /// </summary>
-    /// <param name="id">Confirmation ID.</param>
+        /// <summary>
+        /// Delete a confirmation by ID.
+        /// </summary>
+        /// <param name="id">Confirmation ID.</param>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
-using NTSkelbimuSistemaSaitynai;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
@@ -35,11 +29,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return await _context.Availabilities.ToListAsync();
         }
 
-    /// <summary>
-    /// Get availability by ID.
-    /// </summary>
-    /// <param name="id">Availability ID.</param>
-    /// <returns>Availability or 404.</returns>
+        /// <summary>
+        /// Get availability by ID.
+        /// </summary>
+        /// <param name="id">Availability ID.</param>
+        /// <returns>Availability or 404.</returns>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Availability))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -65,7 +59,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> PutAvailability(long id, [FromBody] AvailabilityDto availabilityDto)
+        public async Task<IActionResult> PutAvailability(long id, [FromBody] AvailabilityDto availabilityDto)
         {
             DateTime dt1;
             DateTime dt2;
@@ -130,15 +124,15 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return NoContent();
         }
 
-    /// <summary>
-    /// Create a new availability.
-    /// </summary>
-    /// <param name="availabilityDto">Availability payload.</param>
-    /// <returns>The created availability.</returns>
+        /// <summary>
+        /// Create a new availability.
+        /// </summary>
+        /// <param name="availabilityDto">Availability payload.</param>
+        /// <returns>The created availability.</returns>
         [HttpPost]
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Availability))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Availability))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<ActionResult<Availability>> PostAvailability(AvailabilityDto availabilityDto)
         {
             DateTime dt1;
@@ -149,7 +143,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 dt1 = DateTime.Parse(availabilityDto.From);
                 dt2 = DateTime.Parse(availabilityDto.To);
             }
-            catch(FormatException)
+            catch (FormatException)
             {
                 return BadRequest("Invalid date and time format - expecting yyyy-mm-dd hh:mm");
             }
@@ -189,10 +183,10 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return CreatedAtAction("GetAvailability", new { id = availability.IdAvailability }, availability);
         }
 
-    /// <summary>
-    /// Delete an availability by ID.
-    /// </summary>
-    /// <param name="id">Availability ID.</param>
+        /// <summary>
+        /// Delete an availability by ID.
+        /// </summary>
+        /// <param name="id">Availability ID.</param>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

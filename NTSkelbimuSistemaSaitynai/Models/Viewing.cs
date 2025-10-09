@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace NTSkelbimuSistemaSaitynai.Models;
@@ -47,4 +45,9 @@ public class ViewingDto
     public long FkAvailabilityidAvailability { get; set; }
 
     public long FkListingidListing { get; set; }
+}
+
+public class ViewingPatchDto
+{
+    public required int Status { get; set; }
 }

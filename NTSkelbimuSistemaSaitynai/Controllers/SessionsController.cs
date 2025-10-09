@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
-using NTSkelbimuSistemaSaitynai;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
@@ -35,11 +29,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return await _context.Sessions.ToListAsync();
         }
 
-    /// <summary>
-    /// Get a session by ID.
-    /// </summary>
-    /// <param name="id">Session ID.</param>
-    /// <returns>Session or 404.</returns>
+        /// <summary>
+        /// Get a session by ID.
+        /// </summary>
+        /// <param name="id">Session ID.</param>
+        /// <returns>Session or 404.</returns>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Session))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -65,7 +59,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> PutSession(string id, [FromBody] SessionDto sessionDto)
+        public async Task<IActionResult> PutSession(string id, [FromBody] SessionDto sessionDto)
         {
             DateTime dt1;
             DateTime dt2;
@@ -137,11 +131,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         /// <param name="sessionDto">Session payload.</param>
         /// <returns>The created session.</returns>
         [HttpPost]
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Session))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<Session>> PostSession([FromBody] SessionDto sessionDto)
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Session))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        public async Task<ActionResult<Session>> PostSession([FromBody] SessionDto sessionDto)
         {
             DateTime dt1;
             DateTime dt2;
@@ -202,10 +196,10 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return CreatedAtAction("GetSession", new { id = session.Id }, session);
         }
 
-    /// <summary>
-    /// Delete a session by ID.
-    /// </summary>
-    /// <param name="id">Session ID.</param>
+        /// <summary>
+        /// Delete a session by ID.
+        /// </summary>
+        /// <param name="id">Session ID.</param>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

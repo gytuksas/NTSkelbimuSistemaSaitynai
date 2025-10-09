@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
-using NTSkelbimuSistemaSaitynai;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
@@ -35,11 +29,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return await _context.Pictures.ToListAsync();
         }
 
-    /// <summary>
-    /// Get picture by ID.
-    /// </summary>
-    /// <param name="id">Picture ID.</param>
-    /// <returns>Picture or 404.</returns>
+        /// <summary>
+        /// Get picture by ID.
+        /// </summary>
+        /// <param name="id">Picture ID.</param>
+        /// <returns>Picture or 404.</returns>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Picture))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -55,15 +49,15 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return picture;
         }
 
-    /// <summary>
-    /// Update a picture.
-    /// </summary>
-    /// <param name="id">Picture ID.</param>
-    /// <param name="picture">Updated picture payload.</param>
+        /// <summary>
+        /// Update a picture.
+        /// </summary>
+        /// <param name="id">Picture ID.</param>
+        /// <param name="picture">Updated picture payload.</param>
         [HttpPut("{id}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<IActionResult> PutPicture(string id, Picture picture)
         {
             // Ensure key matches route
@@ -101,15 +95,40 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return NoContent();
         }
 
-    /// <summary>
-    /// Create a new picture.
-    /// </summary>
-    /// <param name="picture">Picture payload.</param>
-    /// <returns>The created picture.</returns>
+        [HttpPatch("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> PatchPicture(string id, [FromBody] PicturePublicPatchDto dto)
+        {
+            var picture = new Picture { Id = id, Public = dto.Public };
+            _context.Attach(picture);
+            _context.Entry(picture).Property(p => p.Public).IsModified = true;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!PictureExists(id))
+                {
+                    return NotFound();
+                }
+                throw;
+            }
+
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Create a new picture.
+        /// </summary>
+        /// <param name="picture">Picture payload.</param>
+        /// <returns>The created picture.</returns>
         [HttpPost]
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Picture))]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Picture))]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<ActionResult<Picture>> PostPicture(Picture picture)
         {
             _context.Pictures.Add(picture);
@@ -136,10 +155,10 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return CreatedAtAction("GetPicture", new { id = picture.Id }, picture);
         }
 
-    /// <summary>
-    /// Delete a picture by ID.
-    /// </summary>
-    /// <param name="id">Picture ID.</param>
+        /// <summary>
+        /// Delete a picture by ID.
+        /// </summary>
+        /// <param name="id">Picture ID.</param>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
