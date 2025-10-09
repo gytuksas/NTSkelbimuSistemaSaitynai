@@ -237,7 +237,7 @@ def main() -> int:
         # broker-centric endpoints
         if "broker" in created:
             brid = created["broker"]["idUser"]
-            results.append(expect_status("GET /Brokers/listings/{id} -> 200", client.get(f"Brokers/listings/{brid}"), [200])))
+            results.append(expect_status("GET /Brokers/listings/{id} -> 200", client.get(f"Brokers/listings/{brid}"), [200]))
             results.append(expect_status("GET /Brokers/apartments/{id} -> 200", client.get(f"Brokers/apartments/{brid}"), [200]))
             # viewings for broker exist after viewing creation; we'll assert later if created
 
