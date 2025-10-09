@@ -49,7 +49,14 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return apartment;
         }
 
-        [HttpGet("listing/{id}")]
+    /// <summary>
+    /// Get the listing for a specific apartment.
+    /// </summary>
+    /// <param name="id">Apartment ID.</param>
+    /// <returns>Listing for the apartment or 404.</returns>
+    [HttpGet("listing/{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Listing))]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Listing>> GetListingForApartment(long id)
         {
             if (!ApartmentExists(id))
@@ -57,7 +64,8 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 return NotFound("No apartment with this ID");
             }
 
-            var listing = _context.Pictures.Where(p => p.FkApartmentidApartment == id)
+            var listing = await _context.Pictures
+                .Where(p => p.FkApartmentidApartment == id)
                 .Select(l => l.Listing)
                 .Where(i => i != null)
                 .SingleOrDefaultAsync();
@@ -67,7 +75,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 return NotFound("No listing for this apartment");
             }
 
-            return await listing;
+            return listing;
         }
 
         /// <summary>

@@ -95,7 +95,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return NoContent();
         }
 
-        [HttpPatch("{id}")]
+    /// <summary>
+    /// Partially update a picture's public flag.
+    /// </summary>
+    /// <param name="id">Picture ID.</param>
+    /// <param name="dto">New public visibility value.</param>
+    /// <returns>No content on success, 404 if picture not found.</returns>
+    [HttpPatch("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> PatchPicture(string id, [FromBody] PicturePublicPatchDto dto)

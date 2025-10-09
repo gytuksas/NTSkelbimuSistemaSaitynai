@@ -70,7 +70,14 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return apartments;
         }
 
+        /// <summary>
+        /// Get all pictures in a specific building.
+        /// </summary>
+        /// <param name="id">Building ID.</param>
+        /// <returns>List of pictures in the building or 404.</returns>
         [HttpGet("pictures/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Picture>))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<Picture>>> GetPicturesInBuilding(long id)
         {
             if (!BuildingExists(id))

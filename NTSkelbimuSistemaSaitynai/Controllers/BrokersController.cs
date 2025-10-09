@@ -49,8 +49,15 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return broker;
         }
 
-        [HttpGet("listings/{id}")]
-        public async Task<ActionResult<Listing>> GetBrokerListings(long id)
+    /// <summary>
+    /// Get all listings managed by a broker.
+    /// </summary>
+    /// <param name="id">Broker's user ID.</param>
+    /// <returns>List of listings or 404 if broker not found.</returns>
+    [HttpGet("listings/{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Listing>))]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IEnumerable<Listing>>> GetBrokerListings(long id)
         {
             if (!BrokerExists(id))
             {
@@ -68,8 +75,15 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return Ok(listings);
         }
 
-        [HttpGet("apartments/{id}")]
-        public async Task<ActionResult<Apartment>> GetBrokerApartments(long id)
+    /// <summary>
+    /// Get all apartments managed by a broker.
+    /// </summary>
+    /// <param name="id">Broker's user ID.</param>
+    /// <returns>List of apartments or 404 if broker not found.</returns>
+    [HttpGet("apartments/{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Apartment>))]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IEnumerable<Apartment>>> GetBrokerApartments(long id)
         {
             if (!BrokerExists(id))
             {
@@ -85,7 +99,14 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return Ok(apartments);
         }
 
-        [HttpGet("viewings/{id}")]
+    /// <summary>
+    /// Get all viewings scheduled for a broker.
+    /// </summary>
+    /// <param name="id">Broker's user ID.</param>
+    /// <returns>List of viewings or 404 if broker not found.</returns>
+    [HttpGet("viewings/{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Viewing>))]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<Viewing>>> GetViewingsForBroker(long id)
         {
             if (!BrokerExists(id))
@@ -102,7 +123,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return Ok(viewings);
         }
 
-        [HttpPatch("{id}")]
+    /// <summary>
+    /// Partially update a broker's status.
+    /// </summary>
+    /// <param name="id">User ID.</param>
+    /// <param name="dto">One of confirmed or blocked must be provided.</param>
+    /// <returns>No content on success, 400 for invalid payload, 404 if not found.</returns>
+    [HttpPatch("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
