@@ -49,12 +49,12 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return building;
         }
 
-        /// <summary>
-        /// Get apartments in a specific building.
-        /// </summary>
-        /// <param name="id">Building ID.</param>
-        /// <returns>List of apartments in a building or 404.</returns>
-        [HttpGet("apartments/{id}")]
+    /// <summary>
+    /// Get apartments in a specific building.
+    /// </summary>
+    /// <param name="id">Building ID.</param>
+    /// <returns>List of apartments in a building or 404.</returns>
+    [HttpGet("{id}/apartments")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Apartment>))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<Apartment>>> GetApartmentsInBuilding(long id)
@@ -70,12 +70,12 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return apartments;
         }
 
-        /// <summary>
-        /// Get all pictures in a specific building.
-        /// </summary>
-        /// <param name="id">Building ID.</param>
-        /// <returns>List of pictures in the building or 404.</returns>
-        [HttpGet("pictures/{id}")]
+    /// <summary>
+    /// Get all pictures in a specific building.
+    /// </summary>
+    /// <param name="id">Building ID.</param>
+    /// <returns>List of pictures in the building or 404.</returns>
+    [HttpGet("{id}/pictures")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Picture>))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<Picture>>> GetPicturesInBuilding(long id)
@@ -93,6 +93,39 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 .ToListAsync();
 
             return pictures;
+        }
+
+        /// <summary>
+        /// Get a specific picture located in a specific apartment within a building.
+        /// </summary>
+        /// <param name="id">Building ID.</param>
+        /// <param name="apartmentId">Apartment ID within the building.</param>
+        /// <param name="pictureId">Picture ID to fetch.</param>
+        /// <returns>The picture if found; otherwise 404.</returns>
+        [HttpGet("{id}/apartment/{apartmentId}/picture/{pictureId}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Picture))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<Picture>> GetPictureInBuildingApartment(long id, long apartmentId, string pictureId)
+        {
+            if (!BuildingExists(id))
+                return NotFound("No building with provided id");
+            if (!ApartmentExists(apartmentId))
+                return NotFound("No apartment with provided id");
+            if (!PictureExists(pictureId))
+                return NotFound("No picture with provided id");
+
+            var picture = await _context.
+                Apartments.
+                Where(a => a.FkBuildingidBuilding == id)
+                .Where(a => a.IdApartment == apartmentId)
+                .SelectMany(p => p.Pictures)
+                .Where(p => p.Id == pictureId)
+                .Where(l => l != null)
+                .SingleOrDefaultAsync();
+
+            if (picture == null)
+                return NotFound("No picture with provided IDs");
+            return picture;
         }
 
         /// <summary>
@@ -205,6 +238,14 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         private bool EnergyclassExists(int id)
         {
             return _context.Energyclasses.Any(e => e.IdEnergyclass == id);
+        }
+        private bool ApartmentExists(long id)
+        {
+            return _context.Apartments.Any(e => e.IdApartment == id);
+        }
+        private bool PictureExists(string id)
+        {
+            return _context.Pictures.Any(e => e.Id == id);
         }
     }
 }

@@ -227,9 +227,18 @@ def main() -> int:
         bid = created["building"]["idBuilding"]
         results.append(expect_status("GET /Buildings/{id} -> 200", client.get(f"Buildings/{bid}"), [200]))
         # list apartments in building custom route
-        results.append(expect_status("GET /Buildings/apartments/{id} -> 200", client.get(f"Buildings/apartments/{bid}"), [200]))
+        results.append(expect_status("GET /Buildings/{id}/apartments -> 200", client.get(f"Buildings/{bid}/apartments"), [200]))
         # list pictures in building custom route
-        results.append(expect_status("GET /Buildings/pictures/{id} -> 200", client.get(f"Buildings/pictures/{bid}"), [200]))
+        results.append(expect_status("GET /Buildings/{id}/pictures -> 200", client.get(f"Buildings/{bid}/pictures"), [200]))
+        # get a specific picture within building/apartment when available
+        if "apartment" in created and "picture" in created:
+            aid = created["apartment"]["idApartment"]
+            pid = created["picture"]["id"]
+            results.append(expect_status(
+                "GET /Buildings/{id}/apartment/{apartmentId}/picture/{pictureId} -> 200",
+                client.get(f"Buildings/{bid}/apartment/{aid}/picture/{pid}"),
+                [200],
+            ))
 
     if "listing" in created:
         lid = created["listing"]["idListing"]
@@ -237,8 +246,8 @@ def main() -> int:
         # broker-centric endpoints
         if "broker" in created:
             brid = created["broker"]["idUser"]
-            results.append(expect_status("GET /Brokers/listings/{id} -> 200", client.get(f"Brokers/listings/{brid}"), [200]))
-            results.append(expect_status("GET /Brokers/apartments/{id} -> 200", client.get(f"Brokers/apartments/{brid}"), [200]))
+            results.append(expect_status("GET /Brokers/{id}/listings -> 200", client.get(f"Brokers/{brid}/listings"), [200]))
+            results.append(expect_status("GET /Brokers/{id}/apartments -> 200", client.get(f"Brokers/{brid}/apartments"), [200]))
             # viewings for broker exist after viewing creation; we'll assert later if created
 
     # Update a few resources successfully (expect 204)
@@ -277,7 +286,7 @@ def main() -> int:
     # New custom GET endpoints dependent on resources created
     if "apartment" in created:
         aid = created["apartment"]["idApartment"]
-        results.append(expect_status("GET /Apartments/listing/{id} -> 200", client.get(f"Apartments/listing/{aid}"), [200]))
+        results.append(expect_status("GET /Apartments/{id}/listing -> 200", client.get(f"Apartments/{aid}/listing"), [200]))
 
     # PATCH operations (expect 204)
     try:
@@ -299,9 +308,39 @@ def main() -> int:
     # Complete broker-centric GET after all related resources created
     if "broker" in created:
         brid = created["broker"]["idUser"]
-        results.append(expect_status("GET /Brokers/apartments/{id} -> 200", client.get(f"Brokers/apartments/{brid}"), [200]))
-        results.append(expect_status("GET /Brokers/listings/{id} -> 200", client.get(f"Brokers/listings/{brid}"), [200]))
-        results.append(expect_status("GET /Brokers/viewings/{id} -> 200", client.get(f"Brokers/viewings/{brid}"), [200]))
+        results.append(expect_status("GET /Brokers/{id}/apartments -> 200", client.get(f"Brokers/{brid}/apartments"), [200]))
+        results.append(expect_status("GET /Brokers/{id}/listings -> 200", client.get(f"Brokers/{brid}/listings"), [200]))
+        results.append(expect_status("GET /Brokers/{id}/viewings -> 200", client.get(f"Brokers/{brid}/viewings"), [200]))
+        # nested broker+building endpoints
+        if "building" in created:
+            bid = created["building"]["idBuilding"]
+            results.append(expect_status(
+                "GET /Brokers/{id}/building/{buildingId}/apartments -> 200",
+                client.get(f"Brokers/{brid}/building/{bid}/apartments"),
+                [200],
+            ))
+            if "apartment" in created:
+                aid = created["apartment"]["idApartment"]
+                results.append(expect_status(
+                    "GET /Brokers/{id}/building/{buildingId}/apartment/{apartmentId}/listings -> 200",
+                    client.get(f"Brokers/{brid}/building/{bid}/apartment/{aid}/listings"),
+                    [200],
+                ))
+                if "picture" in created:
+                    pid = created["picture"]["id"]
+                    results.append(expect_status(
+                        "GET /Brokers/{id}/building/{buildingId}/apartment/{apartmentId}/picture/{pictureId}/listing -> 200",
+                        client.get(f"Brokers/{brid}/building/{bid}/apartment/{aid}/picture/{pid}/listing"),
+                        [200],
+                    ))
+        # nested broker+availability endpoint
+        if "availability" in created:
+            avid = created["availability"]["idAvailability"]
+            results.append(expect_status(
+                "GET /Brokers/{id}/availability/{availabilityId}/viewings -> 200",
+                client.get(f"Brokers/{brid}/availability/{avid}/viewings"),
+                [200],
+            ))
 
     # DTO-based PUTs now succeed (expect 204)
     if "user_broker" in created:

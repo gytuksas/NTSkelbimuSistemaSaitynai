@@ -49,13 +49,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return viewing;
         }
 
-    /// <summary>
-    /// Partially update a viewing's status.
-    /// </summary>
-    /// <param name="id">Viewing ID.</param>
-    /// <param name="dto">Fields to update (currently only status).</param>
-    /// <returns>No content on success, 404 if not found, 422 for invalid foreign key.</returns>
-    [HttpPatch("{id}")]
+        /// <summary>
+        /// Partially update a viewing's status.
+        /// </summary>
+        /// <param name="id">Viewing ID.</param>
+        /// <param name="dto">Fields to update (currently only status).</param>
+        /// <returns>No content on success, 404 if not found, 422 for invalid foreign key.</returns>
+        [HttpPatch("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]

@@ -49,13 +49,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return buyer;
         }
 
-    /// <summary>
-    /// Partially update a buyer's status.
-    /// </summary>
-    /// <param name="id">User ID.</param>
-    /// <param name="dto">One of confirmed or blocked must be provided.</param>
-    /// <returns>No content on success, 400 for invalid payload, 404 if not found.</returns>
-    [HttpPatch("{id}")]
+        /// <summary>
+        /// Partially update a buyer's status.
+        /// </summary>
+        /// <param name="id">User ID.</param>
+        /// <param name="dto">One of confirmed or blocked must be provided.</param>
+        /// <returns>No content on success, 400 for invalid payload, 404 if not found.</returns>
+        [HttpPatch("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

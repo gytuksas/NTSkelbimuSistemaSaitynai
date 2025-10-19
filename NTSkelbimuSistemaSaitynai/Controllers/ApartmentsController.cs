@@ -49,14 +49,14 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return apartment;
         }
 
-    /// <summary>
-    /// Get the listing for a specific apartment.
-    /// </summary>
-    /// <param name="id">Apartment ID.</param>
-    /// <returns>Listing for the apartment or 404.</returns>
-    [HttpGet("listing/{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Listing))]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+        /// <summary>
+        /// Get the listing associated with a specific apartment.
+        /// </summary>
+        /// <param name="id">Apartment ID.</param>
+        /// <returns>The listing resource if it exists, otherwise 404.</returns>
+        [HttpGet("{id}/listing")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Listing))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Listing>> GetListingForApartment(long id)
         {
             if (!ApartmentExists(id))
