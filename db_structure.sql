@@ -53,7 +53,7 @@ CREATE TABLE Administrator
 (
     id_User bigint NOT NULL,
     PRIMARY KEY(id_User),
-    FOREIGN KEY(id_User) REFERENCES "User"(id_User)
+    FOREIGN KEY(id_User) REFERENCES "User"(id_User) ON DELETE CASCADE
 );
 
 CREATE TABLE Broker
@@ -62,7 +62,7 @@ CREATE TABLE Broker
     blocked boolean NOT NULL,
     id_User bigint NOT NULL,
     PRIMARY KEY(id_User),
-    FOREIGN KEY(id_User) REFERENCES "User"(id_User)
+    FOREIGN KEY(id_User) REFERENCES "User"(id_User) ON DELETE CASCADE
 );
 
 CREATE TABLE Buyer
@@ -71,7 +71,7 @@ CREATE TABLE Buyer
     blocked boolean NOT NULL,
     id_User bigint NOT NULL,
     PRIMARY KEY(id_User),
-    FOREIGN KEY(id_User) REFERENCES "User"(id_User)
+    FOREIGN KEY(id_User) REFERENCES "User"(id_User) ON DELETE CASCADE
 );
 
 CREATE TABLE "Session"
@@ -82,7 +82,7 @@ CREATE TABLE "Session"
     lastActivity timestamptz NOT NULL,
     fk_Userid_User bigint NOT NULL,
     PRIMARY KEY(id),
-    FOREIGN KEY(fk_Userid_User) REFERENCES "User"(id_User)
+    FOREIGN KEY(fk_Userid_User) REFERENCES "User"(id_User) ON DELETE CASCADE
 );
 
 CREATE TABLE Availability
@@ -92,7 +92,7 @@ CREATE TABLE Availability
     id_Availability bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
     fk_Brokerid_User bigint NOT NULL,
     PRIMARY KEY(id_Availability),
-    FOREIGN KEY(fk_Brokerid_User) REFERENCES Broker(id_User)
+    FOREIGN KEY(fk_Brokerid_User) REFERENCES Broker(id_User) ON DELETE CASCADE
 );
 
 CREATE TABLE Building
@@ -108,7 +108,7 @@ CREATE TABLE Building
     fk_Brokerid_User bigint NOT NULL,
     PRIMARY KEY(id_Building),
     FOREIGN KEY(energy) REFERENCES EnergyClass(id_EnergyClass),
-    FOREIGN KEY(fk_Brokerid_User) REFERENCES Broker(id_User)
+    FOREIGN KEY(fk_Brokerid_User) REFERENCES Broker(id_User) ON DELETE CASCADE
 );
 
 CREATE TABLE Confirmation
@@ -118,7 +118,7 @@ CREATE TABLE Confirmation
     fk_Buyerid_User bigint NOT NULL,
     PRIMARY KEY(id),
     UNIQUE(fk_Buyerid_User),
-    FOREIGN KEY(fk_Buyerid_User) REFERENCES Buyer(id_User)
+    FOREIGN KEY(fk_Buyerid_User) REFERENCES Buyer(id_User) ON DELETE CASCADE
 );
 
 CREATE TABLE Apartment
@@ -136,7 +136,7 @@ CREATE TABLE Apartment
     PRIMARY KEY(id_Apartment),
     FOREIGN KEY(heating) REFERENCES HeatingTypes(id_HeatingTypes),
     FOREIGN KEY(finish) REFERENCES FinishTypes(id_FinishTypes),
-    FOREIGN KEY(fk_Buildingid_Building) REFERENCES Building(id_Building)
+    FOREIGN KEY(fk_Buildingid_Building) REFERENCES Building(id_Building) ON DELETE CASCADE
 );
 
 CREATE TABLE Picture
@@ -145,7 +145,7 @@ CREATE TABLE Picture
     public boolean NOT NULL,
     fk_Apartmentid_Apartment bigint NOT NULL,
     PRIMARY KEY(id),
-    FOREIGN KEY(fk_Apartmentid_Apartment) REFERENCES Apartment(id_Apartment)
+    FOREIGN KEY(fk_Apartmentid_Apartment) REFERENCES Apartment(id_Apartment) ON DELETE CASCADE
 );
 
 CREATE TABLE Listing
@@ -157,7 +157,7 @@ CREATE TABLE Listing
     fk_Pictureid varchar(255) NOT NULL,
     PRIMARY KEY(id_Listing),
     UNIQUE(fk_Pictureid),
-    FOREIGN KEY(fk_Pictureid) REFERENCES Picture(id)
+    FOREIGN KEY(fk_Pictureid) REFERENCES Picture(id) ON DELETE CASCADE
 );
 
 CREATE TABLE Viewing
@@ -171,6 +171,6 @@ CREATE TABLE Viewing
     PRIMARY KEY(id_Viewing),
     UNIQUE(fk_Listingid_Listing),
     FOREIGN KEY(status) REFERENCES ViewingStatus(id_ViewingStatus),
-    FOREIGN KEY(fk_Availabilityid_Availability) REFERENCES Availability(id_Availability),
-    FOREIGN KEY(fk_Listingid_Listing) REFERENCES Listing(id_Listing)
+    FOREIGN KEY(fk_Availabilityid_Availability) REFERENCES Availability(id_Availability) ON DELETE CASCADE,
+    FOREIGN KEY(fk_Listingid_Listing) REFERENCES Listing(id_Listing) ON DELETE CASCADE
 );

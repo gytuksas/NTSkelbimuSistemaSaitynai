@@ -288,6 +288,129 @@ def main() -> int:
         aid = created["apartment"]["idApartment"]
         results.append(expect_status("GET /Apartments/{id}/listing -> 200", client.get(f"Apartments/{aid}/listing"), [200]))
 
+    # 3.5) Cascade delete scenario (separate chain)
+    # Build a separate resource chain under a different broker, then delete the broker and ensure cascading deletes
+    cascade: Dict[str, Any] = {}
+    # user for cascade broker
+    resp = client.post("Users", json={
+        "name": "Cascade",
+        "surname": "Tester",
+        "email": f"cascade-{uuid.uuid4().hex[:8]}@example.com",
+        "phone": "+37060000000",
+        "password": "password123",
+        "registrationtime": "2025-01-01 12:00",
+        "profilepicture": None,
+    })
+    results.append(expect_status("POST /Users (cascade) -> 201", resp, [201]))
+    if resp.status_code == 201:
+        cascade["user"] = resp.json()
+
+    # broker (cascade)
+    if "user" in cascade:
+        resp = client.post("Brokers", json={"confirmed": False, "blocked": False, "idUser": cascade["user"]["idUser"]})
+        results.append(expect_status("POST /Brokers (cascade) -> 201", resp, [201]))
+        if resp.status_code == 201:
+            cascade["broker"] = resp.json()
+
+    # building (cascade)
+    if "broker" in cascade:
+        resp = client.post("Buildings", json={
+            "city": "Vilnius",
+            "address": "Cascade 1",
+            "area": 10.0,
+            "year": 2024,
+            "lastrenovationyear": None,
+            "floors": 1,
+            "energy": 1,
+            "fkBrokeridUser": cascade["broker"]["idUser"],
+        })
+        results.append(expect_status("POST /Buildings (cascade) -> 201", resp, [201]))
+        if resp.status_code == 201:
+            cascade["building"] = resp.json()
+
+    # apartment (cascade)
+    if "building" in cascade:
+        resp = client.post("Apartments", json={
+            "apartmentnumber": 1,
+            "area": 20.0,
+            "floor": 1,
+            "rooms": 1,
+            "notes": "cascade",
+            "heating": None,
+            "finish": 1,
+            "fkBuildingidBuilding": cascade["building"]["idBuilding"],
+            "iswholebuilding": False,
+        })
+        results.append(expect_status("POST /Apartments (cascade) -> 201", resp, [201]))
+        if resp.status_code == 201:
+            cascade["apartment"] = resp.json()
+
+    # picture (cascade)
+    if "apartment" in cascade:
+        pic_id2 = f"pic-{uuid.uuid4().hex}"
+        resp = client.post("Pictures", json={"id": pic_id2, "public": False, "fkApartmentidApartment": cascade["apartment"]["idApartment"]})
+        results.append(expect_status("POST /Pictures (cascade) -> 201", resp, [201]))
+        if resp.status_code == 201:
+            cascade["picture"] = resp.json()
+
+    # listing (cascade)
+    if "picture" in cascade:
+        resp = client.post("Listings", json={
+            "description": "cascade listing",
+            "askingprice": 1.0,
+            "rent": False,
+            "fkPictureid": cascade["picture"]["id"],
+        })
+        results.append(expect_status("POST /Listings (cascade) -> 201", resp, [201]))
+        if resp.status_code == 201:
+            cascade["listing"] = resp.json()
+
+    # availability (cascade)
+    if "broker" in cascade:
+        resp = client.post("Availabilities", json={
+            "from": "2025-02-01 10:00",
+            "to": "2025-02-01 11:00",
+            "fkBrokeridUser": cascade["broker"]["idUser"],
+        })
+        results.append(expect_status("POST /Availabilities (cascade) -> 201", resp, [201]))
+        if resp.status_code == 201:
+            cascade["availability"] = resp.json()
+
+    # viewing (cascade)
+    if "availability" in cascade and "listing" in cascade:
+        resp = client.post("Viewings", json={
+            "from": "2025-02-01T10:10:00Z",
+            "to": "2025-02-01T10:30:00Z",
+            "status": 1,
+            "fkAvailabilityidAvailability": cascade["availability"]["idAvailability"],
+            "fkListingidListing": cascade["listing"]["idListing"],
+        })
+        results.append(expect_status("POST /Viewings (cascade) -> 201", resp, [201]))
+        if resp.status_code == 201:
+            cascade["viewing"] = resp.json()
+
+    # Now delete the broker and ensure cascading deletes
+    if "broker" in cascade:
+        results.append(expect_status("DELETE /Brokers/{id} (cascade broker) -> 204", client.delete(f"Brokers/{cascade['broker']['idUser']}"), [204]))
+        # Broker itself
+        results.append(expect_status("GET /Brokers/{id} (after cascade) -> 404", client.get(f"Brokers/{cascade['broker']['idUser']}"), [404]))
+        # Downstream resources should be gone
+        if "building" in cascade:
+            results.append(expect_status("GET /Buildings/{id} (after cascade) -> 404", client.get(f"Buildings/{cascade['building']['idBuilding']}"), [404]))
+        if "apartment" in cascade:
+            results.append(expect_status("GET /Apartments/{id} (after cascade) -> 404", client.get(f"Apartments/{cascade['apartment']['idApartment']}"), [404]))
+        if "picture" in cascade:
+            results.append(expect_status("GET /Pictures/{id} (after cascade) -> 404", client.get(f"Pictures/{cascade['picture']['id']}"), [404]))
+        if "listing" in cascade:
+            results.append(expect_status("GET /Listings/{id} (after cascade) -> 404", client.get(f"Listings/{cascade['listing']['idListing']}"), [404]))
+        if "availability" in cascade:
+            results.append(expect_status("GET /Availabilities/{id} (after cascade) -> 404", client.get(f"Availabilities/{cascade['availability']['idAvailability']}"), [404]))
+        if "viewing" in cascade:
+            results.append(expect_status("GET /Viewings/{id} (after cascade) -> 404", client.get(f"Viewings/{cascade['viewing']['idViewing']}"), [404]))
+        # User should still exist (deleting broker doesn't delete the user)
+        if "user" in cascade:
+            results.append(expect_status("GET /Users/{id} (user survives broker delete) -> 200", client.get(f"Users/{cascade['user']['idUser']}"), [200]))
+
     # PATCH operations (expect 204)
     try:
         if "picture" in created:
