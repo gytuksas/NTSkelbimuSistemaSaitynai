@@ -20,6 +20,18 @@ Toliau esančios komandos turėtų būti vykdomos atsidarius PowerShell (Windows
 1. Toliau reikia sukurti tokius failus (pakeiskite viską laužtiniuose skliaustuose, laužtinių skliaustų nepalikite):\
     - Postgres duombazės slaptažodis:\
     ```echo "[SLAPTAŽODIS]" > pgpass.txt```
+    - Konfigūracijos informacija (JSON failas):\
+    ```nano config.json``` (arba bet koks kitas redagavimo įrankis)
+    Failo viduje turi būti pateikta tokia informacija būtent tokia struktūra:
+    ```
+        {
+            "Jwt":
+            {
+                "Issuer": "DOMENAS, PVZ example.com",
+                "Key": "SUPERSECRETKEY"
+            }
+        }
+    ```
 1. Grįžkite į pradinę direktoriją.\
 ```cd ..```
 1. Sukompiliuokite programą. Šis veiksmas gali užtrukti iki 10min ar ilgiau priklausomai nuo Jūsų interneto ir kompiuterio spartos.\

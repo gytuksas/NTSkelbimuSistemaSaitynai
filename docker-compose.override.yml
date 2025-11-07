@@ -14,6 +14,7 @@ services:
       - dbnet
     secrets:
       - dbpass
+      - config
   db:
     networks:
       - bridged
@@ -35,6 +36,8 @@ networks:
 secrets:
   dbpass:
     file: secrets/pgpass.txt
+  config: 
+    file: secrets/config.json
 volumes:
   dbdata:
     external: false  
