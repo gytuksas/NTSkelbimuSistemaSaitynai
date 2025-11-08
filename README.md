@@ -28,7 +28,7 @@ Toliau esančios komandos turėtų būti vykdomos atsidarius PowerShell (Windows
             "Jwt":
             {
                 "Issuer": "DOMENAS, PVZ example.com",
-                "Key": "SUPERSECRETKEY"
+                "Key": "SUPERSECRETKEY32BYTES"
             }
         }
     ```
