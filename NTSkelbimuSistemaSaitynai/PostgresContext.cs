@@ -311,6 +311,8 @@ public partial class PostgresContext : DbContext
             entity.Property(e => e.FkUseridUser).HasColumnName("fk_userid_user");
             entity.Property(e => e.Lastactivity).HasColumnName("lastactivity");
             entity.Property(e => e.Remember).HasColumnName("remember");
+            entity.Property(e => e.Expires).HasColumnName("expires");
+            entity.Property(e => e.Revoked).HasColumnName("revoked");
 
             entity.HasOne(d => d.FkUseridUserNavigation).WithMany(p => p.Sessions)
                 .HasForeignKey(d => d.FkUseridUser)

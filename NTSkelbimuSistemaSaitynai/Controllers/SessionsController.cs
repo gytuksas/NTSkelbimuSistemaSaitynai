@@ -63,30 +63,35 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         {
             DateTime dt1;
             DateTime dt2;
+            DateTime dt3;
 
             try
             {
                 dt1 = DateTime.Parse(sessionDto.Created);
                 dt2 = DateTime.Parse(sessionDto.Lastactivity);
+                dt3 = DateTime.Parse(sessionDto.Expires ?? sessionDto.Lastactivity); // fallback
             }
             catch (FormatException)
             {
                 return BadRequest("Invalid date and time format - expecting yyyy-mm-dd hh:mm");
             }
 
-            if (sessionDto.Created.Split(' ').Length < 2 || sessionDto.Lastactivity.Split(' ').Length < 2)
+            if (sessionDto.Created.Split(' ').Length < 2 || sessionDto.Lastactivity.Split(' ').Length < 2 || (sessionDto.Expires != null && sessionDto.Expires.Split(' ').Length < 2))
             {
                 return UnprocessableEntity("Invalid date and time format - seems like there is no time value - expecting yyyy-mm-dd hh:mm");
             }
 
             dt1 = DateTime.SpecifyKind(dt1, DateTimeKind.Utc);
             dt2 = DateTime.SpecifyKind(dt2, DateTimeKind.Utc);
+            dt3 = DateTime.SpecifyKind(dt3, DateTimeKind.Utc);
 
             Session session = new Session
             {
                 Created = dt1,
                 Remember = sessionDto.Remember,
                 Lastactivity = dt2,
+                Expires = dt3,
+                Revoked = sessionDto.Revoked ?? false,
                 FkUseridUser = sessionDto.FkUseridUser
             };
 
@@ -139,30 +144,35 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         {
             DateTime dt1;
             DateTime dt2;
+            DateTime dt3;
 
             try
             {
                 dt1 = DateTime.Parse(sessionDto.Created);
                 dt2 = DateTime.Parse(sessionDto.Lastactivity);
+                dt3 = DateTime.Parse(sessionDto.Expires ?? sessionDto.Lastactivity);
             }
             catch (FormatException)
             {
                 return BadRequest("Invalid date and time format - expecting yyyy-mm-dd hh:mm");
             }
 
-            if (sessionDto.Created.Split(' ').Length < 2 || sessionDto.Lastactivity.Split(' ').Length < 2)
+            if (sessionDto.Created.Split(' ').Length < 2 || sessionDto.Lastactivity.Split(' ').Length < 2 || (sessionDto.Expires != null && sessionDto.Expires.Split(' ').Length < 2))
             {
                 return UnprocessableEntity("Invalid date and time format - seems like there is no time value - expecting yyyy-mm-dd hh:mm");
             }
 
             dt1 = DateTime.SpecifyKind(dt1, DateTimeKind.Utc);
             dt2 = DateTime.SpecifyKind(dt2, DateTimeKind.Utc);
+            dt3 = DateTime.SpecifyKind(dt3, DateTimeKind.Utc);
 
             Session session = new Session
             {
                 Created = dt1,
                 Remember = sessionDto.Remember,
                 Lastactivity = dt2,
+                Expires = dt3,
+                Revoked = sessionDto.Revoked ?? false,
                 FkUseridUser = sessionDto.FkUseridUser
             };
 

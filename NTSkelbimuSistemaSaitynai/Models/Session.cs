@@ -13,6 +13,10 @@ public partial class Session
     public bool Remember { get; set; }
 
     public DateTime Lastactivity { get; set; }
+    
+    public DateTime Expires { get; set; }
+
+    public bool Revoked { get; set; }
 
     public long FkUseridUser { get; set; }
 
@@ -29,6 +33,10 @@ public class SessionDto
     public required bool Remember { get; set; }
 
     public required string Lastactivity { get; set; }
+
+    public string? Expires { get; set; }
+
+    public bool? Revoked { get; set; }
 
     public required long FkUseridUser { get; set; }
 }

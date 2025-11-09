@@ -80,6 +80,8 @@ CREATE TABLE "Session"
     created timestamptz NOT NULL,
     remember boolean NOT NULL,
     lastActivity timestamptz NOT NULL,
+    expires timestamptz NOT NULL,
+    revoked boolean NOT NULL DEFAULT false,
     fk_Userid_User bigint NOT NULL,
     PRIMARY KEY(id),
     FOREIGN KEY(fk_Userid_User) REFERENCES "User"(id_User) ON DELETE CASCADE
