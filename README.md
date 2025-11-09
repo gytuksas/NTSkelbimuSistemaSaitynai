@@ -42,16 +42,16 @@ arba, jeigu praėjusi komanda nesuveikė, kartais būna tokia sintaksė\
 ```docker-compose up -d```\
 arba\
 ```docker compose up -d```
-1. Prisijunkite prie duomenų bazės ir įkelkite į `postgres` duomenų bazėje esančia schemą `public` `db_structure.sql` esančią struktūrą.
-    - Prisijungimo adresas: `localhost:5432`, Vartotojas: `postgres`, slaptažodis toks, kokį nurodėte kuriant `pgpass.txt` failą.
-    - Pasirinktinai, dar galima įkelti ir netikrus duomenis iš failo `fake_db_data.sql`.
-    - Po to, rekomenduojama iš failo `docker-compose.override.yml` ištrinti duomenų bazės ryšį su išore. Tai galima padarytį ištrinant šią eilutę:
+1. Duomenų bazė automatiškai susikurią reikalingą struktūrą ir įkelia netikrus duomenis. Jeigu netikrų duomenų nereikia, iš failo `PGSQLDockerfile` ištrinkite eilutę `COPY fake_db_data.sql /docker-entrypoint-initdb.d/` ir iš naujo įvykdykite praėjusius du veiksmus. Jeigu netikri duomenys Jums tinka, galite praleisti šį žingsnį. Papildoma informacija:
+    - Duomenų bazės prisijungimo adresas: `localhost:5432`, Vartotojas: `postgres`, slaptažodis toks, kokį nurodėte kuriant `pgpass.txt` failą.
+    - Duomenų bazė yra pasiekiama ją talpinančiam kompiuteriui, tačiau, jeigu neketinate daryti jokių pakeitimų ranka, rekomenduojama iš failo `docker-compose.override.yml` ištrinti duomenų bazės ryšį su išore. Tai galima padarytį ištrinant šią eilutę:
     ```  
     db:
       networks:
         - bridged  <-------- IŠTRINKITE ARBA UŽKOMENTUOKITE ŠIĄ EILUTĘ
         - dbnet
     ```
+    Taip duomenų bazė bus pasiekiama tiktais pačiai programai.
 1. Programa dabar turėtų būti pasiekiama.\
     - API taškai: ```http://localhost:8080/api```
     - Swagger sąsaja: ```http://localhost:8080/swagger```

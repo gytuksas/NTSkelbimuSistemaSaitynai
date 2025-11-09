@@ -5,5 +5,7 @@ services:
       context: .
       dockerfile: NTSkelbimuSistemaSaitynai/Dockerfile
   db:
-    image: postgres:17.6
+    build:
+      context: .
+      dockerfile: PGSQLDockerfile
 
