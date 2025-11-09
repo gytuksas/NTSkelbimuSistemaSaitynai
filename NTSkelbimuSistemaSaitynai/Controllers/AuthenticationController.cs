@@ -134,7 +134,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
 
             var claims = new[] {
                 new Claim("id", user.IdUser.ToString()),
-                new Claim("roles", await GetRoleAsync(user.IdUser)),
+                new Claim(ClaimTypes.Role, await GetRoleAsync(user.IdUser)),
             };
 
             var token = new JwtSecurityToken(_config.Jwt.Issuer, //issuer

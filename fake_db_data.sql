@@ -11,7 +11,8 @@ INSERT INTO "User" (name, surname, email, phone, password, registrationTime, pro
 ('Lukas', 'Kvedaras', 'lukas.kvedaras@example.lt', '+37061234575', 'hashedpwd9', NOW(), NULL),
 ('Simona', 'Martinkutė', 'simona.martinkute@example.lt', '+37061234576', 'hashedpwd10', NOW(), NULL),
 ('Ignas', 'Kairys', 'ignas.kairys@example.lt', '+37061234577', 'hashedpwd11', NOW(), NULL),
-('Rūta', 'Kasparaitė', 'ruta.kasparaite@example.lt', '+37061234578', 'hashedpwd12', NOW(), NULL);
+('Rūta', 'Kasparaitė', 'ruta.kasparaite@example.lt', '+37061234578', 'hashedpwd12', NOW(), NULL),
+('Admin', 'Account', 'admin@example.lt', '+37060000000', 'hashedadminpwd', NOW(), NULL);
 
 -- BROKERS
 INSERT INTO Broker (id_User, confirmed, blocked) VALUES
@@ -20,6 +21,10 @@ INSERT INTO Broker (id_User, confirmed, blocked) VALUES
 -- BUYERS
 INSERT INTO Buyer (id_User, confirmed, blocked) VALUES
 (7, TRUE, FALSE), (8, TRUE, FALSE), (9, TRUE, FALSE), (10, TRUE, FALSE), (11, TRUE, FALSE), (12, TRUE, FALSE);
+
+-- ADMINISTRATOR
+INSERT INTO Administrator (id_User)
+SELECT id_User FROM "User" WHERE email = 'admin@example.lt';
 
 -- CONFIRMATIONS
 INSERT INTO Confirmation (id, expires, fk_Buyerid_User) VALUES

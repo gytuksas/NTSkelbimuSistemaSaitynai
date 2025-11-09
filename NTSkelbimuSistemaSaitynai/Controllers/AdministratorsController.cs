@@ -1,12 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
+using System.Net;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
     /// <summary>
     /// Manages administrator resources.
     /// </summary>
+    [Authorize(Roles = "Administrator")]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [Route("api/[controller]")]
     [ApiController]
     public class AdministratorsController : ControllerBase
