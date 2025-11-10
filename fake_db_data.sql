@@ -1,25 +1,39 @@
 -- USERS
 INSERT INTO "User" (name, surname, email, phone, password, registrationTime, profilePicture) VALUES
-('Jonas', 'Petrauskas', 'jonas.petrauskas@example.lt', '+37061234567', 'hashedpwd1', NOW(), NULL),
-('Aistė', 'Kazlauskaitė', 'aiste.kazlauskaite@example.lt', '+37061234568', 'hashedpwd2', NOW(), NULL),
-('Mantas', 'Žilinskas', 'mantas.zilinskas@example.lt', '+37061234569', 'hashedpwd3', NOW(), NULL),
-('Eglė', 'Jankauskienė', 'egle.jankauskiene@example.lt', '+37061234570', 'hashedpwd4', NOW(), NULL),
-('Tomas', 'Vasiliauskas', 'tomas.vasiliauskas@example.lt', '+37061234571', 'hashedpwd5', NOW(), NULL),
-('Gintarė', 'Rimkutė', 'gintare.rimkute@example.lt', '+37061234572', 'hashedpwd6', NOW(), NULL),
-('Rokas', 'Urbonas', 'rokas.urbonas@example.lt', '+37061234573', 'hashedpwd7', NOW(), NULL),
-('Agnė', 'Balčiūnaitė', 'agne.balciunaite@example.lt', '+37061234574', 'hashedpwd8', NOW(), NULL),
-('Lukas', 'Kvedaras', 'lukas.kvedaras@example.lt', '+37061234575', 'hashedpwd9', NOW(), NULL),
-('Simona', 'Martinkutė', 'simona.martinkute@example.lt', '+37061234576', 'hashedpwd10', NOW(), NULL),
-('Ignas', 'Kairys', 'ignas.kairys@example.lt', '+37061234577', 'hashedpwd11', NOW(), NULL),
-('Rūta', 'Kasparaitė', 'ruta.kasparaite@example.lt', '+37061234578', 'hashedpwd12', NOW(), NULL);
+('Jonas', 'Petrauskas', 'jonas.petrauskas@example.lt', '+37061234567', 'PBKDF2$100000$8f1e6d02c3a1b4e5f6a7b8c9d0e1f2a3$d8d268df5c70dbb9d78f3dbf37d83d1db595521239816754967f4b5114b6d37c', NOW(), NULL),
+('Aistė', 'Kazlauskaitė', 'aiste.kazlauskaite@example.lt', '+37061234568', 'PBKDF2$100000$8f1e6d02c3a1b4e5f6a7b8c9d0e1f2a3$d8d268df5c70dbb9d78f3dbf37d83d1db595521239816754967f4b5114b6d37c', NOW(), NULL),
+('Mantas', 'Žilinskas', 'mantas.zilinskas@example.lt', '+37061234569', 'PBKDF2$100000$8f1e6d02c3a1b4e5f6a7b8c9d0e1f2a3$d8d268df5c70dbb9d78f3dbf37d83d1db595521239816754967f4b5114b6d37c', NOW(), NULL),
+('Eglė', 'Jankauskienė', 'egle.jankauskiene@example.lt', '+37061234570', 'PBKDF2$100000$8f1e6d02c3a1b4e5f6a7b8c9d0e1f2a3$d8d268df5c70dbb9d78f3dbf37d83d1db595521239816754967f4b5114b6d37c', NOW(), NULL),
+('Tomas', 'Vasiliauskas', 'tomas.vasiliauskas@example.lt', '+37061234571', 'PBKDF2$100000$8f1e6d02c3a1b4e5f6a7b8c9d0e1f2a3$d8d268df5c70dbb9d78f3dbf37d83d1db595521239816754967f4b5114b6d37c', NOW(), NULL),
+('Gintarė', 'Rimkutė', 'gintare.rimkute@example.lt', '+37061234572', 'PBKDF2$100000$8f1e6d02c3a1b4e5f6a7b8c9d0e1f2a3$d8d268df5c70dbb9d78f3dbf37d83d1db595521239816754967f4b5114b6d37c', NOW(), NULL),
+('Rokas', 'Urbonas', 'rokas.urbonas@example.lt', '+37061234573', 'PBKDF2$100000$8f1e6d02c3a1b4e5f6a7b8c9d0e1f2a3$d8d268df5c70dbb9d78f3dbf37d83d1db595521239816754967f4b5114b6d37c', NOW(), NULL),
+('Agnė', 'Balčiūnaitė', 'agne.balciunaite@example.lt', '+37061234574', 'PBKDF2$100000$8f1e6d02c3a1b4e5f6a7b8c9d0e1f2a3$d8d268df5c70dbb9d78f3dbf37d83d1db595521239816754967f4b5114b6d37c', NOW(), NULL),
+('Lukas', 'Kvedaras', 'lukas.kvedaras@example.lt', '+37061234575', 'PBKDF2$100000$8f1e6d02c3a1b4e5f6a7b8c9d0e1f2a3$d8d268df5c70dbb9d78f3dbf37d83d1db595521239816754967f4b5114b6d37c', NOW(), NULL),
+('Simona', 'Martinkutė', 'simona.martinkute@example.lt', '+37061234576', 'PBKDF2$100000$8f1e6d02c3a1b4e5f6a7b8c9d0e1f2a3$d8d268df5c70dbb9d78f3dbf37d83d1db595521239816754967f4b5114b6d37c', NOW(), NULL),
+('Ignas', 'Kairys', 'ignas.kairys@example.lt', '+37061234577', 'PBKDF2$100000$8f1e6d02c3a1b4e5f6a7b8c9d0e1f2a3$d8d268df5c70dbb9d78f3dbf37d83d1db595521239816754967f4b5114b6d37c', NOW(), NULL),
+('Rūta', 'Kasparaitė', 'ruta.kasparaite@example.lt', '+37061234578', 'PBKDF2$100000$8f1e6d02c3a1b4e5f6a7b8c9d0e1f2a3$d8d268df5c70dbb9d78f3dbf37d83d1db595521239816754967f4b5114b6d37c', NOW(), NULL),
+('Admin', 'Account', 'admin@example.lt', '+37060000000', 'PBKDF2$100000$8f1e6d02c3a1b4e5f6a7b8c9d0e1f2a3$d8d268df5c70dbb9d78f3dbf37d83d1db595521239816754967f4b5114b6d37c', NOW(), NULL),
+('Bruno', 'Admin', 'admin@example.com', '+37060000100', 'PBKDF2$100000$8f1e6d02c3a1b4e5f6a7b8c9d0e1f2a3$d8d268df5c70dbb9d78f3dbf37d83d1db595521239816754967f4b5114b6d37c', NOW(), NULL),
+('Bruno', 'Broker', 'broker@example.com', '+37060000101', 'PBKDF2$100000$8f1e6d02c3a1b4e5f6a7b8c9d0e1f2a3$d8d268df5c70dbb9d78f3dbf37d83d1db595521239816754967f4b5114b6d37c', NOW(), NULL),
+('Bruno', 'Buyer', 'buyer@example.com', '+37060000102', 'PBKDF2$100000$8f1e6d02c3a1b4e5f6a7b8c9d0e1f2a3$d8d268df5c70dbb9d78f3dbf37d83d1db595521239816754967f4b5114b6d37c', NOW(), NULL);
 
 -- BROKERS
 INSERT INTO Broker (id_User, confirmed, blocked) VALUES
-(1, TRUE, FALSE), (2, TRUE, FALSE), (3, TRUE, FALSE), (4, TRUE, FALSE), (5, TRUE, FALSE), (6, TRUE, FALSE);
+(1, TRUE, FALSE), (2, TRUE, FALSE), (3, TRUE, FALSE), (4, TRUE, FALSE), (5, TRUE, FALSE), (6, TRUE, FALSE),
+((SELECT id_User FROM "User" WHERE email='broker@example.com'), TRUE, FALSE);
 
 -- BUYERS
 INSERT INTO Buyer (id_User, confirmed, blocked) VALUES
-(7, TRUE, FALSE), (8, TRUE, FALSE), (9, TRUE, FALSE), (10, TRUE, FALSE), (11, TRUE, FALSE), (12, TRUE, FALSE);
+(7, TRUE, FALSE), (8, TRUE, FALSE), (9, TRUE, FALSE), (10, TRUE, FALSE), (11, TRUE, FALSE), (12, TRUE, FALSE),
+((SELECT id_User FROM "User" WHERE email='buyer@example.com'), TRUE, FALSE);
+
+-- ADMINISTRATOR
+INSERT INTO Administrator (id_User)
+SELECT id_User FROM "User" WHERE email = 'admin@example.lt';
+
+-- Bruno Admin as Administrator too
+INSERT INTO Administrator (id_User)
+SELECT id_User FROM "User" WHERE email = 'admin@example.com';
 
 -- CONFIRMATIONS
 INSERT INTO Confirmation (id, expires, fk_Buyerid_User) VALUES

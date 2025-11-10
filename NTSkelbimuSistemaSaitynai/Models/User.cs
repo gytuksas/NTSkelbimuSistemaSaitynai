@@ -59,3 +59,9 @@ public class UserDto
 
     public string? Profilepicture { get; set; }
 }
+
+public class UserLoginDto
+{
+    public string Email { get; set; } = null!;
+    public string Password { get; set; } = null!;
+}

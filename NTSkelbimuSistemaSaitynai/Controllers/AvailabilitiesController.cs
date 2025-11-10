@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using NTSkelbimuSistemaSaitynai.Authorization;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
 
@@ -9,13 +11,17 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+    [ServiceFilter(typeof(NTSkelbimuSistemaSaitynai.Authorization.NotBlockedFilter))]
     public class AvailabilitiesController : ControllerBase
     {
         private readonly PostgresContext _context;
+        private readonly OwnershipService _ownership;
 
-        public AvailabilitiesController(PostgresContext context)
+        public AvailabilitiesController(PostgresContext context, OwnershipService ownershipService)
         {
             _context = context;
+            _ownership = ownershipService;
         }
 
         /// <summary>
@@ -24,9 +30,20 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         /// <returns>List of availabilities.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Availability>))]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<Availability>>> GetAvailabilities()
         {
-            return await _context.Availabilities.ToListAsync();
+            if (User.IsInRole("Administrator"))
+            {
+                return await _context.Availabilities.ToListAsync();
+            }
+            var currentId = _ownership.GetCurrentUserId(User);
+            if (currentId == null || !User.IsInRole("Broker"))
+            {
+                return Forbid();
+            }
+            var availabilities = await _context.Availabilities.Where(a => a.FkBrokeridUser == currentId).ToListAsync();
+            return availabilities;
         }
 
         /// <summary>
@@ -37,6 +54,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Availability))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Availability>> GetAvailability(long id)
         {
             var availability = await _context.Availabilities.FindAsync(id);
@@ -44,6 +62,15 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             if (availability == null)
             {
                 return NotFound();
+            }
+
+            if (!User.IsInRole("Administrator"))
+            {
+                var currentId = _ownership.GetCurrentUserId(User);
+                if (currentId == null || availability.FkBrokeridUser != currentId.Value)
+                {
+                    return Forbid();
+                }
             }
 
             return availability;
@@ -61,6 +88,14 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<IActionResult> PutAvailability(long id, [FromBody] AvailabilityDto availabilityDto)
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                var currentId = _ownership.GetCurrentUserId(User);
+                if (currentId == null || availabilityDto.FkBrokeridUser != currentId.Value)
+                {
+                    return Forbid();
+                }
+            }
             DateTime dt1;
             DateTime dt2;
 
@@ -135,6 +170,14 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<ActionResult<Availability>> PostAvailability(AvailabilityDto availabilityDto)
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                var currentId = _ownership.GetCurrentUserId(User);
+                if (currentId == null || availabilityDto.FkBrokeridUser != currentId.Value)
+                {
+                    return Forbid();
+                }
+            }
             DateTime dt1;
             DateTime dt2;
 
@@ -192,6 +235,15 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteAvailability(long id)
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                var currentId = _ownership.GetCurrentUserId(User);
+                var owns = currentId != null && await _ownership.BrokerOwnsAvailability(currentId.Value, id);
+                if (!owns)
+                {
+                    return Forbid();
+                }
+            }
             var availability = await _context.Availabilities.FindAsync(id);
             if (availability == null)
             {

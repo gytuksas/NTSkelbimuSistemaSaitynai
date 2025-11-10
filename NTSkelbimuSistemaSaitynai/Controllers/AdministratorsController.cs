@@ -1,12 +1,17 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
+using System.Net;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
     /// <summary>
     /// Manages administrator resources.
     /// </summary>
+    [Authorize(Roles = "Administrator")]
+    [ServiceFilter(typeof(NTSkelbimuSistemaSaitynai.Authorization.NotBlockedFilter))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [Route("api/[controller]")]
     [ApiController]
     public class AdministratorsController : ControllerBase
@@ -24,6 +29,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         /// <returns>List of administrators.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Administrator>))]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<Administrator>>> GetAdministrators()
         {
             return await _context.Administrators.ToListAsync();
@@ -37,6 +43,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Administrator))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Administrator>> GetAdministrator(long id)
         {
             var administrator = await _context.Administrators.FindAsync(id);
@@ -55,9 +62,10 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         /// <param name="id">User ID of the administrator to update.</param>
         /// <param name="administrator">Updated administrator payload.</param>
         /// <remarks>Returns 404 if the resource does not exist.</remarks>
-        [HttpPut("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> PutAdministrator(long id, Administrator administrator)
         {
             administrator.IdUser = id;
@@ -89,9 +97,10 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         /// <param name="administrator">Administrator payload.</param>
         /// <returns>The created administrator.</returns>
         /// <remarks>Returns 409 if the administrator already exists.</remarks>
-        [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Administrator))]
-        [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Administrator))]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Administrator>> PostAdministrator(Administrator administrator)
         {
             _context.Administrators.Add(administrator);
@@ -119,9 +128,10 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         /// </summary>
         /// <param name="id">User ID of the administrator to delete.</param>
         /// <remarks>Returns 404 if the resource does not exist.</remarks>
-        [HttpDelete("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> DeleteAdministrator(long id)
         {
             var administrator = await _context.Administrators.FindAsync(id);

@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using NTSkelbimuSistemaSaitynai.Authorization;
+using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
+using NTSkelbimuSistemaSaitynai.Security;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
@@ -9,13 +13,17 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+    [ServiceFilter(typeof(NTSkelbimuSistemaSaitynai.Authorization.NotBlockedFilter))]
     public class UsersController : ControllerBase
     {
         private readonly PostgresContext _context;
+        private readonly OwnershipService _ownership;
 
-        public UsersController(PostgresContext context)
+        public UsersController(PostgresContext context, OwnershipService ownershipService)
         {
             _context = context;
+            _ownership = ownershipService;
         }
 
         /// <summary>
@@ -24,8 +32,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         /// <returns>List of users.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<User>))]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                return Forbid();
+            }
             return await _context.Users.ToListAsync();
         }
 
@@ -37,15 +50,19 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(User))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<User>> GetUser(long id)
         {
             var user = await _context.Users.FindAsync(id);
-
             if (user == null)
             {
                 return NotFound();
             }
-
+            var currentId = _ownership.GetCurrentUserId(User);
+            if (!(User.IsInRole("Administrator") || currentId == id))
+            {
+                return Forbid();
+            }
             return user;
         }
 
@@ -59,8 +76,14 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> PutUser(long id, UserDto userDto)
         {
+            var currentId = _ownership.GetCurrentUserId(User);
+            if (!(User.IsInRole("Administrator") || currentId == id))
+            {
+                return Forbid();
+            }
             DateTime dt1;
 
             try
@@ -85,7 +108,8 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 Surname = userDto.Surname,
                 Email = userDto.Email,
                 Phone = userDto.Phone,
-                Password = userDto.Password,
+                // Hash password on update if it's not already a hash
+                Password = PasswordHasher.IsHashed(userDto.Password) ? userDto.Password : PasswordHasher.Hash(userDto.Password),
                 Registrationtime = dt1,
                 Profilepicture = userDto.Profilepicture,
             };
@@ -123,8 +147,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(User))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<User>> PostUser([FromBody] UserDto userDto)
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                return Forbid();
+            }
             DateTime dt1;
 
             try
@@ -149,7 +178,8 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 Surname = userDto.Surname,
                 Email = userDto.Email,
                 Phone = userDto.Phone,
-                Password = userDto.Password,
+                // Hash password on create if not already hashed
+                Password = PasswordHasher.IsHashed(userDto.Password) ? userDto.Password : PasswordHasher.Hash(userDto.Password),
                 Registrationtime = dt1,
                 Profilepicture = userDto.Profilepicture,
             };
@@ -167,8 +197,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> DeleteUser(long id)
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                return Forbid();
+            }
             var user = await _context.Users.FindAsync(id);
             if (user == null)
             {

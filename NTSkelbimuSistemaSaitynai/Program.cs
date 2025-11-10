@@ -1,7 +1,13 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NTSkelbimuSistemaSaitynai;
+using NTSkelbimuSistemaSaitynai.Configuration;
 using NTSkelbimuSistemaSaitynai.DbUtils;
+using NuGet.Protocol.Plugins;
+using System.Text;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,7 +39,30 @@ builder.Services.AddSwaggerGen(c =>
     }
 });
 
+Configuration configuration = Configuration.GetConfiguration();
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = configuration.Jwt.Issuer,
+            ValidAudience = configuration.Jwt.Issuer,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration.Jwt.Key))
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+// Custom filters/services
+builder.Services.AddScoped<NTSkelbimuSistemaSaitynai.Authorization.NotBlockedFilter>();
+builder.Services.AddScoped<NTSkelbimuSistemaSaitynai.Authorization.OwnershipService>();
+
+builder.Services.AddMvc(options => options.EnableEndpointRouting = false);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -43,6 +72,10 @@ if (app.Environment.IsDevelopment())
 }
 
 //app.UseAuthorization();
+
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseMvc();
 
 app.UseSwagger();
 app.UseSwaggerUI();

@@ -14,9 +14,10 @@ services:
       - dbnet
     secrets:
       - dbpass
+      - config
   db:
     networks:
-      - bridged
+#      - bridged
       - dbnet
     volumes:
       - dbdata:/var/lib/postgresql/data
@@ -35,6 +36,8 @@ networks:
 secrets:
   dbpass:
     file: secrets/pgpass.txt
+  config: 
+    file: secrets/config.json
 volumes:
   dbdata:
     external: false  
