@@ -10,6 +10,9 @@ import requests
 
 BASE_URL = os.environ.get("BASE_URL", "http://localhost:8080/api").rstrip("/")
 TIMEOUT = float(os.environ.get("HTTP_TIMEOUT", "10"))
+# Pre-seeded admin credentials (set via env if different)
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@example.com")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "password123")
 
 @dataclass
 class TestResult:
@@ -26,6 +29,8 @@ class Client:
         self.base_url = base_url.rstrip("/")
         self.sess = requests.Session()
         self.sess.headers.update({"Content-Type": "application/json"})
+        self.access_token: Optional[str] = None
+        self.refresh_token: Optional[str] = None
 
     def _url(self, path: str) -> str:
         path = path.lstrip("/")
@@ -46,6 +51,22 @@ class Client:
     def patch(self, path: str, json: Optional[dict] = None, **kw):
         return self.sess.patch(self._url(path), json=json, timeout=TIMEOUT, **kw)
 
+    # --- Auth helpers ---
+    def set_bearer(self, token: Optional[str]):
+        if token:
+            self.sess.headers.update({"Authorization": f"Bearer {token}"})
+        else:
+            self.sess.headers.pop("Authorization", None)
+
+    def login(self, email: str, password: str):
+        return self.post("Authentication", json={"email": email, "password": password})
+
+    def refresh(self, refresh_token: str):
+        return self.post("Authentication/refresh", json={"refreshToken": refresh_token})
+
+    def logout(self, refresh_token: str):
+        return self.post("Authentication/logout", json={"refreshToken": refresh_token})
+
 
 def expect_status(name: str, resp: requests.Response, expected: Sequence[int]) -> TestResult:
     ok = resp.status_code in expected
@@ -64,6 +85,30 @@ def expect_status(name: str, resp: requests.Response, expected: Sequence[int]) -
 def main() -> int:
     client = Client(BASE_URL)
     results: list[TestResult] = []
+
+    # 0) Admin login and refresh
+    resp_login = client.login(ADMIN_EMAIL, ADMIN_PASSWORD)
+    results.append(expect_status("POST /Authentication (admin login) -> 200", resp_login, [200]))
+    if resp_login.status_code != 200:
+        print("Admin login failed. Ensure ADMIN_EMAIL/ADMIN_PASSWORD exist in DB or set env vars.")
+        for r in results:
+            status = "PASS" if r.ok else "FAIL"
+            print(f"[{status}] {r.name} -> {r.status}" + (f" | {r.details}" if r.details else ""))
+        return 1
+
+    tokens = resp_login.json()
+    client.access_token = tokens.get("accessToken")
+    client.refresh_token = tokens.get("refreshToken")
+    client.set_bearer(client.access_token)
+
+    if client.refresh_token:
+        resp_ref = client.refresh(client.refresh_token)
+        results.append(expect_status("POST /Authentication/refresh -> 200", resp_ref, [200]))
+        if resp_ref.status_code == 200:
+            tokens = resp_ref.json()
+            client.access_token = tokens.get("accessToken")
+            client.refresh_token = tokens.get("refreshToken")
+            client.set_bearer(client.access_token)
 
     # 1) Simple NOT FOUND checks (404)
     results.append(expect_status("GET /Users/999999999 (404)", client.get("Users/999999999"), [404]))
@@ -494,7 +539,49 @@ def main() -> int:
         bad_put_view = {"from": "2025-02-01 10:20", "to": "2025-02-01 10:40", "status": 1, "fkAvailabilityidAvailability": created["availability"]["idAvailability"], "fkListingidListing": created["listing"]["idListing"]}
         results.append(expect_status("PUT /Viewings/{id} DTO -> 204", client.put(f"Viewings/{vid}", json=bad_put_view), [204]))
 
-    # Delete chain (expect 204)
+    # 4) Negative tests (run BEFORE deletions so users still exist)
+    prev_token = client.access_token
+    # 4.1 Unauthorized_NoToken
+    client.set_bearer(None)
+    results.append(expect_status("GET /Users (no token) -> 401", client.get("Users"), [401]))
+    client.set_bearer(prev_token)
+
+    # 4.2 Forbidden_BuyerAccessesBrokerResource
+    if "user_buyer" in created:
+        buyer_email = created["user_buyer"]["email"]
+        rlogin_buyer = client.login(buyer_email, "password123")
+        results.append(expect_status("POST /Authentication (buyer) -> 200", rlogin_buyer, [200]))
+        if rlogin_buyer.status_code == 200 and "broker" in created:
+            client.set_bearer(rlogin_buyer.json().get("accessToken"))
+            brid = created["broker"]["idUser"]
+            results.append(expect_status("GET /Brokers/{id}/apartments as buyer -> 403", client.get(f"Brokers/{brid}/apartments"), [403]))
+        client.set_bearer(prev_token)
+
+    # 4.3 Forbidden_BrokerAccessesAnotherBrokerResource
+    other: Dict[str, Any] = {}
+    resp_other_user = client.post("Users", json={
+        "name": "BrokerTwo",
+        "surname": "Tester",
+        "email": f"brokertwo-{uuid.uuid4().hex[:8]}@example.com",
+        "phone": "+37060000000",
+        "password": "password123",
+        "registrationtime": "2025-01-01 12:00",
+        "profilepicture": None,
+    })
+    if resp_other_user.status_code == 201:
+        other["user"] = resp_other_user.json()
+        resp_other_broker = client.post("Brokers", json={"confirmed": False, "blocked": False, "idUser": other["user"]["idUser"]})
+        if resp_other_broker.status_code == 201:
+            other["broker"] = resp_other_broker.json()
+    if "user_broker" in created and "broker" in other:
+        rlogin_b1 = client.login(created["user_broker"]["email"], "password123")
+        results.append(expect_status("POST /Authentication (broker1) -> 200", rlogin_b1, [200]))
+        if rlogin_b1.status_code == 200:
+            client.set_bearer(rlogin_b1.json().get("accessToken"))
+            results.append(expect_status("GET /Brokers/{otherId}/apartments as broker1 -> 403", client.get(f"Brokers/{other['broker']['idUser']}/apartments"), [403]))
+        client.set_bearer(prev_token)
+
+    # 5) Deletion / teardown AFTER negative tests
     def delete_expect_204(name: str, path: str):
         results.append(expect_status(name, client.delete(path), [204]))
 
@@ -519,12 +606,14 @@ def main() -> int:
     if "session" in created:
         delete_expect_204("DELETE /Sessions/{id} -> 204", f"Sessions/{created['session']['id']}")
 
-    # Finally, delete the users
     for key in ("user_broker", "user_buyer", "user_admin"):
         if key in created:
             delete_expect_204(f"DELETE /Users/{{id}} ({key}) -> 204", f"Users/{created[key]['idUser']}")
 
-    # Summary
+    # Admin logout at very end
+    if client.refresh_token:
+        results.append(expect_status("POST /Authentication/logout -> 204", client.logout(client.refresh_token), [204]))
+
     print("\n==== API Test Summary ====\n")
     failed = 0
     for r in results:

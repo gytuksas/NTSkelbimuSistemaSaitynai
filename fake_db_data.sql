@@ -12,19 +12,28 @@ INSERT INTO "User" (name, surname, email, phone, password, registrationTime, pro
 ('Simona', 'Martinkutė', 'simona.martinkute@example.lt', '+37061234576', 'hashedpwd10', NOW(), NULL),
 ('Ignas', 'Kairys', 'ignas.kairys@example.lt', '+37061234577', 'hashedpwd11', NOW(), NULL),
 ('Rūta', 'Kasparaitė', 'ruta.kasparaite@example.lt', '+37061234578', 'hashedpwd12', NOW(), NULL),
-('Admin', 'Account', 'admin@example.lt', '+37060000000', 'hashedadminpwd', NOW(), NULL);
+('Admin', 'Account', 'admin@example.lt', '+37060000000', 'hashedadminpwd', NOW(), NULL),
+('Bruno', 'Admin', 'admin@example.com', '+37060000100', 'password123', NOW(), NULL),
+('Bruno', 'Broker', 'broker@example.com', '+37060000101', 'password123', NOW(), NULL),
+('Bruno', 'Buyer', 'buyer@example.com', '+37060000102', 'password123', NOW(), NULL);
 
 -- BROKERS
 INSERT INTO Broker (id_User, confirmed, blocked) VALUES
-(1, TRUE, FALSE), (2, TRUE, FALSE), (3, TRUE, FALSE), (4, TRUE, FALSE), (5, TRUE, FALSE), (6, TRUE, FALSE);
+(1, TRUE, FALSE), (2, TRUE, FALSE), (3, TRUE, FALSE), (4, TRUE, FALSE), (5, TRUE, FALSE), (6, TRUE, FALSE),
+((SELECT id_User FROM "User" WHERE email='broker@example.com'), TRUE, FALSE);
 
 -- BUYERS
 INSERT INTO Buyer (id_User, confirmed, blocked) VALUES
-(7, TRUE, FALSE), (8, TRUE, FALSE), (9, TRUE, FALSE), (10, TRUE, FALSE), (11, TRUE, FALSE), (12, TRUE, FALSE);
+(7, TRUE, FALSE), (8, TRUE, FALSE), (9, TRUE, FALSE), (10, TRUE, FALSE), (11, TRUE, FALSE), (12, TRUE, FALSE),
+((SELECT id_User FROM "User" WHERE email='buyer@example.com'), TRUE, FALSE);
 
 -- ADMINISTRATOR
 INSERT INTO Administrator (id_User)
 SELECT id_User FROM "User" WHERE email = 'admin@example.lt';
+
+-- Bruno Admin as Administrator too
+INSERT INTO Administrator (id_User)
+SELECT id_User FROM "User" WHERE email = 'admin@example.com';
 
 -- CONFIRMATIONS
 INSERT INTO Confirmation (id, expires, fk_Buyerid_User) VALUES
