@@ -6,6 +6,7 @@ using NTSkelbimuSistemaSaitynai;
 using NTSkelbimuSistemaSaitynai.Configuration;
 using NTSkelbimuSistemaSaitynai.DbUtils;
 using NuGet.Protocol.Plugins;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
@@ -158,7 +159,11 @@ if (!app.Environment.IsDevelopment())
                 var user = parts[0];
                 var pass = parts.Length > 1 ? parts[1] : string.Empty;
 
-                if (!string.Equals(user, swaggerUser) || !string.Equals(pass, swaggerPass))
+                // Use a constant-time comparison to prevent timing attacks
+                if (!string.Equals(user, swaggerUser, StringComparison.OrdinalIgnoreCase) || 
+                    !CryptographicOperations.FixedTimeEquals(
+                        Encoding.UTF8.GetBytes(pass ?? string.Empty),
+                        Encoding.UTF8.GetBytes(swaggerPass ?? string.Empty)))
                 {
                     context.Response.Headers["WWW-Authenticate"] = "Basic realm=\"Swagger UI\"";
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
