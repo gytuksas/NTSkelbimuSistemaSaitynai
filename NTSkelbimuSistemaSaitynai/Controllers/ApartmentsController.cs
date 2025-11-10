@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using NTSkelbimuSistemaSaitynai.Authorization;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
 
@@ -9,13 +11,17 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+    [ServiceFilter(typeof(NTSkelbimuSistemaSaitynai.Authorization.NotBlockedFilter))]
     public class ApartmentsController : ControllerBase
     {
         private readonly PostgresContext _context;
+        private readonly OwnershipService _ownership;
 
-        public ApartmentsController(PostgresContext context)
+        public ApartmentsController(PostgresContext context, OwnershipService ownershipService)
         {
             _context = context;
+            _ownership = ownershipService;
         }
 
         /// <summary>
@@ -24,9 +30,23 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         /// <returns>List of apartments.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Apartment>))]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<Apartment>>> GetApartments()
         {
-            return await _context.Apartments.ToListAsync();
+            if (User.IsInRole("Administrator"))
+            {
+                return await _context.Apartments.ToListAsync();
+            }
+            var currentId = _ownership.GetCurrentUserId(User);
+            if (currentId == null || !User.IsInRole("Broker"))
+            {
+                return Forbid();
+            }
+            var apartments = await _context.Buildings
+                .Where(b => b.FkBrokeridUser == currentId)
+                .SelectMany(b => b.Apartments)
+                .ToListAsync();
+            return apartments;
         }
 
         /// <summary>
@@ -37,15 +57,22 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Apartment))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Apartment>> GetApartment(long id)
         {
             var apartment = await _context.Apartments.FindAsync(id);
-
             if (apartment == null)
             {
                 return NotFound();
             }
-
+            if (!User.IsInRole("Administrator"))
+            {
+                var currentId = _ownership.GetCurrentUserId(User);
+                if (currentId == null || !await _ownership.BrokerOwnsApartment(currentId.Value, id))
+                {
+                    return Forbid();
+                }
+            }
             return apartment;
         }
 
@@ -87,8 +114,17 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> PutApartment(long id, Apartment apartment)
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                var currentId = _ownership.GetCurrentUserId(User);
+                if (currentId == null || !await _ownership.BrokerOwnsApartment(currentId.Value, id))
+                {
+                    return Forbid();
+                }
+            }
             // Ensure ID is aligned with route
             apartment.IdApartment = id;
 
@@ -134,8 +170,17 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Apartment))]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Apartment>> PostApartment(Apartment apartment)
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                var currentId = _ownership.GetCurrentUserId(User);
+                if (currentId == null || !await _ownership.BrokerOwnsBuilding(currentId.Value, apartment.FkBuildingidBuilding))
+                {
+                    return Forbid();
+                }
+            }
             _context.Apartments.Add(apartment);
             try
             {
@@ -165,8 +210,17 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> DeleteApartment(long id)
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                var currentId = _ownership.GetCurrentUserId(User);
+                if (currentId == null || !await _ownership.BrokerOwnsApartment(currentId.Value, id))
+                {
+                    return Forbid();
+                }
+            }
             var apartment = await _context.Apartments.FindAsync(id);
             if (apartment == null)
             {

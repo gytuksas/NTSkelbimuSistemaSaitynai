@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
 
@@ -9,6 +10,8 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+    [ServiceFilter(typeof(NTSkelbimuSistemaSaitynai.Authorization.NotBlockedFilter))]
     public class SessionsController : ControllerBase
     {
         private readonly PostgresContext _context;
@@ -24,8 +27,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         /// <returns>List of sessions.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Session>))]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<Session>>> GetSessions()
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                return Forbid();
+            }
             return await _context.Sessions.ToListAsync();
         }
 
@@ -37,6 +45,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Session))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Session>> GetSession(string id)
         {
             var session = await _context.Sessions.FindAsync(id);
@@ -45,7 +54,15 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             {
                 return NotFound();
             }
-
+            if (!User.IsInRole("Administrator"))
+            {
+                var uidStr = User.FindFirst("id")?.Value;
+                long.TryParse(uidStr, out var uid);
+                if (session.FkUseridUser != uid)
+                {
+                    return Forbid();
+                }
+            }
             return session;
         }
 
@@ -59,8 +76,18 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> PutSession(string id, [FromBody] SessionDto sessionDto)
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                var uidStr = User.FindFirst("id")?.Value;
+                long.TryParse(uidStr, out var uid);
+                if (sessionDto.FkUseridUser != uid)
+                {
+                    return Forbid();
+                }
+            }
             DateTime dt1;
             DateTime dt2;
             DateTime dt3;
@@ -140,8 +167,18 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Session>> PostSession([FromBody] SessionDto sessionDto)
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                var uidStr = User.FindFirst("id")?.Value;
+                long.TryParse(uidStr, out var uid);
+                if (sessionDto.FkUseridUser != uid)
+                {
+                    return Forbid();
+                }
+            }
             DateTime dt1;
             DateTime dt2;
             DateTime dt3;
@@ -213,12 +250,22 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> DeleteSession(string id)
         {
             var session = await _context.Sessions.FindAsync(id);
             if (session == null)
             {
                 return NotFound();
+            }
+            if (!User.IsInRole("Administrator"))
+            {
+                var uidStr = User.FindFirst("id")?.Value;
+                long.TryParse(uidStr, out var uid);
+                if (session.FkUseridUser != uid)
+                {
+                    return Forbid();
+                }
             }
 
             _context.Sessions.Remove(session);

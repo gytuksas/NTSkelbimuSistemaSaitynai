@@ -56,6 +56,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.AddAuthorization();
+
+// Custom filters/services
+builder.Services.AddScoped<NTSkelbimuSistemaSaitynai.Authorization.NotBlockedFilter>();
+builder.Services.AddScoped<NTSkelbimuSistemaSaitynai.Authorization.OwnershipService>();
+
 builder.Services.AddMvc(options => options.EnableEndpointRouting = false);
 var app = builder.Build();
 

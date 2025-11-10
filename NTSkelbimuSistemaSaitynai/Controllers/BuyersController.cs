@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using NTSkelbimuSistemaSaitynai.Authorization;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
 
@@ -9,13 +11,17 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+    [ServiceFilter(typeof(NTSkelbimuSistemaSaitynai.Authorization.NotBlockedFilter))]
     public class BuyersController : ControllerBase
     {
         private readonly PostgresContext _context;
+        private readonly OwnershipService _ownership;
 
-        public BuyersController(PostgresContext context)
+        public BuyersController(PostgresContext context, OwnershipService ownershipService)
         {
             _context = context;
+            _ownership = ownershipService;
         }
 
         /// <summary>
@@ -24,8 +30,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         /// <returns>List of buyers.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Buyer>))]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<Buyer>>> GetBuyers()
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                return Forbid();
+            }
             return await _context.Buyers.ToListAsync();
         }
 
@@ -37,6 +48,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Buyer))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Buyer>> GetBuyer(long id)
         {
             var buyer = await _context.Buyers.FindAsync(id);
@@ -45,7 +57,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             {
                 return NotFound();
             }
-
+            var currentId = _ownership.GetCurrentUserId(User);
+            if (!(User.IsInRole("Administrator") || (User.IsInRole("Buyer") && currentId == id)))
+            {
+                return Forbid();
+            }
             return buyer;
         }
 
@@ -59,8 +75,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> PatchBuyer(long id, [FromBody] BuyerPatchDto dto)
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                return Forbid();
+            }
             if (dto == null)
             {
                 return BadRequest();
@@ -103,8 +124,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> PutBuyer(long id, Buyer buyer)
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                return Forbid();
+            }
             buyer.IdUser = id;
 
             _context.Entry(buyer).State = EntityState.Modified;
@@ -136,8 +162,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Buyer))]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Buyer>> PostBuyer(Buyer buyer)
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                return Forbid();
+            }
             _context.Buyers.Add(buyer);
             try
             {
@@ -165,8 +196,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> DeleteBuyer(long id)
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                return Forbid();
+            }
             var buyer = await _context.Buyers.FindAsync(id);
             if (buyer == null)
             {

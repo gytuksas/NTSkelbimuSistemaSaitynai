@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using NTSkelbimuSistemaSaitynai.Authorization;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
 using System.Runtime.CompilerServices;
@@ -10,13 +12,17 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+    [ServiceFilter(typeof(NTSkelbimuSistemaSaitynai.Authorization.NotBlockedFilter))]
     public class BrokersController : ControllerBase
     {
         private readonly PostgresContext _context;
+        private readonly OwnershipService _ownership;
 
-        public BrokersController(PostgresContext context)
+        public BrokersController(PostgresContext context, OwnershipService ownershipService)
         {
             _context = context;
+            _ownership = ownershipService;
         }
 
         /// <summary>
@@ -25,8 +31,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         /// <returns>List of brokers.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Broker>))]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<Broker>>> GetBrokers()
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                return Forbid();
+            }
             return await _context.Brokers.ToListAsync();
         }
 
@@ -38,15 +49,19 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Broker))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Broker>> GetBroker(long id)
         {
             var broker = await _context.Brokers.FindAsync(id);
-
             if (broker == null)
             {
                 return NotFound();
             }
-
+            var currentId = _ownership.GetCurrentUserId(User);
+            if (!(User.IsInRole("Administrator") || (User.IsInRole("Broker") && currentId == id)))
+            {
+                return Forbid();
+            }
             return broker;
         }
 
@@ -63,6 +78,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             if (!BrokerExists(id))
             {
                 return NotFound("No broker with this ID");
+            }
+            var currentId = _ownership.GetCurrentUserId(User);
+            if (!(User.IsInRole("Administrator") || (User.IsInRole("Broker") && currentId == id)))
+            {
+                return Forbid();
             }
 
             var listings = await _context.Buildings
@@ -89,6 +109,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             if (!BrokerExists(id))
             {
                 return NotFound("No broker with this ID");
+            }
+            var currentId = _ownership.GetCurrentUserId(User);
+            if (!(User.IsInRole("Administrator") || (User.IsInRole("Broker") && currentId == id)))
+            {
+                return Forbid();
             }
 
             var apartments = await _context.Buildings
@@ -119,6 +144,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             {
                 return NotFound("No building with this ID");
             }
+            var currentId = _ownership.GetCurrentUserId(User);
+            if (!(User.IsInRole("Administrator") || (User.IsInRole("Broker") && currentId == id)))
+            {
+                return Forbid();
+            }
 
             var apartments = await _context.Buildings
                 .Where(b => b.FkBrokeridUser == id)
@@ -144,6 +174,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             {
                 return NotFound("No broker with this ID");
             }
+            var currentId = _ownership.GetCurrentUserId(User);
+            if (!(User.IsInRole("Administrator") || (User.IsInRole("Broker") && currentId == id)))
+            {
+                return Forbid();
+            }
 
             var viewings = await _context.Availabilities
                 .Where(a => a.FkBrokeridUser == id)
@@ -167,6 +202,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 return NotFound("No broker with this ID");
             if (!AvailabilityExists(availabilityId))
                 return NotFound("No availability with this ID");
+            var currentId = _ownership.GetCurrentUserId(User);
+            if (!(User.IsInRole("Administrator") || (User.IsInRole("Broker") && currentId == id)))
+            {
+                return Forbid();
+            }
 
             var viewings = await _context.Availabilities
                 .Where(a => a.FkBrokeridUser == id)
@@ -194,6 +234,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 return NotFound("No building with this ID");
             if (!ApartmentExists(apartmentId))
                 return NotFound("No apartment with this ID");
+            var currentId = _ownership.GetCurrentUserId(User);
+            if (!(User.IsInRole("Administrator") || (User.IsInRole("Broker") && currentId == id)))
+            {
+                return Forbid();
+            }
 
             var listings = await _context.Buildings
             .Where(b => b.FkBrokeridUser == id)
@@ -228,6 +273,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 return NotFound("No apartment with this ID");
             if (!PictureExists(pictureId))
                 return NotFound("No picture with this ID");
+            var currentId = _ownership.GetCurrentUserId(User);
+            if (!(User.IsInRole("Administrator") || (User.IsInRole("Broker") && currentId == id)))
+            {
+                return Forbid();
+            }
 
             var listings = await _context.Buildings
             .Where(b => b.FkBrokeridUser == id)
@@ -254,8 +304,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> PatchBroker(long id, [FromBody] BrokerPatchDto dto)
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                return Forbid();
+            }
             if (dto == null)
             {
                 return BadRequest();
@@ -299,8 +354,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> PutBroker(long id, Broker broker)
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                return Forbid();
+            }
             broker.IdUser = id;
 
             _context.Entry(broker).State = EntityState.Modified;
@@ -332,8 +392,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Broker))]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Broker>> PostBroker(Broker broker)
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                return Forbid();
+            }
             _context.Brokers.Add(broker);
             try
             {
@@ -361,8 +426,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> DeleteBroker(long id)
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                return Forbid();
+            }
             var broker = await _context.Brokers.FindAsync(id);
             if (broker == null)
             {

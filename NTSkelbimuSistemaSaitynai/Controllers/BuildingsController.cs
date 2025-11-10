@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using NTSkelbimuSistemaSaitynai.Authorization;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
 
@@ -9,13 +11,17 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+    [ServiceFilter(typeof(NTSkelbimuSistemaSaitynai.Authorization.NotBlockedFilter))]
     public class BuildingsController : ControllerBase
     {
         private readonly PostgresContext _context;
+        private readonly OwnershipService _ownership;
 
-        public BuildingsController(PostgresContext context)
+        public BuildingsController(PostgresContext context, OwnershipService ownershipService)
         {
             _context = context;
+            _ownership = ownershipService;
         }
 
         /// <summary>
@@ -24,9 +30,20 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         /// <returns>List of buildings.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Building>))]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<Building>>> GetBuildings()
         {
-            return await _context.Buildings.ToListAsync();
+            if (User.IsInRole("Administrator"))
+            {
+                return await _context.Buildings.ToListAsync();
+            }
+            var currentId = _ownership.GetCurrentUserId(User);
+            if (currentId == null || !User.IsInRole("Broker"))
+            {
+                return Forbid();
+            }
+            var buildings = await _context.Buildings.Where(b => b.FkBrokeridUser == currentId).ToListAsync();
+            return buildings;
         }
 
         /// <summary>
@@ -37,15 +54,22 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Building))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Building>> GetBuilding(long id)
         {
             var building = await _context.Buildings.FindAsync(id);
-
             if (building == null)
             {
                 return NotFound();
             }
-
+            if (!User.IsInRole("Administrator"))
+            {
+                var currentId = _ownership.GetCurrentUserId(User);
+                if (currentId == null || building.FkBrokeridUser != currentId.Value)
+                {
+                    return Forbid();
+                }
+            }
             return building;
         }
 
@@ -57,6 +81,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
     [HttpGet("{id}/apartments")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Apartment>))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<Apartment>>> GetApartmentsInBuilding(long id)
         {
             var apartments = await _context.
@@ -66,7 +91,15 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
 
             if (apartments == null)
                 return NotFound();
-
+            if (!User.IsInRole("Administrator"))
+            {
+                var currentId = _ownership.GetCurrentUserId(User);
+                var owns = currentId != null && await _ownership.BrokerOwnsBuilding(currentId.Value, id);
+                if (!owns)
+                {
+                    return Forbid();
+                }
+            }
             return apartments;
         }
 
@@ -78,6 +111,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
     [HttpGet("{id}/pictures")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Picture>))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<Picture>>> GetPicturesInBuilding(long id)
         {
             if (!BuildingExists(id))
@@ -92,6 +126,15 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 .Where(l => l != null)
                 .ToListAsync();
 
+            if (!User.IsInRole("Administrator"))
+            {
+                var currentId = _ownership.GetCurrentUserId(User);
+                var owns = currentId != null && await _ownership.BrokerOwnsBuilding(currentId.Value, id);
+                if (!owns)
+                {
+                    return Forbid();
+                }
+            }
             return pictures;
         }
 
@@ -105,6 +148,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpGet("{id}/apartment/{apartmentId}/picture/{pictureId}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Picture))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Picture>> GetPictureInBuildingApartment(long id, long apartmentId, string pictureId)
         {
             if (!BuildingExists(id))
@@ -125,6 +169,15 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
 
             if (picture == null)
                 return NotFound("No picture with provided IDs");
+            if (!User.IsInRole("Administrator"))
+            {
+                var currentId = _ownership.GetCurrentUserId(User);
+                var ownsApartment = currentId != null && await _ownership.BrokerOwnsApartment(currentId.Value, apartmentId);
+                if (!ownsApartment)
+                {
+                    return Forbid();
+                }
+            }
             return picture;
         }
 
@@ -137,8 +190,17 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> PutBuilding(long id, Building building)
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                var currentId = _ownership.GetCurrentUserId(User);
+                if (currentId == null || building.FkBrokeridUser != currentId.Value)
+                {
+                    return Forbid();
+                }
+            }
             building.IdBuilding = id;
 
             _context.Entry(building).State = EntityState.Modified;
@@ -182,8 +244,17 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Building))]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Building>> PostBuilding(Building building)
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                var currentId = _ownership.GetCurrentUserId(User);
+                if (currentId == null || building.FkBrokeridUser != currentId.Value)
+                {
+                    return Forbid();
+                }
+            }
             _context.Buildings.Add(building);
             try
             {
@@ -212,12 +283,21 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> DeleteBuilding(long id)
         {
             var building = await _context.Buildings.FindAsync(id);
             if (building == null)
             {
                 return NotFound();
+            }
+            if (!User.IsInRole("Administrator"))
+            {
+                var currentId = _ownership.GetCurrentUserId(User);
+                if (currentId == null || building.FkBrokeridUser != currentId.Value)
+                {
+                    return Forbid();
+                }
             }
 
             _context.Buildings.Remove(building);

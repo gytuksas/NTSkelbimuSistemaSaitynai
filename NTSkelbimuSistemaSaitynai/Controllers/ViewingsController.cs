@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using NTSkelbimuSistemaSaitynai.Authorization;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
 
@@ -9,13 +11,17 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+    [ServiceFilter(typeof(NTSkelbimuSistemaSaitynai.Authorization.NotBlockedFilter))]
     public class ViewingsController : ControllerBase
     {
         private readonly PostgresContext _context;
+        private readonly OwnershipService _ownership;
 
-        public ViewingsController(PostgresContext context)
+        public ViewingsController(PostgresContext context, OwnershipService ownershipService)
         {
             _context = context;
+            _ownership = ownershipService;
         }
 
         /// <summary>
@@ -24,9 +30,27 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         /// <returns>List of viewings.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Viewing>))]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<Viewing>>> GetViewings()
         {
-            return await _context.Viewings.ToListAsync();
+            if (User.IsInRole("Administrator"))
+            {
+                return await _context.Viewings.ToListAsync();
+            }
+            var currentId = _ownership.GetCurrentUserId(User);
+            if (currentId == null || !User.IsInRole("Broker"))
+            {
+                return Forbid();
+            }
+            var viewings = await _context.Viewings
+                .Join(_context.Availabilities,
+                      v => v.FkAvailabilityidAvailability,
+                      a => a.IdAvailability,
+                      (v,a) => new { v, a })
+                .Where(x => x.a.FkBrokeridUser == currentId)
+                .Select(x => x.v)
+                .ToListAsync();
+            return viewings;
         }
 
         /// <summary>
@@ -37,15 +61,23 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Viewing))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Viewing>> GetViewing(long id)
         {
             var viewing = await _context.Viewings.FindAsync(id);
-
             if (viewing == null)
             {
                 return NotFound();
             }
-
+            if (!User.IsInRole("Administrator"))
+            {
+                var currentId = _ownership.GetCurrentUserId(User);
+                var owns = currentId != null && await _ownership.BrokerOwnsViewing(currentId.Value, id);
+                if (!owns)
+                {
+                    return Forbid();
+                }
+            }
             return viewing;
         }
 
@@ -59,11 +91,21 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> PatchViewing(long id, [FromBody] ViewingPatchDto dto)
         {
             if (!ViewingExists(id))
             {
                 return NotFound();
+            }
+            if (!User.IsInRole("Administrator"))
+            {
+                var currentId = _ownership.GetCurrentUserId(User);
+                var owns = currentId != null && await _ownership.BrokerOwnsViewing(currentId.Value, id);
+                if (!owns)
+                {
+                    return Forbid();
+                }
             }
 
             var viewing = new Viewing { IdViewing = id, Status = dto.Status };
@@ -96,8 +138,20 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> PutViewing(long id, [FromBody] ViewingDto viewingDto)
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                var currentId = _ownership.GetCurrentUserId(User);
+                // Ownership either by availability owner or by listing owner
+                var ownsAvailability = currentId != null && await _ownership.BrokerOwnsAvailability(currentId.Value, viewingDto.FkAvailabilityidAvailability);
+                var ownsListing = currentId != null && await _ownership.BrokerOwnsListing(currentId.Value, viewingDto.FkListingidListing);
+                if (!(ownsAvailability && ownsListing))
+                {
+                    return Forbid();
+                }
+            }
             DateTime dt1;
             DateTime dt2;
 
@@ -171,8 +225,19 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Viewing))]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Viewing>> PostViewing(Viewing viewing)
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                var currentId = _ownership.GetCurrentUserId(User);
+                var ownsAvailability = currentId != null && await _ownership.BrokerOwnsAvailability(currentId.Value, viewing.FkAvailabilityidAvailability);
+                var ownsListing = currentId != null && await _ownership.BrokerOwnsListing(currentId.Value, viewing.FkListingidListing);
+                if (!(ownsAvailability && ownsListing))
+                {
+                    return Forbid();
+                }
+            }
             _context.Viewings.Add(viewing);
             try
             {
@@ -200,8 +265,18 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> DeleteViewing(long id)
         {
+            if (!User.IsInRole("Administrator"))
+            {
+                var currentId = _ownership.GetCurrentUserId(User);
+                var owns = currentId != null && await _ownership.BrokerOwnsViewing(currentId.Value, id);
+                if (!owns)
+                {
+                    return Forbid();
+                }
+            }
             var viewing = await _context.Viewings.FindAsync(id);
             if (viewing == null)
             {

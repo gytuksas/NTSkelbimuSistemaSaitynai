@@ -120,6 +120,49 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return Ok(new {accessToken = newAccessToken, refreshToken = newRefreshToken });
         }
 
+        /// <summary>
+        /// Logs out a user by revoking the provided refresh token and instructing the client to remove access token.
+        /// </summary>
+        /// <param name="request">Refresh token to revoke.</param>
+        [Authorize]
+        [HttpPost("logout")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> Logout([FromBody] RefreshRequestDto request)
+        {
+            if (string.IsNullOrWhiteSpace(request.RefreshToken))
+            {
+                return BadRequest("RefreshToken is required");
+            }
+
+            var session = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == request.RefreshToken);
+            if (session == null)
+            {
+                return Unauthorized();
+            }
+
+            // Ensure the refresh belongs to current user (or admin)
+            var userIdStr = User.FindFirst("id")?.Value;
+            long.TryParse(userIdStr, out var userId);
+            var isAdmin = User.IsInRole("Administrator");
+            if (!isAdmin && session.FkUseridUser != userId)
+            {
+                return Forbid();
+            }
+
+            session.Revoked = true;
+            session.Lastactivity = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            // If tokens are in cookies, expire them; otherwise client must delete storage
+            Response.Cookies.Delete("access_token");
+            Response.Cookies.Delete("refresh_token");
+            Response.Headers.Append("Clear-Authorization", "true");
+
+            return NoContent();
+        }
+
         private async Task<User?> AuthenticateUser(UserLoginDto login)
         {
             return await _context.Users.Where(u => u.Email == login.Email)
