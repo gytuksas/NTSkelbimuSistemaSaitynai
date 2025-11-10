@@ -59,7 +59,7 @@ class Client:
             self.sess.headers.pop("Authorization", None)
 
     def login(self, email: str, password: str):
-        return self.post("Authentication", json={"email": email, "password": password})
+        return self.post("Authentication/login", json={"email": email, "password": password})
 
     def refresh(self, refresh_token: str):
         return self.post("Authentication/refresh", json={"refreshToken": refresh_token})

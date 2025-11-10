@@ -29,8 +29,8 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         /// </summary>
         /// <param name="login">Username and password</param>
         /// <returns>JWT token or error</returns>
-        [AllowAnonymous]
-        [HttpPost]
+    [AllowAnonymous]
+    [HttpPost("login")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
