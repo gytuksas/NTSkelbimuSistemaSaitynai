@@ -44,14 +44,14 @@ arba\
 ```docker compose up -d```
 1. Duomenų bazė automatiškai susikurią reikalingą struktūrą ir įkelia netikrus duomenis. Jeigu netikrų duomenų nereikia, iš failo `PGSQLDockerfile` ištrinkite eilutę `COPY fake_db_data.sql /docker-entrypoint-initdb.d/` ir iš naujo įvykdykite praėjusius du veiksmus. Jeigu netikri duomenys Jums tinka, galite praleisti šį žingsnį. Papildoma informacija:
     - Duomenų bazės prisijungimo adresas: `localhost:5432`, Vartotojas: `postgres`, slaptažodis toks, kokį nurodėte kuriant `pgpass.txt` failą.
-    - Duomenų bazė yra pasiekiama ją talpinančiam kompiuteriui, tačiau, jeigu neketinate daryti jokių pakeitimų ranka, rekomenduojama iš failo `docker-compose.override.yml` ištrinti duomenų bazės ryšį su išore. Tai galima padarytį ištrinant šią eilutę:
+    - Duomenų bazė yra nepasiekiama ją talpinančiam kompiuteriui, tačiau, jeigu reikia daryti kažkokius pakeitimus ranka, faile `docker-compose.override.yml` reikia įjungti duomenų bazės ryšį su išore. Tai galima padarytį atkomentuojant šią eilutę:
     ```  
     db:
       networks:
-        - bridged  <-------- IŠTRINKITE ARBA UŽKOMENTUOKITE ŠIĄ EILUTĘ
+    #    - bridged  <-------- IŠTRYNUS # DUOMENŲ BAZĖ TAPS PASIEKIAMA
         - dbnet
     ```
-    Taip duomenų bazė bus pasiekiama tiktais pačiai programai.
+    Baigus darbus, rekomenduojama eilutę užkomentuoti vėl ir perkrauti programą.
 1. Programa dabar turėtų būti pasiekiama.\
     - API taškai: ```http://localhost:8080/api```
     - Swagger sąsaja: ```http://localhost:8080/swagger```
