@@ -12,7 +12,7 @@ BASE_URL = os.environ.get("BASE_URL", "http://localhost:8080/api").rstrip("/")
 TIMEOUT = float(os.environ.get("HTTP_TIMEOUT", "10"))
 # Pre-seeded admin credentials (set via env if different)
 ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@example.com")
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "password123")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Skutubulves123!")
 
 @dataclass
 class TestResult:
