@@ -4,8 +4,10 @@ services:
     build:
       context: .
       dockerfile: NTSkelbimuSistemaSaitynai/Dockerfile
+    restart: unless-stopped
   db:
     build:
       context: .
       dockerfile: PGSQLDockerfile
+    restart: unless-stopped
 
