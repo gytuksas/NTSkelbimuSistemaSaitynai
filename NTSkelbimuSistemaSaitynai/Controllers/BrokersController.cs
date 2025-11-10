@@ -14,6 +14,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
     [ApiController]
     [Authorize]
     [ServiceFilter(typeof(NTSkelbimuSistemaSaitynai.Authorization.NotBlockedFilter))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class BrokersController : ControllerBase
     {
         private readonly PostgresContext _context;
