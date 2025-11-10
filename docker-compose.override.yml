@@ -10,7 +10,7 @@ services:
       - DB_NAME=postgres
       - SWAGGER_AUTH_FILE=/run/secrets/swaggerauth
     ports:
-      - "8080:8080"
+      - "8989:8080"
     networks:
       - bridged
       - dbnet
