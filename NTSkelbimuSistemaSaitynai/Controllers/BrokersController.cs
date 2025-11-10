@@ -73,6 +73,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpGet("{id}/listings")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Listing>))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<Listing>>> GetBrokerListings(long id)
         {
             if (!BrokerExists(id))
@@ -104,6 +105,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpGet("{id}/apartments")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Apartment>))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<Apartment>>> GetBrokerApartments(long id)
         {
             if (!BrokerExists(id))
@@ -134,6 +136,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
     [HttpGet("{id}/building/{buildingId}/apartments")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Apartment>))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<Apartment>>> GetBrokerApartmentsInBuilding(long id, long buildingId)
         {
             if (!BrokerExists(id))
@@ -168,6 +171,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpGet("{id}/viewings")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Viewing>))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<Viewing>>> GetViewingsForBroker(long id)
         {
             if (!BrokerExists(id))
@@ -196,6 +200,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
     /// <param name="availabilityId">Availability ID.</param>
     /// <returns>List of viewings or 404 if not found.</returns>
     [HttpGet("{id}/availability/{availabilityId}/viewings")]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<Viewing>>> GetBrokerViewingsInAvailability(long id, long availabilityId)
         {
             if (!BrokerExists(id))
@@ -226,6 +231,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
     /// <param name="apartmentId">Apartment ID.</param>
     /// <returns>List of listings or 404 if not found.</returns>
     [HttpGet("{id}/building/{buildingId}/apartment/{apartmentId}/listings")]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<Listing>>> GetListingsForBuildingApartment(long id, long buildingId, long apartmentId)
         {
             if (!BrokerExists(id))
@@ -263,6 +269,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
     /// <param name="pictureId">Picture ID.</param>
     /// <returns>List of listings that use the picture.</returns>
     [HttpGet("{id}/building/{buildingId}/apartment/{apartmentId}/picture/{pictureId}/listing")]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<Listing>>> GetListingsWherePictureAppears(long id, long buildingId, long apartmentId, string pictureId)
         {
             if (!BrokerExists(id))
