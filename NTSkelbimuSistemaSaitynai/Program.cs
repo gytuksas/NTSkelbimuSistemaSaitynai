@@ -134,8 +134,15 @@ if (!app.Environment.IsDevelopment())
     }
 
     // Fall back to appsettings or env vars if secret not supplied or invalid
-    swaggerUser ??= builder.Configuration["SwaggerAuth:Username"] ?? "admin";
-    swaggerPass ??= builder.Configuration["SwaggerAuth:Password"] ?? "admin";
+    swaggerUser ??= builder.Configuration["SwaggerAuth:Username"];
+    swaggerPass ??= builder.Configuration["SwaggerAuth:Password"];
+    
+    // Validate that credentials are configured in non-development environments
+    if (string.IsNullOrEmpty(swaggerUser) || string.IsNullOrEmpty(swaggerPass))
+    {
+        throw new InvalidOperationException("Swagger authentication credentials must be configured in non-development environments. " +
+            "Set credentials via Docker secrets (SWAGGER_AUTH_FILE), appsettings.json (SwaggerAuth:Username/Password), or environment variables.");
+    }
 
     app.Use(async (context, next) =>
     {
