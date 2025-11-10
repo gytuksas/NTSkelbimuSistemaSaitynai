@@ -146,7 +146,7 @@ def main() -> int:
             "surname": "Tester",
             "email": email,
             "phone": "+37060000000",
-            "password": "password123",
+            "password": "Skutubulves123!",
             "registrationtime": "2025-01-01 12:00",
             "profilepicture": None,
         }
@@ -342,7 +342,7 @@ def main() -> int:
         "surname": "Tester",
         "email": f"cascade-{uuid.uuid4().hex[:8]}@example.com",
         "phone": "+37060000000",
-        "password": "password123",
+        "password": "Skutubulves123!",
         "registrationtime": "2025-01-01 12:00",
         "profilepicture": None,
     })
@@ -549,7 +549,7 @@ def main() -> int:
     # 4.2 Forbidden_BuyerAccessesBrokerResource
     if "user_buyer" in created:
         buyer_email = created["user_buyer"]["email"]
-        rlogin_buyer = client.login(buyer_email, "password123")
+        rlogin_buyer = client.login(buyer_email, "Skutubulves123!")
         results.append(expect_status("POST /Authentication (buyer) -> 200", rlogin_buyer, [200]))
         if rlogin_buyer.status_code == 200 and "broker" in created:
             client.set_bearer(rlogin_buyer.json().get("accessToken"))
@@ -564,7 +564,7 @@ def main() -> int:
         "surname": "Tester",
         "email": f"brokertwo-{uuid.uuid4().hex[:8]}@example.com",
         "phone": "+37060000000",
-        "password": "password123",
+        "password": "Skutubulves123!",
         "registrationtime": "2025-01-01 12:00",
         "profilepicture": None,
     })
@@ -574,7 +574,7 @@ def main() -> int:
         if resp_other_broker.status_code == 201:
             other["broker"] = resp_other_broker.json()
     if "user_broker" in created and "broker" in other:
-        rlogin_b1 = client.login(created["user_broker"]["email"], "password123")
+        rlogin_b1 = client.login(created["user_broker"]["email"], "Skutubulves123!")
         results.append(expect_status("POST /Authentication (broker1) -> 200", rlogin_b1, [200]))
         if rlogin_b1.status_code == 200:
             client.set_bearer(rlogin_b1.json().get("accessToken"))
