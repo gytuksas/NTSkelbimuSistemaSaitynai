@@ -27,11 +27,14 @@ Toliau esančios komandos turėtų būti vykdomos atsidarius PowerShell (Windows
         {
             "Jwt":
             {
-                "Issuer": "DOMENAS, PVZ example.com",
-                "Key": "SUPERSECRETKEY32BYTES"
+                "Issuer": "[DOMENAS, PVZ example.com]",
+                "Key": "[SUPERSECRETKEY32BYTES]"
             }
         }
     ```
+    - Swagger UI prisijungimo duomenys (reikalingi, kai programa paleidžiama su Release konfigūracija):\
+    ```echo "[NAUDOTOJAS]:[SLAPTAŽODIS]" > swaggerauth.txt```
+
 1. Grįžkite į pradinę direktoriją.\
 ```cd ..```
 1. Sukompiliuokite programą. Šis veiksmas gali užtrukti iki 10min ar ilgiau priklausomai nuo Jūsų interneto ir kompiuterio spartos.\
