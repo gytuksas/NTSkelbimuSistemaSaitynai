@@ -7,6 +7,7 @@ services:
       - DB_USER=postgres
       - DB_PASS_FILE=/run/secrets/dbpass
       - DB_NAME=postgres
+      - SWAGGER_AUTH_FILE=/run/secrets/swaggerauth
     ports:
       - "8080:8080"
     networks:
@@ -15,6 +16,7 @@ services:
     secrets:
       - dbpass
       - config
+      - swaggerauth
   db:
     networks:
 #      - bridged
@@ -38,6 +40,12 @@ secrets:
     file: secrets/pgpass.txt
   config: 
     file: secrets/config.json
+  swaggerauth:
+    # Supported formats (choose one):
+    # 1) JSON: { "Username": "user", "Password": "pass" }
+    # 2) Plain: user:pass
+    # 3) Two lines: first line username, second line password
+    file: secrets/swaggerauth.txt
 volumes:
   dbdata:
     external: false  
