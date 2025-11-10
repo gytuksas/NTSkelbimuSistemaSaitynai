@@ -4,6 +4,7 @@ using NTSkelbimuSistemaSaitynai.Authorization;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
+using NTSkelbimuSistemaSaitynai.Security;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
@@ -107,7 +108,8 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 Surname = userDto.Surname,
                 Email = userDto.Email,
                 Phone = userDto.Phone,
-                Password = userDto.Password,
+                // Hash password on update if it's not already a hash
+                Password = PasswordHasher.IsHashed(userDto.Password) ? userDto.Password : PasswordHasher.Hash(userDto.Password),
                 Registrationtime = dt1,
                 Profilepicture = userDto.Profilepicture,
             };
@@ -176,7 +178,8 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 Surname = userDto.Surname,
                 Email = userDto.Email,
                 Phone = userDto.Phone,
-                Password = userDto.Password,
+                // Hash password on create if not already hashed
+                Password = PasswordHasher.IsHashed(userDto.Password) ? userDto.Password : PasswordHasher.Hash(userDto.Password),
                 Registrationtime = dt1,
                 Profilepicture = userDto.Profilepicture,
             };

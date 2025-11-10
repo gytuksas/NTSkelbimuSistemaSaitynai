@@ -7,6 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
 using System.Text;
+using NTSkelbimuSistemaSaitynai.Security;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
@@ -165,9 +166,17 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
 
         private async Task<User?> AuthenticateUser(UserLoginDto login)
         {
-            return await _context.Users.Where(u => u.Email == login.Email)
-                .Where(u => u.Password == login.Password)
-                .FirstOrDefaultAsync();
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == login.Email);
+            if (user == null)
+            {
+                return null;
+            }
+            // Verify hashed password
+            if (PasswordHasher.Verify(login.Password, user.Password))
+            {
+                return user;
+            }
+            return null;
         }
 
         private async Task<string> GenerateJSONWebToken(User user)
