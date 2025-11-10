@@ -13,6 +13,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
     [ApiController]
     [Authorize]
     [ServiceFilter(typeof(NTSkelbimuSistemaSaitynai.Authorization.NotBlockedFilter))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class AvailabilitiesController : ControllerBase
     {
         private readonly PostgresContext _context;
@@ -86,6 +87,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> PutAvailability(long id, [FromBody] AvailabilityDto availabilityDto)
         {
             if (!User.IsInRole("Administrator"))
@@ -168,6 +170,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Availability))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Availability>> PostAvailability(AvailabilityDto availabilityDto)
         {
             if (!User.IsInRole("Administrator"))
@@ -233,6 +236,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> DeleteAvailability(long id)
         {
             if (!User.IsInRole("Administrator"))
