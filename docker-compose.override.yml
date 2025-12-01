@@ -15,6 +15,15 @@ services:
     secrets:
       - dbpass
       - config
+  frontend:
+    environment:
+      - VITE_API_BASE_URL=http://ntskelbimusistemasaitynai:8080
+    depends_on:
+      - ntskelbimusistemasaitynai
+    ports:
+      - "4173:80"
+    networks:
+      - bridged
   db:
     networks:
 #      - bridged

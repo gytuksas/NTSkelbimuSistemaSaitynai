@@ -4,6 +4,14 @@ services:
     build:
       context: .
       dockerfile: NTSkelbimuSistemaSaitynai/Dockerfile
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=http://ntskelbimusistemasaitynai:8080
+    depends_on:
+      - ntskelbimusistemasaitynai
   db:
     build:
       context: .
