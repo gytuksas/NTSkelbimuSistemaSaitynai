@@ -107,8 +107,11 @@ export interface AppUser {
 }
 
 export interface TokenPayload {
-  id: string
-  role: UserRole
+  id?: string
+  sub?: string
+  role?: UserRole
+  'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'?: UserRole
+  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'?: string
   exp: number
   iat: number
 }

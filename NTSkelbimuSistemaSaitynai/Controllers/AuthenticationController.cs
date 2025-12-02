@@ -184,9 +184,12 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.Jwt.Key));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-            var claims = new[] {
+            var role = await GetRoleAsync(user.IdUser);
+            var claims = new[]
+            {
                 new Claim("id", user.IdUser.ToString()),
-                new Claim(ClaimTypes.Role, await GetRoleAsync(user.IdUser)),
+                new Claim("role", role),
+                new Claim(ClaimTypes.Role, role),
             };
 
             var token = new JwtSecurityToken(_config.Jwt.Issuer, //issuer

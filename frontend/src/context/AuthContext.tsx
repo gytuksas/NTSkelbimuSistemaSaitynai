@@ -26,9 +26,22 @@ const decodeIdentity = (accessToken: string | null): Identity | null => {
   if (!accessToken) return null
   try {
     const payload = jwtDecode<TokenPayload>(accessToken)
+    const rawId =
+      payload.id ??
+      payload.sub ??
+      payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']
+    const parsedId = rawId ? Number(rawId) : Number.NaN
+    const rawRole =
+      payload.role ?? payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
+
+    if (Number.isNaN(parsedId) || !rawRole) {
+      console.error('Nepavyko nuskaityti rolės arba ID iš žetono', payload)
+      return null
+    }
+
     return {
-      id: Number(payload.id),
-      role: payload.role,
+      id: parsedId,
+      role: rawRole,
     }
   } catch (error) {
     console.error('Nepavyko iškoduoti žetono', error)

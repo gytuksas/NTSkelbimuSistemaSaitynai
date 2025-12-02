@@ -27,7 +27,7 @@ type ListingCard = {
 }
 
 export const HomePage = () => {
-  const { isAuthenticated } = useAuth()
+  const { user } = useAuth()
   const [listings, setListings] = useState<Listing[]>([])
   const [viewings, setViewings] = useState<Viewing[]>([])
   const [publicListings, setPublicListings] = useState<PublicListing[]>([])
@@ -35,6 +35,7 @@ export const HomePage = () => {
   const [rentFilter, setRentFilter] = useState<RentFilter>('visi')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const canSeePrivateListings = Boolean(user && (user.role === 'Broker' || user.role === 'Administrator'))
 
   useEffect(() => {
     let cancelled = false
@@ -42,7 +43,7 @@ export const HomePage = () => {
       setLoading(true)
       setError(null)
       try {
-        if (isAuthenticated) {
+        if (canSeePrivateListings) {
           const [listingsResponse, viewingsResponse] = await Promise.all([
             client.get<Listing[]>('/api/Listings'),
             client.get<Viewing[]>('/api/Viewings'),
@@ -74,10 +75,10 @@ export const HomePage = () => {
     return () => {
       cancelled = true
     }
-  }, [isAuthenticated])
+  }, [canSeePrivateListings])
 
   const listingCards = useMemo<ListingCard[]>(() => {
-    if (isAuthenticated) {
+    if (canSeePrivateListings) {
       return listings.map((listing) => ({
         id: listing.idListing,
         description: listing.description,
@@ -97,7 +98,7 @@ export const HomePage = () => {
       nextViewingFrom: listing.nextViewingFrom ?? null,
       nextViewingTo: listing.nextViewingTo ?? null,
     }))
-  }, [isAuthenticated, listings, publicListings])
+  }, [canSeePrivateListings, listings, publicListings])
 
   const filteredListings = useMemo(() => {
     return listingCards.filter((listing) => {
@@ -151,10 +152,10 @@ export const HomePage = () => {
               </button>
             ))}
           </div>
-          {!isAuthenticated && (
+          {!canSeePrivateListings && (
             <p className="hint">
-              Svečiams rodome viešą brokerių galeriją. Prisijunkite, kad matytumėte asmeninius skelbimus ir
-              kurtumėte savo.
+              Viešą galeriją rodome svečiams ir pirkėjams. Prisijunkite kaip brokeris arba administratorius, kad
+              matytumėte savo portfelį.
             </p>
           )}
         </div>
@@ -175,7 +176,7 @@ export const HomePage = () => {
             const card = (
               <article
                 className={
-                  'card listing-card' + (!isAuthenticated ? ' listing-card--interactive' : '')
+                  'card listing-card' + (!canSeePrivateListings ? ' listing-card--interactive' : '')
                 }
               >
                 <div
@@ -203,10 +204,10 @@ export const HomePage = () => {
                     Artimiausia apžiūra {formatFriendly(listing.nextViewingFrom)}
                   </p>
                 )}
-                {listing.pictureId && !isAuthenticated && (
+                {listing.pictureId && !canSeePrivateListings && (
                   <p className="listing-card__note">Nuotrauka #{listing.pictureId}</p>
                 )}
-                {!isAuthenticated && (
+                {!canSeePrivateListings && (
                   <div className="listing-card__cta">
                     <span>Žiūrėti detaliau</span>
                     <span aria-hidden="true">→</span>
@@ -215,7 +216,7 @@ export const HomePage = () => {
               </article>
             )
 
-            return isAuthenticated ? (
+            return canSeePrivateListings ? (
               <Fragment key={listing.id}>{card}</Fragment>
             ) : (
               <Link key={listing.id} to={`/skelbimai/${listing.id}`} className="listing-card__link">
@@ -234,7 +235,7 @@ export const HomePage = () => {
           <h3>Atvirų durų dienos</h3>
           <p>Greita brokerių prieinamumo ir suplanuotų vizitų apžvalga.</p>
         </div>
-        {isAuthenticated ? (
+        {canSeePrivateListings ? (
           <div className="timeline">
             {viewings.map((viewing) => (
               <div key={viewing.idViewing} className="timeline__item">
