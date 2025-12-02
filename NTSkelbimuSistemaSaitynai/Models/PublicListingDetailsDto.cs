@@ -9,5 +9,6 @@ public class PublicListingDetailsDto : PublicListingDto
     public string? BrokerName { get; set; }
     public string? BrokerPhone { get; set; }
     public List<string> GalleryPictureIds { get; set; } = new();
+    public List<string> GalleryPictureUrls { get; set; } = new();
     public IEnumerable<PublicAvailabilityDto> Availabilities { get; set; } = Array.Empty<PublicAvailabilityDto>();
 }

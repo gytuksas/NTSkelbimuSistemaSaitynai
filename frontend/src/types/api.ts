@@ -16,6 +16,7 @@ export interface PublicListing {
   buildingCity?: string | null
   buildingAddress?: string | null
   pictureId?: string | null
+  pictureUrl?: string | null
   nextViewingFrom?: string | null
   nextViewingTo?: string | null
 }
@@ -34,6 +35,7 @@ export interface PublicListingDetails extends PublicListing {
   brokerName?: string | null
   brokerPhone?: string | null
   galleryPictureIds: string[]
+  galleryPictureUrls: string[]
   availabilities: PublicAvailability[]
 }
 

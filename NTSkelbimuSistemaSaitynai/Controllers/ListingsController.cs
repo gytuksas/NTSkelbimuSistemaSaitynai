@@ -2,7 +2,11 @@
 using Microsoft.AspNetCore.Authorization;
 using NTSkelbimuSistemaSaitynai.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using NTSkelbimuSistemaSaitynai.Configuration;
 using NTSkelbimuSistemaSaitynai.Models;
+using System.IO;
+using System.Linq;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
@@ -18,11 +22,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
     {
         private readonly PostgresContext _context;
         private readonly OwnershipService _ownership;
+        private readonly FileStorageOptions _fileStorageOptions;
 
-        public ListingsController(PostgresContext context, OwnershipService ownershipService)
+        public ListingsController(PostgresContext context, OwnershipService ownershipService, IOptions<FileStorageOptions> fileStorageOptions)
         {
             _context = context;
             _ownership = ownershipService;
+            _fileStorageOptions = fileStorageOptions.Value;
         }
 
         /// <summary>
@@ -55,6 +61,10 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                                 };
 
             var listings = await listingsQuery.ToListAsync();
+            foreach (var listing in listings)
+            {
+                listing.PictureUrl = ResolvePictureUrl(listing.PictureId);
+            }
             return Ok(listings);
         }
 
@@ -128,8 +138,15 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 BrokerName = broker != null ? $"{broker.Name} {broker.Surname}" : null,
                 BrokerPhone = broker?.Phone,
                 GalleryPictureIds = gallery,
+                GalleryPictureUrls = gallery
+                    .Select(id => ResolvePictureUrl(id))
+                    .Where(url => !string.IsNullOrWhiteSpace(url))
+                    .Select(url => url!)
+                    .ToList(),
                 Availabilities = availabilities
             };
+
+            details.PictureUrl = ResolvePictureUrl(details.PictureId);
 
             return Ok(details);
         }
@@ -326,6 +343,40 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         private bool PictureExists(string id)
         {
             return _context.Pictures.Any(e => e.Id == id);
+        }
+
+        private string NormalizeRequestPath(string? requestPath)
+        {
+            var normalized = string.IsNullOrWhiteSpace(requestPath) ? "/uploads" : requestPath.Trim();
+            if (!normalized.StartsWith('/'))
+            {
+                normalized = "/" + normalized.TrimStart('/');
+            }
+            return normalized.TrimEnd('/');
+        }
+
+        private string? ResolvePictureUrl(string? pictureId)
+        {
+            if (string.IsNullOrWhiteSpace(pictureId))
+            {
+                return null;
+            }
+
+            var fileName = pictureId;
+            var candidatePath = Path.Combine(_fileStorageOptions.UploadRoot, pictureId);
+            if (!System.IO.File.Exists(candidatePath))
+            {
+                var fallback = Directory
+                    .EnumerateFiles(_fileStorageOptions.UploadRoot, $"{pictureId}.*", SearchOption.TopDirectoryOnly)
+                    .FirstOrDefault();
+                if (fallback != null)
+                {
+                    fileName = Path.GetFileName(fallback);
+                }
+            }
+
+            var requestPath = NormalizeRequestPath(_fileStorageOptions.RequestPath);
+            return $"{requestPath}/{fileName}";
         }
     }
 }

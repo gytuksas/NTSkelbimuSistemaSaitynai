@@ -1,17 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { client, publicClient, baseURL } from '../api/client'
+import { client, publicClient } from '../api/client'
 import type { PublicAvailability, PublicListingDetails } from '../types/api'
 import { formatPrice } from '../utils/text'
 import { formatFriendly } from '../utils/dates'
 import { useAuth } from '../context/AuthContext'
-
-const buildCoverStyle = (pictureId?: string | null) =>
-  pictureId
-    ? {
-        backgroundImage: `url(${baseURL}/uploads/${pictureId})`,
-      }
-    : undefined
+import { buildCoverStyle } from '../utils/pictures'
 
 export const ListingDetailsPage = () => {
   const { id } = useParams<{ id: string }>()
@@ -102,6 +96,12 @@ export const ListingDetailsPage = () => {
     (availability) => availability.id === selectedAvailability,
   )
 
+  const galleryUsesUrls = Boolean(listing && listing.galleryPictureUrls.length > 0)
+  const galleryItems = galleryUsesUrls
+    ? listing?.galleryPictureUrls ?? []
+    : listing?.galleryPictureIds ?? []
+  const shouldRenderGallery = galleryItems.length > 1
+
   return (
     <div className="page listing-details">
       <button type="button" className="btn btn--ghost" onClick={() => navigate(-1)}>
@@ -114,8 +114,15 @@ export const ListingDetailsPage = () => {
       {!loading && !error && listing && (
         <>
           <section className="card details-hero">
-            <div className={listing.pictureId ? 'details-hero__media' : 'details-hero__media details-hero__media--empty'} style={buildCoverStyle(listing.pictureId)}>
-              {!listing.pictureId && <span>Nuotrauka ruošiama</span>}
+            <div
+              className={
+                listing.pictureUrl
+                  ? 'details-hero__media'
+                  : 'details-hero__media details-hero__media--empty'
+              }
+              style={buildCoverStyle(listing.pictureUrl, listing.pictureId)}
+            >
+              {!listing.pictureUrl && <span>Nuotrauka ruošiama</span>}
             </div>
             <div className="details-hero__content">
               <p className="hero__eyebrow">Skelbimas #{listing.id}</p>
@@ -176,15 +183,22 @@ export const ListingDetailsPage = () => {
             </article>
           </section>
 
-          {listing.galleryPictureIds.length > 1 && (
+          {shouldRenderGallery && (
             <section>
               <h3>Nuotraukų galerija</h3>
               <div className="gallery-grid">
-                {listing.galleryPictureIds.map((pictureId) => (
-                  <div key={pictureId} className="gallery-grid__item" style={buildCoverStyle(pictureId)}>
-                    {!pictureId && <span>Nuotrauka</span>}
-                  </div>
-                ))}
+                {galleryItems.map((item, index) => {
+                  const style = galleryUsesUrls
+                    ? buildCoverStyle(item, undefined)
+                    : buildCoverStyle(undefined, item)
+                  const hasImage = Boolean(style)
+                  const key = `${item}-${index}`
+                  return (
+                    <div key={key} className="gallery-grid__item" style={style}>
+                      {!hasImage && <span>Nuotrauka</span>}
+                    </div>
+                  )
+                })}
               </div>
             </section>
           )}

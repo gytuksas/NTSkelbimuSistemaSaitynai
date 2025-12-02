@@ -1,11 +1,12 @@
 import axios from 'axios'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { client, publicClient, baseURL } from '../api/client'
+import { client, publicClient } from '../api/client'
 import type { Listing, PublicListing } from '../types/api'
 import { useAuth } from '../context/AuthContext'
 import { formatPrice } from '../utils/text'
 import { formatFriendly } from '../utils/dates'
+import { resolvePictureSrc } from '../utils/pictures'
 
 const rentFilterOptions = [
   { value: 'visi', label: 'Visi' },
@@ -21,6 +22,7 @@ type ListingCard = {
   price?: number
   rent: boolean
   pictureId?: string
+  pictureUrl?: string
   buildingCity?: string
   buildingAddress?: string
   nextViewingFrom?: string | null
@@ -95,6 +97,7 @@ export const ListingsPage = () => {
         price: listing.askingprice,
         rent: listing.rent,
         pictureId: listing.fkPictureid,
+        pictureUrl: resolvePictureSrc(undefined, listing.fkPictureid),
       }))
     }
     return publicListings.map((listing) => ({
@@ -103,6 +106,7 @@ export const ListingsPage = () => {
       price: listing.askingPrice,
       rent: listing.rent,
       pictureId: listing.pictureId ?? undefined,
+      pictureUrl: resolvePictureSrc(listing.pictureUrl ?? undefined, listing.pictureId ?? undefined),
       buildingCity: listing.buildingCity ?? undefined,
       buildingAddress: listing.buildingAddress ?? undefined,
       nextViewingFrom: listing.nextViewingFrom ?? null,
@@ -168,9 +172,7 @@ export const ListingsPage = () => {
         </div>
         <div className="listing-grid">
           {filteredListings.map((listing) => {
-            const coverStyle = listing.pictureId
-              ? { backgroundImage: `url(${baseURL}/uploads/${listing.pictureId})` }
-              : undefined
+            const coverStyle = listing.pictureUrl ? { backgroundImage: `url(${listing.pictureUrl})` } : undefined
             const card = (
               <article
                 className={
@@ -179,13 +181,13 @@ export const ListingsPage = () => {
               >
                 <div
                   className={
-                    listing.pictureId
+                    listing.pictureUrl
                       ? 'listing-card__media'
                       : 'listing-card__media listing-card__media--empty'
                   }
                   style={coverStyle}
                 >
-                  {!listing.pictureId && <span>Nuotrauka ruošiama</span>}
+                  {!listing.pictureUrl && <span>Nuotrauka ruošiama</span>}
                 </div>
                 <div className="listing-card__badge">#{listing.id}</div>
                 <h4>{listing.description}</h4>
@@ -201,9 +203,6 @@ export const ListingsPage = () => {
                   <p className="listing-card__meta">
                     Artimiausia apžiūra {formatFriendly(listing.nextViewingFrom)}
                   </p>
-                )}
-                {listing.pictureId && !canSeePrivateListings && (
-                  <p className="listing-card__note">Nuotrauka #{listing.pictureId}</p>
                 )}
                 {!canSeePrivateListings && (
                   <div className="listing-card__cta">

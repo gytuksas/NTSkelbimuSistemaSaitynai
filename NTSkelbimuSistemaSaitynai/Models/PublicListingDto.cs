@@ -9,6 +9,7 @@ public class PublicListingDto
     public string? BuildingCity { get; set; }
     public string? BuildingAddress { get; set; }
     public string? PictureId { get; set; }
+    public string? PictureUrl { get; set; }
     public DateTime? NextViewingFrom { get; set; }
     public DateTime? NextViewingTo { get; set; }
 }
