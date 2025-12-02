@@ -5,6 +5,7 @@ import { client, publicClient } from '../api/client'
 import type { PublicListing, Viewing } from '../types/api'
 import { useAuth } from '../context/AuthContext'
 import { formatFriendly } from '../utils/dates'
+import { resolvePictureSrc } from '../utils/pictures'
 
 export const ViewingsPage = () => {
   const { user } = useAuth()
@@ -68,12 +69,17 @@ export const ViewingsPage = () => {
   const publicViewingCards = useMemo(() => {
     return publicListings
       .filter((listing) => Boolean(listing.nextViewingFrom))
-      .map((listing) => ({
-        id: listing.id,
-        from: listing.nextViewingFrom as string,
-        to: listing.nextViewingTo ?? null,
-        city: listing.buildingCity ?? undefined,
-      }))
+      .map((listing) => {
+        const pictureUrl = resolvePictureSrc(listing.pictureUrl ?? undefined, listing.pictureId ?? undefined)
+        return {
+          id: listing.id,
+          from: listing.nextViewingFrom as string,
+          to: listing.nextViewingTo ?? null,
+          city: listing.buildingCity ?? undefined,
+          description: listing.description,
+          pictureUrl,
+        }
+      })
       .sort((a, b) => new Date(a.from).getTime() - new Date(b.from).getTime())
   }, [publicListings])
 
@@ -115,18 +121,34 @@ export const ViewingsPage = () => {
                   <div className={`status status--${viewing.status}`}>Būsena #{viewing.status}</div>
                 </div>
               ))
-            : publicViewingCards.map((viewing) => (
-                <div key={viewing.id} className="timeline__item">
-                  <div>
-                    <p className="timeline__date">{formatFriendly(viewing.from)}</p>
-                    <p className="timeline__subtitle">
-                      {viewing.city ? `${viewing.city} · ` : ''}
-                      {viewing.to ? `iki ${formatFriendly(viewing.to)}` : 'trukmė neviešinama'}
-                    </p>
-                  </div>
-                  <div className="status">Vieša apžiūra #{viewing.id}</div>
-                </div>
-              ))}
+            : publicViewingCards.map((viewing) => {
+                const coverStyle = viewing.pictureUrl
+                  ? { backgroundImage: `url(${viewing.pictureUrl})` }
+                  : undefined
+                return (
+                  <Link key={viewing.id} to={`/skelbimai/${viewing.id}`} className="timeline__item timeline__item--link">
+                    <div
+                      className={
+                        viewing.pictureUrl
+                          ? 'timeline__media'
+                          : 'timeline__media timeline__media--empty'
+                      }
+                      style={coverStyle}
+                    >
+                      {!viewing.pictureUrl && <span>Nuotrauka ruošiama</span>}
+                    </div>
+                    <div className="timeline__content">
+                      <p className="timeline__date">{formatFriendly(viewing.from)}</p>
+                      <p className="timeline__subtitle">
+                        {viewing.city ? `${viewing.city} · ` : ''}
+                        {viewing.to ? `iki ${formatFriendly(viewing.to)}` : 'trukmė neviešinama'}
+                      </p>
+                      <p className="timeline__title">{viewing.description}</p>
+                    </div>
+                    <div className="timeline__cta">Žiūrėti skelbimą →</div>
+                  </Link>
+                )
+              })}
 
           {!loading && canSeePrivateSchedule && viewings.length === 0 && (
             <p className="muted">Šiuo metu neturite suplanuotų apžiūrų.</p>

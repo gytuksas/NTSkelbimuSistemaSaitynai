@@ -319,6 +319,52 @@ a {
   align-items: center;
 }
 
+.timeline__item--link {
+  text-decoration: none;
+  color: inherit;
+  gap: 1rem;
+  transition: border 0.2s ease, transform 0.2s ease;
+}
+
+.timeline__item--link:hover {
+  border-color: rgba(249, 115, 22, 0.4);
+  transform: translateY(-2px);
+}
+
+.timeline__media {
+  width: 80px;
+  height: 80px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.timeline__media--empty {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.timeline__content {
+  flex: 1;
+  text-align: left;
+}
+
+.timeline__title {
+  margin: 0.4rem 0 0;
+  font-weight: 600;
+}
+
+.timeline__cta {
+  font-weight: 600;
+  color: var(--accent);
+}
+
 .status {
   padding: 0.35rem 0.85rem;
   border-radius: 999px;
