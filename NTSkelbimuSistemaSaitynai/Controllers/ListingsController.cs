@@ -16,7 +16,6 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    [ServiceFilter(typeof(NTSkelbimuSistemaSaitynai.Authorization.NotBlockedFilter))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class ListingsController : ControllerBase
     {
@@ -120,6 +119,8 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                     })
                     .ToListAsync();
 
+            var availableSlots = await BuildAvailableSlotsAsync(availabilities);
+
             var details = new PublicListingDetailsDto
             {
                 Id = listing.IdListing,
@@ -143,7 +144,8 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                     .Where(url => !string.IsNullOrWhiteSpace(url))
                     .Select(url => url!)
                     .ToList(),
-                Availabilities = availabilities
+                Availabilities = availabilities,
+                AvailableSlots = availableSlots
             };
 
             details.PictureUrl = ResolvePictureUrl(details.PictureId);
@@ -333,6 +335,58 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             }
 
             return NoContent();
+        }
+
+        private async Task<List<PublicAvailabilitySlotDto>> BuildAvailableSlotsAsync(List<PublicAvailabilityDto> availabilities)
+        {
+            var slots = new List<PublicAvailabilitySlotDto>();
+            if (availabilities == null || availabilities.Count == 0)
+            {
+                return slots;
+            }
+
+            var availabilityIds = availabilities.Select(a => a.Id).ToList();
+            var existingViewings = await _context.Viewings
+                .Where(v => availabilityIds.Contains(v.FkAvailabilityidAvailability))
+                .Select(v => new { v.FkAvailabilityidAvailability, v.From, v.To })
+                .ToListAsync();
+
+            var now = DateTime.UtcNow;
+
+            foreach (var availability in availabilities)
+            {
+                var availabilityStart = DateTime.SpecifyKind(availability.From, DateTimeKind.Utc);
+                var availabilityEnd = DateTime.SpecifyKind(availability.To, DateTimeKind.Utc);
+                var slotStart = availabilityStart;
+
+                while (slotStart.AddHours(1) <= availabilityEnd)
+                {
+                    if (slotStart < now)
+                    {
+                        slotStart = slotStart.AddHours(1);
+                        continue;
+                    }
+
+                    var slotEnd = slotStart.AddHours(1);
+                    var hasOverlap = existingViewings.Any(v => v.FkAvailabilityidAvailability == availability.Id && v.From < slotEnd && v.To > slotStart);
+
+                    if (!hasOverlap)
+                    {
+                        slots.Add(new PublicAvailabilitySlotDto
+                        {
+                            AvailabilityId = availability.Id,
+                            From = slotStart,
+                            To = slotEnd
+                        });
+                    }
+
+                    slotStart = slotStart.AddHours(1);
+                }
+            }
+
+            return slots
+                .OrderBy(s => s.From)
+                .ToList();
         }
 
         private bool ListingExists(long id)

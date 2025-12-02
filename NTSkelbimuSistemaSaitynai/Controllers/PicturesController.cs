@@ -19,7 +19,6 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    [ServiceFilter(typeof(NTSkelbimuSistemaSaitynai.Authorization.NotBlockedFilter))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class PicturesController : ControllerBase
     {

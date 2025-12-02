@@ -7,6 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
 using System.Text;
+using System.Linq;
 using NTSkelbimuSistemaSaitynai.Security;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
@@ -41,6 +42,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             if (user == null)
             {
                 return Unauthorized("Invalid email or password");
+            }
+
+            if (await IsUserBlockedAsync(user.IdUser))
+            {
+                Response.Headers["X-Account-Blocked"] = "true";
+                await RevokeActiveSessionsAsync(user.IdUser);
+                return Unauthorized("Account is blocked by the administrator");
             }
 
             var accessToken = await GenerateJSONWebToken(user);
@@ -94,6 +102,15 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             if (user == null)
             {
                 return Unauthorized("Associated user not found");
+            }
+
+            if (await IsUserBlockedAsync(user.IdUser))
+            {
+                existing.Revoked = true;
+                Response.Headers["X-Account-Blocked"] = "true";
+                await RevokeActiveSessionsAsync(user.IdUser, saveChanges: false);
+                await _context.SaveChangesAsync();
+                return Unauthorized("Account is blocked by the administrator");
             }
 
             // Revoke old token
@@ -210,6 +227,41 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             if (await _context.Buyers.AnyAsync(bu => bu.IdUser == userId))
                 return "Buyer";
             return "User";
+        }
+
+        private async Task<bool> IsUserBlockedAsync(long userId)
+        {
+            var broker = await _context.Brokers.AsNoTracking().FirstOrDefaultAsync(b => b.IdUser == userId);
+            if (broker?.Blocked == true)
+            {
+                return true;
+            }
+
+            var buyer = await _context.Buyers.AsNoTracking().FirstOrDefaultAsync(b => b.IdUser == userId);
+            return buyer?.Blocked == true;
+        }
+
+        private async Task RevokeActiveSessionsAsync(long userId, bool saveChanges = true)
+        {
+            var sessions = await _context.Sessions
+                .Where(s => s.FkUseridUser == userId && !s.Revoked && s.Expires > DateTime.UtcNow)
+                .ToListAsync();
+
+            if (!sessions.Any())
+            {
+                return;
+            }
+
+            foreach (var session in sessions)
+            {
+                session.Revoked = true;
+                session.Lastactivity = DateTime.UtcNow;
+            }
+
+            if (saveChanges)
+            {
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

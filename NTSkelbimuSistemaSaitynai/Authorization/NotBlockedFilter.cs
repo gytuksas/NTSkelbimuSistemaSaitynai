@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Linq;
 
 namespace NTSkelbimuSistemaSaitynai.Authorization
 {
@@ -39,6 +40,8 @@ namespace NTSkelbimuSistemaSaitynai.Authorization
                 var broker = await _context.Brokers.AsNoTracking().FirstOrDefaultAsync(b => b.IdUser == userId);
                 if (broker?.Blocked == true)
                 {
+                    context.HttpContext.Response.Headers["X-Account-Blocked"] = "true";
+                    await RevokeActiveSessionsAsync(userId);
                     context.Result = new ForbidResult();
                     return;
                 }
@@ -48,12 +51,34 @@ namespace NTSkelbimuSistemaSaitynai.Authorization
                 var buyer = await _context.Buyers.AsNoTracking().FirstOrDefaultAsync(b => b.IdUser == userId);
                 if (buyer?.Blocked == true)
                 {
+                    context.HttpContext.Response.Headers["X-Account-Blocked"] = "true";
+                    await RevokeActiveSessionsAsync(userId);
                     context.Result = new ForbidResult();
                     return;
                 }
             }
 
             await next();
+        }
+
+        private async Task RevokeActiveSessionsAsync(long userId)
+        {
+            var activeSessions = await _context.Sessions
+                .Where(s => s.FkUseridUser == userId && !s.Revoked && s.Expires > DateTime.UtcNow)
+                .ToListAsync();
+
+            if (!activeSessions.Any())
+            {
+                return;
+            }
+
+            foreach (var session in activeSessions)
+            {
+                session.Revoked = true;
+                session.Lastactivity = DateTime.UtcNow;
+            }
+
+            await _context.SaveChangesAsync();
         }
     }
 }

@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { client, publicClient } from '../api/client'
-import type { PublicAvailability, PublicListingDetails } from '../types/api'
+import type { AvailabilitySlot, PublicListingDetails } from '../types/api'
 import { formatPrice } from '../utils/text'
 import { formatFriendly } from '../utils/dates'
 import { useAuth } from '../context/AuthContext'
-import { buildCoverStyle } from '../utils/pictures'
+import { buildCoverStyle, resolvePictureSrc } from '../utils/pictures'
+
+const makeSlotKey = (slot: AvailabilitySlot) => `${slot.availabilityId}-${slot.from}`
 
 export const ListingDetailsPage = () => {
   const { id } = useParams<{ id: string }>()
@@ -14,9 +16,24 @@ export const ListingDetailsPage = () => {
   const [listing, setListing] = useState<PublicListingDetails | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selectedAvailability, setSelectedAvailability] = useState<number | null>(null)
   const [bookingStatus, setBookingStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [bookingMessage, setBookingMessage] = useState<string | null>(null)
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [selectedSlotKey, setSelectedSlotKey] = useState<string | null>(null)
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+  const [carouselIndex, setCarouselIndex] = useState(0)
+
+  const applyListing = useCallback((details: PublicListingDetails) => {
+    setListing(details)
+    if (details.availableSlots.length > 0) {
+      const firstSlot = details.availableSlots[0]
+      setSelectedDate(firstSlot.from.split('T')[0])
+      setSelectedSlotKey(makeSlotKey(firstSlot))
+    } else {
+      setSelectedDate(null)
+      setSelectedSlotKey(null)
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -31,8 +48,7 @@ export const ListingDetailsPage = () => {
       try {
         const { data } = await publicClient.get<PublicListingDetails>(`/api/Listings/public/${id}`)
         if (!cancelled) {
-          setListing(data)
-          setSelectedAvailability(data.availabilities[0]?.id ?? null)
+          applyListing(data)
         }
       } catch (err) {
         console.error(err)
@@ -50,11 +66,166 @@ export const ListingDetailsPage = () => {
     return () => {
       cancelled = true
     }
-  }, [id])
+  }, [id, applyListing])
+
+  const slotsData = useMemo(() => {
+    const groups = new Map<string, AvailabilitySlot[]>()
+    if (listing) {
+      listing.availableSlots.forEach((slot) => {
+        const dateKey = slot.from.split('T')[0]
+        const bucket = groups.get(dateKey)
+        if (bucket) {
+          bucket.push(slot)
+        } else {
+          groups.set(dateKey, [slot])
+        }
+      })
+      groups.forEach((bucket) =>
+        bucket.sort((a, b) => new Date(a.from).getTime() - new Date(b.from).getTime()),
+      )
+    }
+    const dates = Array.from(groups.keys()).sort(
+      (a, b) => new Date(a).getTime() - new Date(b).getTime(),
+    )
+    return { groups, dates }
+  }, [listing])
+
+  const slotsByDate = slotsData.groups
+  const dateOptions = slotsData.dates
+  const slotsForSelectedDate = selectedDate ? slotsByDate.get(selectedDate) ?? [] : []
+
+  const dateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat('lt-LT', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+      }),
+    [],
+  )
+
+  const formatDateLabel = useCallback((value: string) => dateFormatter.format(new Date(value)), [dateFormatter])
+
+  const handleDateSelect = useCallback(
+    (date: string) => {
+      setSelectedDate(date)
+      const firstSlot = slotsByDate.get(date)?.[0] ?? null
+      setSelectedSlotKey(firstSlot ? makeSlotKey(firstSlot) : null)
+    },
+    [slotsByDate],
+  )
+
+  const selectedSlot = useMemo(() => {
+    if (!listing || !selectedSlotKey) {
+      return null
+    }
+    return listing.availableSlots.find((slot) => makeSlotKey(slot) === selectedSlotKey) ?? null
+  }, [listing, selectedSlotKey])
+
+  const timeFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat('lt-LT', {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+    [],
+  )
+
+  const formatSlotRange = useCallback(
+    (slot: AvailabilitySlot) =>
+      `${timeFormatter.format(new Date(slot.from))} – ${timeFormatter.format(new Date(slot.to))}`,
+    [timeFormatter],
+  )
+
+  const heroImage = useMemo(
+    () => resolvePictureSrc(listing?.pictureUrl ?? undefined, listing?.pictureId ?? undefined) ?? null,
+    [listing?.pictureUrl, listing?.pictureId],
+  )
+
+  const resolvedGalleryImages = useMemo(() => {
+    if (!listing) return []
+    const useUrls = listing.galleryPictureUrls.length > 0
+    const sources = useUrls ? listing.galleryPictureUrls : listing.galleryPictureIds
+    return sources
+      .map((source) =>
+        useUrls ? resolvePictureSrc(source, undefined) : resolvePictureSrc(undefined, source),
+      )
+      .filter((src): src is string => Boolean(src))
+  }, [listing])
+
+  const lightboxImages = useMemo(() => {
+    const ordered = heroImage ? [heroImage, ...resolvedGalleryImages] : [...resolvedGalleryImages]
+    return Array.from(new Set(ordered))
+  }, [heroImage, resolvedGalleryImages])
+
+  useEffect(() => {
+    if (lightboxImages.length === 0) {
+      setCarouselIndex(0)
+      return
+    }
+    setCarouselIndex((prev) => (prev >= lightboxImages.length ? 0 : prev))
+  }, [lightboxImages.length])
+
+  const openLightbox = useCallback(
+    (index: number) => {
+      if (!lightboxImages.length) return
+      setLightboxIndex((index + lightboxImages.length) % lightboxImages.length)
+    },
+    [lightboxImages.length],
+  )
+
+  const closeLightbox = useCallback(() => setLightboxIndex(null), [])
+
+  const showNext = useCallback(() => {
+    if (!lightboxImages.length) return
+    setLightboxIndex((prev) => {
+      if (prev === null) return null
+      return (prev + 1) % lightboxImages.length
+    })
+  }, [lightboxImages.length])
+
+  const showPrev = useCallback(() => {
+    if (!lightboxImages.length) return
+    setLightboxIndex((prev) => {
+      if (prev === null) return null
+      return (prev - 1 + lightboxImages.length) % lightboxImages.length
+    })
+  }, [lightboxImages.length])
+
+  const showHeroNext = useCallback(() => {
+    if (!lightboxImages.length) return
+    setCarouselIndex((prev) => (prev + 1) % lightboxImages.length)
+  }, [lightboxImages.length])
+
+  const showHeroPrev = useCallback(() => {
+    if (!lightboxImages.length) return
+    setCarouselIndex((prev) => (prev - 1 + lightboxImages.length) % lightboxImages.length)
+  }, [lightboxImages.length])
+
+  useEffect(() => {
+    if (lightboxImages.length === 0 && lightboxIndex !== null) {
+      setLightboxIndex(null)
+    }
+  }, [lightboxImages.length, lightboxIndex])
+
+  useEffect(() => {
+    if (lightboxIndex === null) return
+    const handler = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setLightboxIndex(null)
+      } else if (event.key === 'ArrowRight') {
+        showNext()
+      } else if (event.key === 'ArrowLeft') {
+        showPrev()
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [lightboxIndex, showNext, showPrev])
 
   const handleBooking = async () => {
-    if (!listing || !selectedAvailability) return
-    const slot = listing.availabilities.find((availability) => availability.id === selectedAvailability)
+    if (!listing) return
+    const slot = selectedSlot
     if (!slot) return
 
     if (!isAuthenticated || user?.role !== 'Buyer') {
@@ -66,15 +237,18 @@ export const ListingDetailsPage = () => {
     setBookingStatus('loading')
     setBookingMessage(null)
     try {
+      const confirmationLabel = formatFriendly(slot.from)
       await client.post('/api/Viewings', {
         from: slot.from,
         to: slot.to,
         status: 1,
-        fkAvailabilityidAvailability: slot.id,
+        fkAvailabilityidAvailability: slot.availabilityId,
         fkListingidListing: listing.id,
       })
+      const { data } = await publicClient.get<PublicListingDetails>(`/api/Listings/public/${listing.id}`)
+      applyListing(data)
       setBookingStatus('success')
-      setBookingMessage('Prašymas pateiktas! Brokeris netrukus patvirtins jūsų apžiūrą.')
+      setBookingMessage(`Prašymas pateiktas (${confirmationLabel}). Brokeris netrukus patvirtins jūsų apžiūrą.`)
     } catch (err) {
       console.error(err)
       setBookingStatus('error')
@@ -82,25 +256,12 @@ export const ListingDetailsPage = () => {
     }
   }
 
-  const availabilityChips = useMemo(() => {
-    if (!listing) return []
-    return listing.availabilities.map((availability) => ({
-      id: availability.id,
-      label: `${formatFriendly(availability.from)} – ${formatFriendly(availability.to)}`,
-    }))
-  }, [listing])
+  const canBook = Boolean(isAuthenticated && user?.role === 'Buyer' && selectedSlot)
 
-  const canBook = Boolean(isAuthenticated && user?.role === 'Buyer' && selectedAvailability)
-
-  const selectedSlot: PublicAvailability | undefined = listing?.availabilities.find(
-    (availability) => availability.id === selectedAvailability,
-  )
-
-  const galleryUsesUrls = Boolean(listing && listing.galleryPictureUrls.length > 0)
-  const galleryItems = galleryUsesUrls
-    ? listing?.galleryPictureUrls ?? []
-    : listing?.galleryPictureIds ?? []
-  const shouldRenderGallery = galleryItems.length > 1
+  const heroHasImage = lightboxImages.length > 0
+  const heroStyle = heroHasImage
+    ? { backgroundImage: `url(${lightboxImages[carouselIndex]})` }
+    : buildCoverStyle(listing?.pictureUrl, listing?.pictureId)
 
   return (
     <div className="page listing-details">
@@ -115,14 +276,42 @@ export const ListingDetailsPage = () => {
         <>
           <section className="card details-hero">
             <div
-              className={
-                listing.pictureUrl
-                  ? 'details-hero__media'
-                  : 'details-hero__media details-hero__media--empty'
-              }
-              style={buildCoverStyle(listing.pictureUrl, listing.pictureId)}
+              className={heroHasImage ? 'details-hero__media' : 'details-hero__media details-hero__media--empty'}
+              style={heroStyle}
             >
-              {!listing.pictureUrl && <span>Nuotrauka ruošiama</span>}
+              {!heroHasImage && <span>Nuotrauka ruošiama</span>}
+              {heroHasImage && (
+                <>
+                  {lightboxImages.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        className="details-hero__nav details-hero__nav--prev"
+                        onClick={showHeroPrev}
+                        aria-label="Ankstesnė nuotrauka"
+                      >
+                        ‹
+                      </button>
+                      <button
+                        type="button"
+                        className="details-hero__nav details-hero__nav--next"
+                        onClick={showHeroNext}
+                        aria-label="Kita nuotrauka"
+                      >
+                        ›
+                      </button>
+                    </>
+                  )}
+                  <button
+                    type="button"
+                    className="details-hero__lightbox-trigger"
+                    onClick={() => openLightbox(carouselIndex)}
+                    aria-label="Padidinti nuotrauką"
+                  >
+                    <span className="details-hero__zoom">Padidinti</span>
+                  </button>
+                </>
+              )}
             </div>
             <div className="details-hero__content">
               <p className="hero__eyebrow">Skelbimas #{listing.id}</p>
@@ -183,25 +372,6 @@ export const ListingDetailsPage = () => {
             </article>
           </section>
 
-          {shouldRenderGallery && (
-            <section>
-              <h3>Nuotraukų galerija</h3>
-              <div className="gallery-grid">
-                {galleryItems.map((item, index) => {
-                  const style = galleryUsesUrls
-                    ? buildCoverStyle(item, undefined)
-                    : buildCoverStyle(undefined, item)
-                  const hasImage = Boolean(style)
-                  const key = `${item}-${index}`
-                  return (
-                    <div key={key} className="gallery-grid__item" style={style}>
-                      {!hasImage && <span>Nuotrauka</span>}
-                    </div>
-                  )
-                })}
-              </div>
-            </section>
-          )}
 
           <section className="details-booking">
             <article className="card booking-card">
@@ -209,18 +379,47 @@ export const ListingDetailsPage = () => {
                 <h3>Rezervuoti privačią apžiūrą</h3>
                 <p>Pasirinkite jums tinkamą brokerio laiką ir atsiųskite užklausą.</p>
               </div>
-              <div className="availability-list">
-                {availabilityChips.length === 0 && <p className="muted">Brokeris dar nepaskelbė savo prieinamumo.</p>}
-                {availabilityChips.map((chip) => (
-                  <button
-                    key={chip.id}
-                    type="button"
-                    className={chip.id === selectedAvailability ? 'availability-card availability-card--active' : 'availability-card'}
-                    onClick={() => setSelectedAvailability(chip.id)}
-                  >
-                    <p>{chip.label}</p>
-                  </button>
-                ))}
+              <div className="calendar">
+                {listing.availableSlots.length === 0 ? (
+                  <p className="muted">Brokeris dar nepaskelbė savo prieinamumo.</p>
+                ) : (
+                  <>
+                    <div className="calendar__dates">
+                      {dateOptions.map((date) => (
+                        <button
+                          key={date}
+                          type="button"
+                          className={
+                            date === selectedDate ? 'calendar__date calendar__date--active' : 'calendar__date'
+                          }
+                          onClick={() => handleDateSelect(date)}
+                        >
+                          {formatDateLabel(date)}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="calendar__slots">
+                      {slotsForSelectedDate.length === 0 ? (
+                        <p className="muted">Šiai dienai nebėra laisvų laikų.</p>
+                      ) : (
+                        slotsForSelectedDate.map((slot) => {
+                          const key = makeSlotKey(slot)
+                          const isActive = selectedSlotKey === key
+                          return (
+                            <button
+                              key={key}
+                              type="button"
+                              className={isActive ? 'calendar__slot calendar__slot--active' : 'calendar__slot'}
+                              onClick={() => setSelectedSlotKey(key)}
+                            >
+                              {formatSlotRange(slot)}
+                            </button>
+                          )
+                        })
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
               <div className="booking-actions">
                 {!isAuthenticated && (
@@ -248,6 +447,44 @@ export const ListingDetailsPage = () => {
               </div>
             </article>
           </section>
+
+          {lightboxIndex !== null && lightboxImages[lightboxIndex] && (
+            <div className="lightbox" role="dialog" aria-modal="true">
+              <button
+                type="button"
+                className="lightbox__close"
+                onClick={closeLightbox}
+                aria-label="Uždaryti galeriją"
+              >
+                ×
+              </button>
+              {lightboxImages.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    className="lightbox__nav lightbox__nav--prev"
+                    onClick={showPrev}
+                    aria-label="Ankstesnė nuotrauka"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    type="button"
+                    className="lightbox__nav lightbox__nav--next"
+                    onClick={showNext}
+                    aria-label="Kita nuotrauka"
+                  >
+                    ›
+                  </button>
+                </>
+              )}
+              <img
+                src={lightboxImages[lightboxIndex]}
+                alt="Skelbimo nuotrauka"
+                className="lightbox__image"
+              />
+            </div>
+          )}
         </>
       )}
     </div>

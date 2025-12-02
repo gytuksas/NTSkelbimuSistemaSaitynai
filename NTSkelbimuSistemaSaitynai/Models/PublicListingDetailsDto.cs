@@ -11,4 +11,5 @@ public class PublicListingDetailsDto : PublicListingDto
     public List<string> GalleryPictureIds { get; set; } = new();
     public List<string> GalleryPictureUrls { get; set; } = new();
     public IEnumerable<PublicAvailabilityDto> Availabilities { get; set; } = Array.Empty<PublicAvailabilityDto>();
+    public List<PublicAvailabilitySlotDto> AvailableSlots { get; set; } = new();
 }

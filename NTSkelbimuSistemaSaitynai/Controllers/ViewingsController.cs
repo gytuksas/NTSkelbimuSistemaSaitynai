@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using NTSkelbimuSistemaSaitynai.Authorization;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
+using System;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
@@ -12,7 +13,6 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    [ServiceFilter(typeof(NTSkelbimuSistemaSaitynai.Authorization.NotBlockedFilter))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class ViewingsController : ControllerBase
     {
@@ -275,8 +275,33 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                         return UnprocessableEntity("Availability is not owned by the listing broker");
                     }
 
-                    viewing.From = availability.From;
-                    viewing.To = availability.To;
+                    var slotFrom = DateTime.SpecifyKind(viewing.From, DateTimeKind.Utc);
+                    var slotTo = DateTime.SpecifyKind(viewing.To, DateTimeKind.Utc);
+                    var slotDuration = slotTo - slotFrom;
+
+                    if (Math.Abs(slotDuration.TotalMinutes - 60) > 0.01)
+                    {
+                        return UnprocessableEntity("Viewings must reserve exactly one hour.");
+                    }
+
+                    var availabilityStart = DateTime.SpecifyKind(availability.From, DateTimeKind.Utc);
+                    var availabilityEnd = DateTime.SpecifyKind(availability.To, DateTimeKind.Utc);
+
+                    if (slotFrom < availabilityStart || slotTo > availabilityEnd)
+                    {
+                        return UnprocessableEntity("Selected time falls outside broker availability.");
+                    }
+
+                    var overlaps = await _context.Viewings
+                        .AnyAsync(v => v.FkAvailabilityidAvailability == availability.IdAvailability && v.From < slotTo && v.To > slotFrom);
+
+                    if (overlaps)
+                    {
+                        return UnprocessableEntity("Selected time slot is already booked.");
+                    }
+
+                    viewing.From = slotFrom;
+                    viewing.To = slotTo;
                     viewing.Status = 1; // Pending confirmation
                 }
                 else
