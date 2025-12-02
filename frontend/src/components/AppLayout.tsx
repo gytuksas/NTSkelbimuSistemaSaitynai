@@ -1,16 +1,22 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { LoginPanel } from '../features/auth/LoginPanel'
-
-const links = [
-  { to: '/', label: 'Pagrindinis' },
-  { to: '/pirkejams', label: 'Pirkėjams' },
-  { to: '/brokeriams', label: 'Brokeriams' },
-  { to: '/administratoriams', label: 'Administratoriui' },
-]
+import { useAuth } from '../context/AuthContext'
 
 export const AppLayout = ({ children }: { children: React.ReactNode }) => {
+  const { user, isAuthenticated } = useAuth()
   const [open, setOpen] = useState(false)
+  const isBroker = Boolean(user && (user.role === 'Broker' || user.role === 'Administrator'))
+  const isAdmin = user?.role === 'Administrator'
+
+  const navLinks = [
+    { to: '/', label: 'Pagrindinis', show: true },
+    { to: '/skelbimai', label: 'Skelbimai', show: true },
+    { to: '/apziuros', label: 'Apžiūros', show: true },
+    { to: '/brokeriams', label: 'Brokeriams', show: isBroker },
+    { to: '/administratoriams', label: 'Administratoriui', show: isAdmin },
+    { to: '/profilis', label: 'Profilis', show: isAuthenticated },
+  ].filter((link) => link.show)
 
   return (
     <div className={`app-shell ${open ? 'app-shell--menu' : ''}`}>
@@ -27,7 +33,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
         </div>
         <nav className="main-nav">
-          {links.map((link) => (
+          {navLinks.map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
