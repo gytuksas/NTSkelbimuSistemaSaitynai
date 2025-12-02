@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { client, publicClient, baseURL } from '../api/client'
@@ -39,31 +40,46 @@ export const HomePage = () => {
 
   useEffect(() => {
     let cancelled = false
+    const fetchPublicListings = async () => {
+      const { data } = await publicClient.get<PublicListing[]>('/api/Listings/public')
+      if (!cancelled) {
+        setPublicListings(data ?? [])
+        setListings([])
+        setViewings([])
+      }
+    }
+
+    const fetchPrivateListings = async () => {
+      const [listingsResponse, viewingsResponse] = await Promise.all([
+        client.get<Listing[]>('/api/Listings'),
+        client.get<Viewing[]>('/api/Viewings'),
+      ])
+      if (!cancelled) {
+        setListings(listingsResponse.data ?? [])
+        setPublicListings([])
+        setViewings(viewingsResponse.data ?? [])
+      }
+    }
+
     const loadData = async () => {
       setLoading(true)
       setError(null)
       try {
         if (canSeePrivateListings) {
-          const [listingsResponse, viewingsResponse] = await Promise.all([
-            client.get<Listing[]>('/api/Listings'),
-            client.get<Viewing[]>('/api/Viewings'),
-          ])
-          if (!cancelled) {
-            setListings(listingsResponse.data ?? [])
-            setPublicListings([])
-            setViewings(viewingsResponse.data ?? [])
-          }
+          await fetchPrivateListings()
         } else {
-          const { data } = await publicClient.get<PublicListing[]>('/api/Listings/public')
-          if (!cancelled) {
-            setPublicListings(data ?? [])
-            setListings([])
-            setViewings([])
-          }
+          await fetchPublicListings()
         }
       } catch (err) {
-        console.error(err)
-        setError('Nepavyko įkelti skelbimų iš API.')
+        const isForbidden = axios.isAxiosError(err) && err.response?.status === 403
+        if (canSeePrivateListings && isForbidden) {
+          console.warn('Privatūs ištekliai nepasiekiami – rodoma vieša galerija.')
+          await fetchPublicListings()
+          setError('Brokerio skydelis nepasiekiamas – rodoma vieša galerija.')
+        } else {
+          console.error(err)
+          setError('Nepavyko įkelti skelbimų iš API.')
+        }
       } finally {
         if (!cancelled) {
           setLoading(false)
