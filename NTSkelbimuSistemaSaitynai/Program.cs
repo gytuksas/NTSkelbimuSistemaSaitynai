@@ -1,11 +1,14 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NTSkelbimuSistemaSaitynai;
 using NTSkelbimuSistemaSaitynai.Configuration;
 using NTSkelbimuSistemaSaitynai.DbUtils;
 using NuGet.Protocol.Plugins;
+using System.IO;
 using System.Text;
 using System.Text.Json;
 
@@ -19,6 +22,24 @@ builder.Services.AddOpenApi();
 
 string connString = new DbConnection().GetConnectionString();
 builder.Services.AddDbContext<PostgresContext>(options => options.UseNpgsql(connString));
+
+var uploadsRoot = builder.Configuration.GetValue<string>($"{FileStorageOptions.SectionName}:UploadRoot");
+if (string.IsNullOrWhiteSpace(uploadsRoot))
+{
+    uploadsRoot = Path.Combine(builder.Environment.ContentRootPath, "storage", "uploads");
+}
+else if (!Path.IsPathRooted(uploadsRoot))
+{
+    uploadsRoot = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, uploadsRoot));
+}
+
+var requestPath = builder.Configuration.GetValue<string>($"{FileStorageOptions.SectionName}:RequestPath") ?? "/uploads";
+
+builder.Services.Configure<FileStorageOptions>(options =>
+{
+    options.UploadRoot = uploadsRoot;
+    options.RequestPath = string.IsNullOrWhiteSpace(requestPath) ? "/uploads" : requestPath;
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -73,6 +94,9 @@ builder.Services.AddScoped<NTSkelbimuSistemaSaitynai.Authorization.OwnershipServ
 builder.Services.AddMvc(options => options.EnableEndpointRouting = false);
 var app = builder.Build();
 
+var fileStorageOptions = app.Services.GetRequiredService<IOptions<FileStorageOptions>>().Value;
+Directory.CreateDirectory(fileStorageOptions.UploadRoot);
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -80,6 +104,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(fileStorageOptions.UploadRoot),
+    RequestPath = fileStorageOptions.RequestPath
+});
 app.UseCors("AllowFrontend");
 
 app.UseAuthentication();

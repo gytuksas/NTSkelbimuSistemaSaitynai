@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 
@@ -11,5 +12,6 @@ public class PictureUploadRequest
     public bool Public { get; set; } = false;
 
     [Required]
-    public IFormFile File { get; set; } = null!;
+    [MinLength(1)]
+    public List<IFormFile> Files { get; set; } = new();
 }

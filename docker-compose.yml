@@ -4,6 +4,8 @@ services:
     build:
       context: .
       dockerfile: NTSkelbimuSistemaSaitynai/Dockerfile
+    volumes:
+      - ./NTSkelbimuSistemaSaitynai/storage/uploads:/app/storage/uploads
   frontend:
     build:
       context: frontend

@@ -49,12 +49,12 @@ const defaultApartmentForm: ApartmentFormState = {
 }
 
 type PictureUploadFormState = {
-  file: File | null
+  files: File[]
   public: boolean
 }
 
 const defaultPictureUpload: PictureUploadFormState = {
-  file: null,
+  files: [],
   public: true,
 }
 
@@ -236,25 +236,29 @@ export const BrokersPage = () => {
       setFeedback('Pasirinkite butą, kuriam priklausys nuotrauka.')
       return
     }
-    if (!pictureUploadForm.file) {
-      setFeedback('Pasirinkite failą prieš įkeldami.')
+    if (pictureUploadForm.files.length === 0) {
+      setFeedback('Pasirinkite bent vieną failą prieš įkeldami.')
       return
     }
     try {
       const formData = new FormData()
-      formData.append('file', pictureUploadForm.file)
+      pictureUploadForm.files.forEach((file) => formData.append('Files', file))
       formData.append('apartmentId', String(selectedApartmentId))
       formData.append('public', String(pictureUploadForm.public))
-      const { data } = await client.post<Picture>('/api/Pictures/upload', formData, {
+      const { data } = await client.post<Picture[]>('/api/Pictures/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
-      setPictures((prev) => [...prev, data])
+      if (Array.isArray(data) && data.length > 0) {
+        setPictures((prev) => [...prev, ...data])
+        setSelectedPictureId(data[data.length - 1].id)
+        setFeedback(data.length > 1 ? `Įkeltos ${data.length} nuotraukos!` : 'Nuotrauka įkelta!')
+      } else {
+        setFeedback('Įkėlimas atliktas, bet negrįžo nuotraukų duomenys.')
+      }
       setPictureUploadForm(defaultPictureUpload)
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
-      setSelectedPictureId(data.id)
-      setFeedback('Nuotrauka įkelta!')
     } catch (error) {
       console.error(error)
       setFeedback('Nepavyko įkelti nuotraukos. Patikrinkite formatą ir dydį.')
@@ -289,8 +293,8 @@ export const BrokersPage = () => {
   }
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] ?? null
-    setPictureUploadForm((prev) => ({ ...prev, file }))
+    const files = event.target.files ? Array.from(event.target.files) : []
+    setPictureUploadForm((prev) => ({ ...prev, files }))
   }
 
   if (!isBroker) {
@@ -468,8 +472,8 @@ export const BrokersPage = () => {
               </div>
               <form className="upload-form" onSubmit={handleUploadPicture}>
                 <label>
-                  Nuotraukos failas
-                  <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp" onChange={handleFileChange} />
+                  Nuotraukų failai
+                  <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={handleFileChange} />
                 </label>
                 <label>
                   Rodoma viešai?
