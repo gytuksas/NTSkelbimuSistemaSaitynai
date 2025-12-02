@@ -4,6 +4,7 @@ import { HomePage } from './pages/Home'
 import { BuyersPage } from './pages/Buyers'
 import { BrokersPage } from './pages/Brokers'
 import { AdminPage } from './pages/Admin'
+import { ListingDetailsPage } from './pages/ListingDetails'
 
 const App = () => {
   return (
@@ -13,6 +14,7 @@ const App = () => {
         <Route path="/pirkejams" element={<BuyersPage />} />
         <Route path="/brokeriams" element={<BrokersPage />} />
         <Route path="/administratoriams" element={<AdminPage />} />
+        <Route path="/skelbimai/:id" element={<ListingDetailsPage />} />
       </Routes>
     </AppLayout>
   )

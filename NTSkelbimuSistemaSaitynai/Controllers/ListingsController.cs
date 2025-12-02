@@ -26,6 +26,115 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         }
 
         /// <summary>
+        /// Public listings feed intended for guests (limited information, no contacts).
+        /// </summary>
+        [HttpGet("public")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<PublicListingDto>))]
+        public async Task<ActionResult<IEnumerable<PublicListingDto>>> GetPublicListings()
+        {
+            var listingsQuery = from listing in _context.Listings.Include(l => l.Viewing)
+                                let viewing = listing.Viewing
+                                join picture in _context.Pictures on listing.FkPictureid equals picture.Id into pictureGroup
+                                from picture in pictureGroup.DefaultIfEmpty()
+                                join apartment in _context.Apartments on picture.FkApartmentidApartment equals apartment.IdApartment into apartmentGroup
+                                from apartment in apartmentGroup.DefaultIfEmpty()
+                                join building in _context.Buildings on apartment.FkBuildingidBuilding equals building.IdBuilding into buildingGroup
+                                from building in buildingGroup.DefaultIfEmpty()
+                                select new PublicListingDto
+                                {
+                                    Id = listing.IdListing,
+                                    Description = listing.Description,
+                                    AskingPrice = listing.Askingprice,
+                                    Rent = listing.Rent,
+                                    PictureId = picture != null && picture.Public ? picture.Id : null,
+                                    BuildingCity = building != null ? building.City : null,
+                                    BuildingAddress = building != null ? building.Address : null,
+                                    NextViewingFrom = viewing != null ? viewing.From : (DateTime?)null,
+                                    NextViewingTo = viewing != null ? viewing.To : (DateTime?)null,
+                                };
+
+            var listings = await listingsQuery.ToListAsync();
+            return Ok(listings);
+        }
+
+        /// <summary>
+        /// Public listing details with basic apartment and broker info.
+        /// </summary>
+        [HttpGet("public/{id}")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PublicListingDetailsDto))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<PublicListingDetailsDto>> GetPublicListing(long id)
+        {
+            var listing = await _context.Listings
+                .Include(l => l.Viewing)
+                .Include(l => l.FkPicture)
+                    .ThenInclude(p => p.FkApartmentidApartmentNavigation)
+                        .ThenInclude(a => a.FkBuildingidBuildingNavigation)
+                .FirstOrDefaultAsync(l => l.IdListing == id);
+
+            if (listing == null)
+            {
+                return NotFound();
+            }
+
+            var picture = listing.FkPicture;
+            var apartment = picture?.FkApartmentidApartmentNavigation;
+            var building = apartment?.FkBuildingidBuildingNavigation;
+
+            User? broker = null;
+            if (building != null)
+            {
+                broker = await _context.Users.FindAsync(building.FkBrokeridUser);
+            }
+
+            var gallery = apartment == null
+                ? new List<string>()
+                : await _context.Pictures
+                    .Where(p => p.FkApartmentidApartment == apartment.IdApartment && p.Public)
+                    .Select(p => p.Id)
+                    .ToListAsync();
+
+            var brokerId = building?.FkBrokeridUser;
+            var availabilities = brokerId == null
+                ? new List<PublicAvailabilityDto>()
+                : await _context.Availabilities
+                    .Where(a => a.FkBrokeridUser == brokerId && a.To >= DateTime.UtcNow)
+                    .OrderBy(a => a.From)
+                    .Select(a => new PublicAvailabilityDto
+                    {
+                        Id = a.IdAvailability,
+                        From = a.From,
+                        To = a.To
+                    })
+                    .ToListAsync();
+
+            var details = new PublicListingDetailsDto
+            {
+                Id = listing.IdListing,
+                Description = listing.Description,
+                AskingPrice = listing.Askingprice,
+                Rent = listing.Rent,
+                PictureId = picture != null && picture.Public ? picture.Id : null,
+                BuildingCity = building?.City,
+                BuildingAddress = building?.Address,
+                NextViewingFrom = listing.Viewing?.From,
+                NextViewingTo = listing.Viewing?.To,
+                ApartmentArea = apartment?.Area,
+                Rooms = apartment?.Rooms,
+                ApartmentId = apartment?.IdApartment,
+                BuildingId = building?.IdBuilding,
+                BrokerName = broker != null ? $"{broker.Name} {broker.Surname}" : null,
+                BrokerPhone = broker?.Phone,
+                GalleryPictureIds = gallery,
+                Availabilities = availabilities
+            };
+
+            return Ok(details);
+        }
+
+        /// <summary>
         /// Get all listings.
         /// </summary>
         /// <returns>List of listings.</returns>

@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
-import { client } from '../api/client'
-import type { Listing, Viewing } from '../types/api'
+import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { client, publicClient, baseURL } from '../api/client'
+import type { Listing, PublicListing, Viewing } from '../types/api'
 import { useAuth } from '../context/AuthContext'
 import { formatPrice } from '../utils/text'
 import { formatFriendly } from '../utils/dates'
@@ -13,10 +14,23 @@ const rentFilterOptions = [
 
 type RentFilter = (typeof rentFilterOptions)[number]['value']
 
+type ListingCard = {
+  id: number
+  description: string
+  price?: number
+  rent: boolean
+  pictureId?: string
+  buildingCity?: string
+  buildingAddress?: string
+  nextViewingFrom?: string | null
+  nextViewingTo?: string | null
+}
+
 export const HomePage = () => {
   const { isAuthenticated } = useAuth()
   const [listings, setListings] = useState<Listing[]>([])
   const [viewings, setViewings] = useState<Viewing[]>([])
+  const [publicListings, setPublicListings] = useState<PublicListing[]>([])
   const [search, setSearch] = useState('')
   const [rentFilter, setRentFilter] = useState<RentFilter>('visi')
   const [loading, setLoading] = useState(false)
@@ -25,21 +39,26 @@ export const HomePage = () => {
   useEffect(() => {
     let cancelled = false
     const loadData = async () => {
-      if (!isAuthenticated) {
-        setListings([])
-        setViewings([])
-        return
-      }
       setLoading(true)
       setError(null)
       try {
-        const [listingsResponse, viewingsResponse] = await Promise.all([
-          client.get<Listing[]>('/api/Listings'),
-          client.get<Viewing[]>('/api/Viewings'),
-        ])
-        if (!cancelled) {
-          setListings(listingsResponse.data ?? [])
-          setViewings(viewingsResponse.data ?? [])
+        if (isAuthenticated) {
+          const [listingsResponse, viewingsResponse] = await Promise.all([
+            client.get<Listing[]>('/api/Listings'),
+            client.get<Viewing[]>('/api/Viewings'),
+          ])
+          if (!cancelled) {
+            setListings(listingsResponse.data ?? [])
+            setPublicListings([])
+            setViewings(viewingsResponse.data ?? [])
+          }
+        } else {
+          const { data } = await publicClient.get<PublicListing[]>('/api/Listings/public')
+          if (!cancelled) {
+            setPublicListings(data ?? [])
+            setListings([])
+            setViewings([])
+          }
         }
       } catch (err) {
         console.error(err)
@@ -57,14 +76,49 @@ export const HomePage = () => {
     }
   }, [isAuthenticated])
 
+  const listingCards = useMemo<ListingCard[]>(() => {
+    if (isAuthenticated) {
+      return listings.map((listing) => ({
+        id: listing.idListing,
+        description: listing.description,
+        price: listing.askingprice,
+        rent: listing.rent,
+        pictureId: listing.fkPictureid,
+      }))
+    }
+    return publicListings.map((listing) => ({
+      id: listing.id,
+      description: listing.description,
+      price: listing.askingPrice,
+      rent: listing.rent,
+      pictureId: listing.pictureId ?? undefined,
+      buildingCity: listing.buildingCity ?? undefined,
+      buildingAddress: listing.buildingAddress ?? undefined,
+      nextViewingFrom: listing.nextViewingFrom ?? null,
+      nextViewingTo: listing.nextViewingTo ?? null,
+    }))
+  }, [isAuthenticated, listings, publicListings])
+
   const filteredListings = useMemo(() => {
-    return listings.filter((listing) => {
+    return listingCards.filter((listing) => {
       const matchesQuery = listing.description.toLowerCase().includes(search.toLowerCase())
       const matchesRent =
         rentFilter === 'visi' || (rentFilter === 'nuoma' ? listing.rent : !listing.rent)
       return matchesQuery && matchesRent
     })
-  }, [listings, search, rentFilter])
+  }, [listingCards, search, rentFilter])
+
+  const publicViewingCards = useMemo(() => {
+    return publicListings
+      .filter((listing) => Boolean(listing.nextViewingFrom))
+      .map((listing) => ({
+        id: listing.id,
+        from: listing.nextViewingFrom as string,
+        to: listing.nextViewingTo ?? null,
+        city: listing.buildingCity ?? undefined,
+      }))
+      .sort((a, b) => new Date(a.from).getTime() - new Date(b.from).getTime())
+  }, [publicListings])
 
   return (
     <div className="page home">
@@ -97,7 +151,12 @@ export const HomePage = () => {
               </button>
             ))}
           </div>
-          {!isAuthenticated && <p className="hint">Prisijunkite, kad matytumėte gyvus API duomenis.</p>}
+          {!isAuthenticated && (
+            <p className="hint">
+              Svečiams rodome viešą brokerių galeriją. Prisijunkite, kad matytumėte asmeninius skelbimus ir
+              kurtumėte savo.
+            </p>
+          )}
         </div>
       </section>
 
@@ -109,15 +168,61 @@ export const HomePage = () => {
           {loading && <span>Kraunama...</span>}
         </div>
         <div className="listing-grid">
-          {filteredListings.map((listing) => (
-            <article key={listing.idListing} className="card listing-card">
-              <div className="listing-card__badge">#{listing.idListing}</div>
-              <h4>{listing.description}</h4>
-              <p className="listing-card__price">{formatPrice(listing.askingprice)}</p>
-              <p className="listing-card__meta">{listing.rent ? 'Nuoma' : 'Pardavimas'}</p>
-              <p className="listing-card__note">Nuotraukos ID: {listing.fkPictureid}</p>
-            </article>
-          ))}
+          {filteredListings.map((listing) => {
+            const coverStyle = listing.pictureId
+              ? { backgroundImage: `url(${baseURL}/uploads/${listing.pictureId})` }
+              : undefined
+            const card = (
+              <article
+                className={
+                  'card listing-card' + (!isAuthenticated ? ' listing-card--interactive' : '')
+                }
+              >
+                <div
+                  className={
+                    listing.pictureId
+                      ? 'listing-card__media'
+                      : 'listing-card__media listing-card__media--empty'
+                  }
+                  style={coverStyle}
+                >
+                  {!listing.pictureId && <span>Nuotrauka ruošiama</span>}
+                </div>
+                <div className="listing-card__badge">#{listing.id}</div>
+                <h4>{listing.description}</h4>
+                <p className="listing-card__price">{formatPrice(listing.price)}</p>
+                <p className="listing-card__meta">{listing.rent ? 'Nuoma' : 'Pardavimas'}</p>
+                {listing.buildingCity && (
+                  <p className="listing-card__meta">
+                    {listing.buildingCity}
+                    {listing.buildingAddress ? ` · ${listing.buildingAddress}` : ''}
+                  </p>
+                )}
+                {listing.nextViewingFrom && (
+                  <p className="listing-card__meta">
+                    Artimiausia apžiūra {formatFriendly(listing.nextViewingFrom)}
+                  </p>
+                )}
+                {listing.pictureId && !isAuthenticated && (
+                  <p className="listing-card__note">Nuotrauka #{listing.pictureId}</p>
+                )}
+                {!isAuthenticated && (
+                  <div className="listing-card__cta">
+                    <span>Žiūrėti detaliau</span>
+                    <span aria-hidden="true">→</span>
+                  </div>
+                )}
+              </article>
+            )
+
+            return isAuthenticated ? (
+              <Fragment key={listing.id}>{card}</Fragment>
+            ) : (
+              <Link key={listing.id} to={`/skelbimai/${listing.id}`} className="listing-card__link">
+                {card}
+              </Link>
+            )
+          })}
           {!loading && filteredListings.length === 0 && (
             <p className="muted">Nėra skelbimų, atitinkančių filtrus.</p>
           )}
@@ -129,20 +234,40 @@ export const HomePage = () => {
           <h3>Atvirų durų dienos</h3>
           <p>Greita brokerių prieinamumo ir suplanuotų vizitų apžvalga.</p>
         </div>
-        <div className="timeline">
-          {viewings.map((viewing) => (
-            <div key={viewing.idViewing} className="timeline__item">
-              <div>
-                <p className="timeline__date">{formatFriendly(viewing.from)}</p>
-                <p className="timeline__subtitle">Trukmė iki {formatFriendly(viewing.to)}</p>
+        {isAuthenticated ? (
+          <div className="timeline">
+            {viewings.map((viewing) => (
+              <div key={viewing.idViewing} className="timeline__item">
+                <div>
+                  <p className="timeline__date">{formatFriendly(viewing.from)}</p>
+                  <p className="timeline__subtitle">Trukmė iki {formatFriendly(viewing.to)}</p>
+                </div>
+                <div className={`status status--${viewing.status}`}>
+                  Būsena #{viewing.status}
+                </div>
               </div>
-              <div className={`status status--${viewing.status}`}>
-                Būsena #{viewing.status}
+            ))}
+            {viewings.length === 0 && <p className="muted">Šiuo metu neturite suplanuotų apžiūrų.</p>}
+          </div>
+        ) : (
+          <div className="timeline">
+            {publicViewingCards.map((viewing) => (
+              <div key={viewing.id} className="timeline__item">
+                <div>
+                  <p className="timeline__date">{formatFriendly(viewing.from)}</p>
+                  <p className="timeline__subtitle">
+                    {viewing.city ? `${viewing.city} · ` : ''}
+                    {viewing.to ? `iki ${formatFriendly(viewing.to)}` : 'trukmė neviešinama'}
+                  </p>
+                </div>
+                <div className="status">Vieša apžiūra #{viewing.id}</div>
               </div>
-            </div>
-          ))}
-          {!isAuthenticated && <p className="muted">Prisijunkite, kad matytumėte suplanuotas apžiūras.</p>}
-        </div>
+            ))}
+            {publicViewingCards.length === 0 && (
+              <p className="muted">Šiuo metu neviešinama jokių atvirų durų dienų.</p>
+            )}
+          </div>
+        )}
       </section>
     </div>
   )

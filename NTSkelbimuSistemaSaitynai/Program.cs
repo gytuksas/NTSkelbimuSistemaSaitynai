@@ -41,6 +41,14 @@ builder.Services.AddSwaggerGen(c =>
 
 Configuration configuration = Configuration.GetConfiguration();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -71,7 +79,8 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-//app.UseAuthorization();
+app.UseStaticFiles();
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();

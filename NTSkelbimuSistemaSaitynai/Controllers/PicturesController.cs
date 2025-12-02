@@ -1,8 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using NTSkelbimuSistemaSaitynai.Authorization;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
+using System;
+using System.IO;
+using System.Linq;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
@@ -18,11 +22,35 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
     {
         private readonly PostgresContext _context;
         private readonly OwnershipService _ownership;
+        private readonly IWebHostEnvironment _environment;
 
-        public PicturesController(PostgresContext context, OwnershipService ownershipService)
+        public PicturesController(PostgresContext context, OwnershipService ownershipService, IWebHostEnvironment environment)
         {
             _context = context;
             _ownership = ownershipService;
+            _environment = environment;
+        }
+
+        private string EnsureUploadsDirectory()
+        {
+            var webRoot = _environment.WebRootPath;
+            if (string.IsNullOrEmpty(webRoot))
+            {
+                webRoot = Path.Combine(AppContext.BaseDirectory, "wwwroot");
+            }
+            var uploadPath = Path.Combine(webRoot, "uploads");
+            Directory.CreateDirectory(uploadPath);
+            return uploadPath;
+        }
+
+        private void DeletePictureFile(string pictureId)
+        {
+            var uploadPath = EnsureUploadsDirectory();
+            var filePath = Path.Combine(uploadPath, pictureId);
+            if (System.IO.File.Exists(filePath))
+            {
+                System.IO.File.Delete(filePath);
+            }
         }
 
         /// <summary>
@@ -224,6 +252,83 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         }
 
         /// <summary>
+        /// Upload a new picture file and create its record.
+        /// </summary>
+        /// <param name="request">Upload payload with apartment reference and visibility.</param>
+        /// <returns>The stored Picture record.</returns>
+        [HttpPost("upload")]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Picture))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        public async Task<ActionResult<Picture>> UploadPicture([FromForm] PictureUploadRequest request)
+        {
+            if (request.File == null || request.File.Length == 0)
+            {
+                return BadRequest("File payload is empty.");
+            }
+
+            if (!User.IsInRole("Administrator"))
+            {
+                var currentId = _ownership.GetCurrentUserId(User);
+                var owns = currentId != null && await _ownership.BrokerOwnsApartment(currentId.Value, request.ApartmentId);
+                if (!owns)
+                {
+                    return Forbid();
+                }
+            }
+
+            if (!ApartmentExists(request.ApartmentId))
+            {
+                return UnprocessableEntity("Apartment does not exist.");
+            }
+
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+            var extension = Path.GetExtension(request.File.FileName).ToLowerInvariant();
+            if (!allowedExtensions.Contains(extension))
+            {
+                return BadRequest("Palaikomi tik JPG, PNG arba WEBP failai.");
+            }
+
+            if (request.File.Length > 10 * 1024 * 1024)
+            {
+                return BadRequest("Failas per didelis (limitas 10 MB).");
+            }
+
+            var uploadsPath = EnsureUploadsDirectory();
+            var newFileName = $"{Guid.NewGuid():N}{extension}";
+            var destinationPath = Path.Combine(uploadsPath, newFileName);
+
+            await using (var stream = System.IO.File.Create(destinationPath))
+            {
+                await request.File.CopyToAsync(stream);
+            }
+
+            var picture = new Picture
+            {
+                Id = newFileName,
+                Public = request.Public,
+                FkApartmentidApartment = request.ApartmentId,
+            };
+
+            _context.Pictures.Add(picture);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                if (PictureExists(picture.Id))
+                {
+                    return Conflict();
+                }
+                throw;
+            }
+
+            return CreatedAtAction(nameof(GetPicture), new { id = picture.Id }, picture);
+        }
+
+        /// <summary>
         /// Delete a picture by ID.
         /// </summary>
         /// <param name="id">Picture ID.</param>
@@ -250,6 +355,8 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
 
             _context.Pictures.Remove(picture);
             await _context.SaveChangesAsync();
+
+            DeletePictureFile(id);
 
             return NoContent();
         }

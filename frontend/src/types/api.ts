@@ -8,6 +8,35 @@ export interface Listing {
   fkPictureid: string
 }
 
+export interface PublicListing {
+  id: number
+  description: string
+  askingPrice: number
+  rent: boolean
+  buildingCity?: string | null
+  buildingAddress?: string | null
+  pictureId?: string | null
+  nextViewingFrom?: string | null
+  nextViewingTo?: string | null
+}
+
+export interface PublicAvailability {
+  id: number
+  from: string
+  to: string
+}
+
+export interface PublicListingDetails extends PublicListing {
+  apartmentArea?: number | null
+  rooms?: number | null
+  apartmentId?: number | null
+  buildingId?: number | null
+  brokerName?: string | null
+  brokerPhone?: string | null
+  galleryPictureIds: string[]
+  availabilities: PublicAvailability[]
+}
+
 export interface Picture {
   id: string
   public: boolean

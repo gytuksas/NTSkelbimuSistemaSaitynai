@@ -229,16 +229,62 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Viewing>> PostViewing(Viewing viewing)
         {
+            var availability = await _context.Availabilities.FindAsync(viewing.FkAvailabilityidAvailability);
+            if (availability == null)
+            {
+                return UnprocessableEntity("Availability does not exist");
+            }
+
+            var listing = await _context.Listings
+                .Include(l => l.FkPicture)
+                    .ThenInclude(p => p.FkApartmentidApartmentNavigation)
+                        .ThenInclude(a => a.FkBuildingidBuildingNavigation)
+                .FirstOrDefaultAsync(l => l.IdListing == viewing.FkListingidListing);
+
+            if (listing == null)
+            {
+                return UnprocessableEntity("Listing does not exist");
+            }
+
+            var listingBrokerId = listing.FkPicture?
+                .FkApartmentidApartmentNavigation?
+                .FkBuildingidBuildingNavigation?
+                .FkBrokeridUser;
+
+            if (listingBrokerId == null)
+            {
+                return UnprocessableEntity("Listing broker is not configured");
+            }
+
             if (!User.IsInRole("Administrator"))
             {
                 var currentId = _ownership.GetCurrentUserId(User);
-                var ownsAvailability = currentId != null && await _ownership.BrokerOwnsAvailability(currentId.Value, viewing.FkAvailabilityidAvailability);
-                var ownsListing = currentId != null && await _ownership.BrokerOwnsListing(currentId.Value, viewing.FkListingidListing);
-                if (!(ownsAvailability && ownsListing))
+                if (User.IsInRole("Broker"))
+                {
+                    var ownsAvailability = currentId != null && await _ownership.BrokerOwnsAvailability(currentId.Value, viewing.FkAvailabilityidAvailability);
+                    var ownsListing = currentId != null && await _ownership.BrokerOwnsListing(currentId.Value, viewing.FkListingidListing);
+                    if (!(ownsAvailability && ownsListing))
+                    {
+                        return Forbid();
+                    }
+                }
+                else if (User.IsInRole("Buyer"))
+                {
+                    if (availability.FkBrokeridUser != listingBrokerId)
+                    {
+                        return UnprocessableEntity("Availability is not owned by the listing broker");
+                    }
+
+                    viewing.From = availability.From;
+                    viewing.To = availability.To;
+                    viewing.Status = 1; // Pending confirmation
+                }
+                else
                 {
                     return Forbid();
                 }
             }
+
             _context.Viewings.Add(viewing);
             try
             {
