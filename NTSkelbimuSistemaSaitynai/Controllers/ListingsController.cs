@@ -81,6 +81,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 .Include(l => l.FkPicture)
                     .ThenInclude(p => p.FkApartmentidApartmentNavigation)
                         .ThenInclude(a => a.FkBuildingidBuildingNavigation)
+                            .ThenInclude(b => b.EnergyNavigation)
+                .Include(l => l.FkPicture)
+                    .ThenInclude(p => p.FkApartmentidApartmentNavigation)
+                        .ThenInclude(a => a.FinishNavigation)
+                .Include(l => l.FkPicture)
+                    .ThenInclude(p => p.FkApartmentidApartmentNavigation)
+                        .ThenInclude(a => a.HeatingNavigation)
                 .FirstOrDefaultAsync(l => l.IdListing == id);
 
             if (listing == null)
@@ -136,6 +143,16 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 Rooms = apartment?.Rooms,
                 ApartmentId = apartment?.IdApartment,
                 BuildingId = building?.IdBuilding,
+                BuildingEnergyClass = building?.EnergyNavigation?.Name,
+                BuildingFloors = building?.Floors,
+                BuildingYear = building?.Year,
+                BuildingLastRenovationYear = building?.Lastrenovationyear,
+                ApartmentNumber = apartment?.Apartmentnumber,
+                ApartmentFloor = apartment?.Iswholebuilding == true ? null : apartment?.Floor,
+                ApartmentIsWholeBuilding = apartment?.Iswholebuilding,
+                ApartmentNotes = string.IsNullOrWhiteSpace(apartment?.Notes) ? null : apartment?.Notes,
+                ApartmentHeating = apartment?.HeatingNavigation?.Name,
+                ApartmentFinish = apartment?.FinishNavigation?.Name,
                 BrokerName = broker != null ? $"{broker.Name} {broker.Surname}" : null,
                 BrokerPhone = broker?.Phone,
                 GalleryPictureIds = gallery,

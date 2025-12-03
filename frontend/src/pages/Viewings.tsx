@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { client, publicClient } from '../api/client'
 import type { PublicListing, Viewing } from '../types/api'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 import { formatFriendly } from '../utils/dates'
 import { resolvePictureSrc } from '../utils/pictures'
 

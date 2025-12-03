@@ -2,9 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { client, publicClient } from '../api/client'
 import type { AvailabilitySlot, PublicListingDetails } from '../types/api'
-import { formatPrice } from '../utils/text'
+import { formatPrice, translateFinishType, translateHeatingType } from '../utils/text'
 import { formatFriendly } from '../utils/dates'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 import { buildCoverStyle, resolvePictureSrc } from '../utils/pictures'
 
 const makeSlotKey = (slot: AvailabilitySlot) => `${slot.availabilityId}-${slot.from}`
@@ -258,10 +258,70 @@ export const ListingDetailsPage = () => {
 
   const canBook = Boolean(isAuthenticated && user?.role === 'Buyer' && selectedSlot)
 
+  const buildingInfoItems = listing
+    ? [
+        {
+          label: 'Energetinė klasė',
+          value: listing.buildingEnergyClass ?? 'Nenurodyta',
+        },
+        {
+          label: 'Aukštų skaičius',
+          value: listing.buildingFloors ? `${listing.buildingFloors} aukšt.` : 'Nenurodyta',
+        },
+        {
+          label: 'Statybos metai',
+          value: listing.buildingYear ? `${listing.buildingYear} m.` : 'Nenurodyta',
+        },
+        {
+          label: 'Renovacija',
+          value: listing.buildingLastRenovationYear
+            ? `${listing.buildingLastRenovationYear} m.`
+            : 'Informacija nepateikta',
+        },
+      ]
+    : []
+
+  const apartmentInfoItems = listing
+    ? [
+        {
+          label: 'Buto numeris',
+          value:
+            listing.apartmentNumber !== undefined && listing.apartmentNumber !== null
+              ? String(listing.apartmentNumber)
+              : '—',
+        },
+        {
+          label: 'Aukštas',
+          value: listing.apartmentIsWholeBuilding
+            ? 'Visas pastatas'
+            : listing.apartmentFloor !== undefined && listing.apartmentFloor !== null
+              ? `${listing.apartmentFloor}`
+              : 'Nenurodyta',
+        },
+        {
+          label: 'Šildymas',
+          value: translateHeatingType(listing.apartmentHeating),
+        },
+        {
+          label: 'Apdaila',
+          value: translateFinishType(listing.apartmentFinish),
+        },
+      ]
+    : []
+
+  const apartmentDescription = listing?.apartmentNotes?.trim() || null
+
   const heroHasImage = lightboxImages.length > 0
   const heroStyle = heroHasImage
     ? { backgroundImage: `url(${lightboxImages[carouselIndex]})` }
     : buildCoverStyle(listing?.pictureUrl, listing?.pictureId)
+  const heroEyebrow = listing
+    ? listing.buildingCity
+      ? `${listing.buildingCity}${listing.buildingAddress ? `, ${listing.buildingAddress}` : ''}`
+      : listing.rent
+        ? 'Nuomos pasiūlymas'
+        : 'Pardavimo pasiūlymas'
+    : ''
 
   return (
     <div className="page listing-details">
@@ -314,7 +374,7 @@ export const ListingDetailsPage = () => {
               )}
             </div>
             <div className="details-hero__content">
-              <p className="hero__eyebrow">Skelbimas #{listing.id}</p>
+              <p className="hero__eyebrow">{heroEyebrow}</p>
               <h2>{listing.description}</h2>
               <p className="details-price">{formatPrice(listing.askingPrice)}</p>
               <p className="details-chip">{listing.rent ? 'Nuomai' : 'Pardavimui'}</p>
@@ -343,20 +403,25 @@ export const ListingDetailsPage = () => {
 
           <section className="details-grid">
             <article className="card">
+              <h3>Pastato informacija</h3>
+              <ul className="info-list">
+                {buildingInfoItems.map((item) => (
+                  <li key={item.label}>
+                    <span>{item.label}</span>
+                    <strong>{item.value}</strong>
+                  </li>
+                ))}
+              </ul>
+            </article>
+            <article className="card">
               <h3>Buto informacija</h3>
               <ul className="info-list">
-                <li>
-                  <span>Butas ID</span>
-                  <strong>{listing.apartmentId ?? '—'}</strong>
-                </li>
-                <li>
-                  <span>Pastatas ID</span>
-                  <strong>{listing.buildingId ?? '—'}</strong>
-                </li>
-                <li>
-                  <span>Miestas</span>
-                  <strong>{listing.buildingCity ?? '—'}</strong>
-                </li>
+                {apartmentInfoItems.map((item) => (
+                  <li key={item.label}>
+                    <span>{item.label}</span>
+                    <strong>{item.value}</strong>
+                  </li>
+                ))}
               </ul>
             </article>
             <article className="card">
@@ -371,6 +436,13 @@ export const ListingDetailsPage = () => {
               )}
             </article>
           </section>
+
+          {apartmentDescription && (
+            <section className="card details-description">
+              <h3>Aprašymas</h3>
+              <p>{apartmentDescription}</p>
+            </section>
+          )}
 
 
           <section className="details-booking">

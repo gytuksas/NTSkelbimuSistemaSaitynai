@@ -38,6 +38,16 @@ export interface PublicListingDetails extends PublicListing {
   rooms?: number | null
   apartmentId?: number | null
   buildingId?: number | null
+  buildingEnergyClass?: string | null
+  buildingFloors?: number | null
+  buildingYear?: number | null
+  buildingLastRenovationYear?: number | null
+  apartmentNumber?: number | null
+  apartmentFloor?: number | null
+  apartmentIsWholeBuilding?: boolean | null
+  apartmentNotes?: string | null
+  apartmentHeating?: string | null
+  apartmentFinish?: string | null
   brokerName?: string | null
   brokerPhone?: string | null
   galleryPictureIds: string[]

@@ -1,26 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { jwtDecode } from 'jwt-decode'
 import { client, publicClient } from '../api/client'
 import { tokenStore, type TokenPair } from '../api/tokenStore'
-import type { AppUser, TokenPayload, UserRole } from '../types/api'
-
-type Identity = {
-  id: number
-  role: UserRole
-  name?: string
-  surname?: string
-  email?: string
-}
-
-type AuthContextValue = {
-  isAuthenticated: boolean
-  user: Identity | null
-  loading: boolean
-  login: (email: string, password: string) => Promise<void>
-  logout: () => Promise<void>
-}
-
-const AuthContext = createContext<AuthContextValue | undefined>(undefined)
+import type { AppUser, TokenPayload } from '../types/api'
+import { AuthContext, type AuthContextValue, type Identity } from './authContext'
 
 const decodeIdentity = (accessToken: string | null): Identity | null => {
   if (!accessToken) return null
@@ -63,7 +46,7 @@ async function fetchProfile(id: number): Promise<Partial<Identity>> {
   }
 }
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<Identity | null>(decodeIdentity(tokenStore.getTokens().accessToken))
   const [loading, setLoading] = useState(false)
 
@@ -126,12 +109,4 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
-
-export const useAuth = () => {
-  const ctx = useContext(AuthContext)
-  if (!ctx) {
-    throw new Error('useAuth privalo būti naudojamas AuthProvider viduje')
-  }
-  return ctx
 }

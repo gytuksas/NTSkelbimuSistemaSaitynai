@@ -4,9 +4,43 @@ const priceFormatter = new Intl.NumberFormat('lt-LT', {
   maximumFractionDigits: 0,
 })
 
+const finishTypeTranslations: Record<string, string> = {
+  complete: 'Pilnai įrengtas',
+  partial: 'Dalinė apdaila',
+  unfinished: 'Neįrengtas',
+  'not fully built': 'Ne iki galo pastatytas',
+  foundations: 'Pamatai',
+  other: 'Kita',
+}
+
+const heatingTypeTranslations: Record<string, string> = {
+  central: 'Centrinis',
+  gas: 'Dujinis',
+  'solid fuel': 'Kietojo kuro',
+  electric: 'Elektra',
+  'heat pump': 'Šilumos siurblys',
+  other: 'Kita',
+}
+
 export const formatPrice = (value?: number) => {
   if (value === undefined || value === null) {
     return '—'
   }
   return priceFormatter.format(value)
+}
+
+export const translateFinishType = (value?: string | null) => {
+  if (!value) {
+    return 'Nenurodyta'
+  }
+  const normalized = value.trim().toLowerCase()
+  return finishTypeTranslations[normalized] ?? value
+}
+
+export const translateHeatingType = (value?: string | null) => {
+  if (!value) {
+    return 'Nenurodyta'
+  }
+  const normalized = value.trim().toLowerCase()
+  return heatingTypeTranslations[normalized] ?? value
 }

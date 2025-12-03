@@ -562,6 +562,7 @@ textarea {
   gap: 1.5rem;
 }
 
+
 .details-broker {
   font-size: 1.1rem;
   margin-bottom: 0.25rem;
@@ -728,13 +729,44 @@ textarea {
   margin: 0;
   padding: 0;
   display: flex;
-  gap: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem 1.25rem;
+  width: 100%;
 }
 
 .info-list li {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  flex: 1 1 160px;
+  padding: 0.35rem 0.25rem;
+}
+
+.info-list--stacked {
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.info-list--stacked li {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.02);
+  width: 100%;
+}
+
+.info-list--stacked li strong {
+  white-space: pre-line;
+  word-break: break-word;
+}
+
+.details-description {
+  margin-top: 1rem;
+}
+
+.details-description p {
+  white-space: pre-line;
+  margin: 0.5rem 0 0;
 }
 
 .admin-toggle {

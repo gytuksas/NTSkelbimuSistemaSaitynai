@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { client, baseURL } from '../api/client'
 import type { Apartment, Availability, Building, Listing, Picture, Viewing } from '../types/api'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 import { toDateTimeLocal, formatFriendly } from '../utils/dates'
 import { formatPrice } from '../utils/text'
 
@@ -75,9 +75,9 @@ export const BrokersPage = () => {
   const [apartmentForm, setApartmentForm] = useState(defaultApartmentForm)
   const [pictureUploadForm, setPictureUploadForm] = useState(defaultPictureUpload)
 
-  const [selectedBuildingId, setSelectedBuildingId] = useState<number | null>(null)
-  const [selectedApartmentId, setSelectedApartmentId] = useState<number | null>(null)
-  const [selectedPictureId, setSelectedPictureId] = useState<string | null>(null)
+  const [selectedBuildingIdInput, setSelectedBuildingIdInput] = useState<number | null>(null)
+  const [selectedApartmentIdInput, setSelectedApartmentIdInput] = useState<number | null>(null)
+  const [selectedPictureIdInput, setSelectedPictureIdInput] = useState<string | null>(null)
   const [feedback, setFeedback] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -108,66 +108,83 @@ export const BrokersPage = () => {
     void loadBrokerData()
   }, [isBroker])
 
-  useEffect(() => {
+  const selectedBuildingId = useMemo(() => {
     if (buildings.length === 0) {
-      setSelectedBuildingId(null)
-      return
+      return null
     }
-    if (selectedBuildingId === null || !buildings.some((building) => building.idBuilding === selectedBuildingId)) {
-      setSelectedBuildingId(buildings[0].idBuilding)
+    if (
+      selectedBuildingIdInput !== null &&
+      buildings.some((building) => building.idBuilding === selectedBuildingIdInput)
+    ) {
+      return selectedBuildingIdInput
     }
-  }, [buildings, selectedBuildingId])
+    return buildings[0].idBuilding
+  }, [buildings, selectedBuildingIdInput])
 
-  useEffect(() => {
-    if (selectedBuildingId === null) {
-      setSelectedApartmentId(null)
-      return
-    }
-    const scopedApartments = apartments.filter((apartment) => apartment.fkBuildingidBuilding === selectedBuildingId)
-    if (scopedApartments.length === 0) {
-      setSelectedApartmentId(null)
-      return
-    }
-    if (!selectedApartmentId || !scopedApartments.some((apartment) => apartment.idApartment === selectedApartmentId)) {
-      setSelectedApartmentId(scopedApartments[0].idApartment)
-    }
-  }, [apartments, selectedBuildingId, selectedApartmentId])
-
-  useEffect(() => {
-    if (selectedApartmentId === null) {
-      setSelectedPictureId(null)
-      return
-    }
-    const scopedPictures = pictures.filter((picture) => picture.fkApartmentidApartment === selectedApartmentId)
-    if (scopedPictures.length === 0) {
-      setSelectedPictureId(null)
-      return
-    }
-    if (!selectedPictureId || !scopedPictures.some((picture) => picture.id === selectedPictureId)) {
-      setSelectedPictureId(scopedPictures[0].id)
-    }
-  }, [pictures, selectedApartmentId, selectedPictureId])
-
-  const selectedBuilding = buildings.find((building) => building.idBuilding === selectedBuildingId)
   const apartmentsInBuilding = useMemo(
     () => (selectedBuildingId ? apartments.filter((apartment) => apartment.fkBuildingidBuilding === selectedBuildingId) : []),
     [apartments, selectedBuildingId],
   )
+
+  const selectedApartmentId = useMemo(() => {
+    if (!selectedBuildingId || apartmentsInBuilding.length === 0) {
+      return null
+    }
+    if (
+      selectedApartmentIdInput !== null &&
+      apartmentsInBuilding.some((apartment) => apartment.idApartment === selectedApartmentIdInput)
+    ) {
+      return selectedApartmentIdInput
+    }
+    return apartmentsInBuilding[0].idApartment
+  }, [selectedApartmentIdInput, apartmentsInBuilding, selectedBuildingId])
+
   const picturesInApartment = useMemo(
     () => (selectedApartmentId ? pictures.filter((picture) => picture.fkApartmentidApartment === selectedApartmentId) : []),
     [pictures, selectedApartmentId],
   )
+
+  const selectedPictureId = useMemo(() => {
+    if (!selectedApartmentId || picturesInApartment.length === 0) {
+      return null
+    }
+    if (selectedPictureIdInput !== null && picturesInApartment.some((picture) => picture.id === selectedPictureIdInput)) {
+      return selectedPictureIdInput
+    }
+    return picturesInApartment[0]?.id ?? null
+  }, [selectedPictureIdInput, picturesInApartment, selectedApartmentId])
+
+  const selectedBuilding = buildings.find((building) => building.idBuilding === selectedBuildingId)
   const selectedPicture = pictures.find((picture) => picture.id === selectedPictureId)
+  const selectedApartment = apartments.find((apartment) => apartment.idApartment === selectedApartmentId)
+  const pictureDirectory = useMemo(() => new Map(pictures.map((picture) => [picture.id, picture])), [pictures])
   const selectedListing = listings.find((listing) => listing.fkPictureid === selectedPictureId)
+  const selectedPicturePosition = selectedPictureId ? picturesInApartment.findIndex((picture) => picture.id === selectedPictureId) : -1
+  const selectedApartmentSummary = selectedApartment
+    ? [
+        selectedApartment.apartmentnumber ? `Nr. ${selectedApartment.apartmentnumber}` : null,
+        `${selectedApartment.rooms} kamb.`,
+        `${selectedApartment.area} m²`,
+      ]
+        .filter(Boolean)
+        .join(' · ')
+    : null
+  const selectedPictureSummary = selectedPicture
+    ? selectedPicturePosition >= 0 && picturesInApartment.length > 0
+      ? `Nuotrauka ${selectedPicturePosition + 1}/${picturesInApartment.length} · ${selectedPicture.public ? 'vieša' : 'privati'}`
+      : selectedPicture.public
+        ? 'Vieša nuotrauka'
+        : 'Privati nuotrauka'
+    : null
 
   const handleBuildingCreate = async () => {
     if (!user) return
     try {
       const payload = { ...buildingForm, fkBrokeridUser: user.id }
       const { data } = await client.post<Building>('/api/Buildings', payload)
-      setBuildings((prev) => [...prev, data])
-      setBuildingForm(defaultBuilding)
-      setSelectedBuildingId(data.idBuilding)
+  setBuildings((prev) => [...prev, data])
+  setBuildingForm(defaultBuilding)
+  setSelectedBuildingIdInput(data.idBuilding)
       setFeedback('Pastatas išsaugotas!')
     } catch (error) {
       console.error(error)
@@ -193,9 +210,9 @@ export const BrokersPage = () => {
         isWholeBuilding: apartmentForm.isWholeBuilding,
       }
       const { data } = await client.post<Apartment>('/api/Apartments', payload)
-      setApartments((prev) => [...prev, data])
-      setApartmentForm(defaultApartmentForm)
-      setSelectedApartmentId(data.idApartment)
+  setApartments((prev) => [...prev, data])
+  setApartmentForm(defaultApartmentForm)
+  setSelectedApartmentIdInput(data.idApartment)
       setFeedback('Butas pridėtas!')
     } catch (error) {
       console.error(error)
@@ -249,8 +266,8 @@ export const BrokersPage = () => {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
       if (Array.isArray(data) && data.length > 0) {
-        setPictures((prev) => [...prev, ...data])
-        setSelectedPictureId(data[data.length - 1].id)
+  setPictures((prev) => [...prev, ...data])
+  setSelectedPictureIdInput(data[data.length - 1].id)
         setFeedback(data.length > 1 ? `Įkeltos ${data.length} nuotraukos!` : 'Nuotrauka įkelta!')
       } else {
         setFeedback('Įkėlimas atliktas, bet negrįžo nuotraukų duomenys.')
@@ -313,7 +330,7 @@ export const BrokersPage = () => {
               type="button"
               key={building.idBuilding}
               className={selectedBuildingId === building.idBuilding ? 'selector-list__item selector-list__item--active' : 'selector-list__item'}
-              onClick={() => setSelectedBuildingId(building.idBuilding)}
+              onClick={() => setSelectedBuildingIdInput(building.idBuilding)}
             >
               <strong>{building.city}</strong>
               <span>{building.address}</span>
@@ -327,10 +344,10 @@ export const BrokersPage = () => {
             <strong>Pasirinktas pastatas:</strong> {selectedBuilding ? `${selectedBuilding.city}, ${selectedBuilding.address}` : 'nepasirinkta'}
           </li>
           <li>
-            <strong>Butas:</strong> {selectedApartmentId ?? 'nepasirinkta'}
+            <strong>Butas:</strong> {selectedApartmentSummary ?? 'nepasirinkta'}
           </li>
           <li>
-            <strong>Nuotrauka:</strong> {selectedPictureId ?? 'nepasirinkta'}
+            <strong>Nuotrauka:</strong> {selectedPictureSummary ?? 'nepasirinkta'}
           </li>
         </ul>
       </section>
@@ -365,10 +382,10 @@ export const BrokersPage = () => {
           <h3>Butai pasirinktame pastate</h3>
           <div className="table">
             <div className="table__row table__row--head">
-              <span>ID</span>
               <span>Nr.</span>
               <span>Kamb.</span>
               <span>Plotas</span>
+              <span>Aukštas</span>
             </div>
             {apartmentsInBuilding.map((apartment) => (
               <div
@@ -376,18 +393,18 @@ export const BrokersPage = () => {
                 className="table__row"
                 role="button"
                 tabIndex={0}
-                onClick={() => setSelectedApartmentId(apartment.idApartment)}
+                onClick={() => setSelectedApartmentIdInput(apartment.idApartment)}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault()
-                    setSelectedApartmentId(apartment.idApartment)
+                    setSelectedApartmentIdInput(apartment.idApartment)
                   }
                 }}
               >
-                <span>{apartment.idApartment}</span>
                 <span>{apartment.apartmentnumber ?? '—'}</span>
                 <span>{apartment.rooms}</span>
                 <span>{apartment.area} m²</span>
+                <span>{apartment.floor ?? '—'}</span>
               </div>
             ))}
             {apartmentsInBuilding.length === 0 && <p className="muted">Šiame pastate dar nėra butų.</p>}
@@ -447,10 +464,10 @@ export const BrokersPage = () => {
                     <div
                       key={picture.id}
                       className={selectedPictureId === picture.id ? 'picture-card picture-card--selected' : 'picture-card'}
-                      onClick={() => setSelectedPictureId(picture.id)}
+                      onClick={() => setSelectedPictureIdInput(picture.id)}
                     >
                       <div className="picture-card__media" style={coverStyle}>
-                        <span className="badge">ID {picture.id.slice(0, 6)}…</span>
+                        {selectedPictureId === picture.id && <span className="badge">Pasirinkta</span>}
                         <span className="badge">{picture.public ? 'Vieša' : 'Privatu'}</span>
                       </div>
                       <div className="picture-card__actions">
@@ -495,13 +512,15 @@ export const BrokersPage = () => {
         <div className="card">
           <h3>Skelbimo kūrimas</h3>
           <p className="muted">
-            Nuotrauka: <strong>{selectedPictureId ?? 'nepasirinkta'}</strong>
+            Nuotrauka: <strong>{selectedPictureSummary ?? 'nepasirinkta'}</strong>
           </p>
           {selectedPicture && (
             <p className="muted">Matomumas: {selectedPicture.public ? 'Vieša' : 'Privatu'}</p>
           )}
           {selectedListing && (
-            <p className="hint">Šiai nuotraukai jau priskirtas skelbimas #{selectedListing.idListing}</p>
+            <p className="hint">
+              Ši nuotrauka jau naudojama skelbime „{selectedListing.description || formatPrice(selectedListing.askingprice)}“
+            </p>
           )}
           <label>
             Aprašymas
@@ -536,7 +555,6 @@ export const BrokersPage = () => {
                   <p>{formatFriendly(slot.from)}</p>
                   <p className="muted">iki {formatFriendly(slot.to)}</p>
                 </div>
-                <span># {slot.idAvailability}</span>
               </div>
             ))}
             {availabilities.length === 0 && <p className="muted">Dar neregistravote prieinamumo.</p>}
@@ -560,26 +578,39 @@ export const BrokersPage = () => {
           <h3>Peržiūrų užklausos</h3>
           <div className="table">
             <div className="table__row table__row--head">
-              <span>ID</span>
               <span>Skelbimas</span>
               <span>Laikas</span>
               <span>Veiksmas</span>
             </div>
-            {viewings.map((viewing) => (
-              <div key={viewing.idViewing} className="table__row">
-                <span>{viewing.idViewing}</span>
-                <span>{viewing.fkListingidListing}</span>
-                <span>{formatFriendly(viewing.from)}</span>
-                <span className="table__actions">
-                  <button className="btn btn--ghost" onClick={() => handleViewingDecision(viewing.idViewing, 2)}>
-                    Patvirtinti
-                  </button>
-                  <button className="btn btn--ghost" onClick={() => handleViewingDecision(viewing.idViewing, 3)}>
-                    Atmesti
-                  </button>
-                </span>
-              </div>
-            ))}
+            {viewings.map((viewing) => {
+              const relatedListing = listings.find((listing) => listing.idListing === viewing.fkListingidListing)
+              return (
+                <div key={viewing.idViewing} className="table__row">
+                  <span>
+                    <strong>{relatedListing?.description ?? 'Skelbimo duomenys nepasiekiami'}</strong>
+                    <p className="muted">
+                      {relatedListing
+                        ? relatedListing.rent
+                          ? 'Nuomos pasiūlymas'
+                          : 'Pardavimo pasiūlymas'
+                        : 'Patikrinkite ar skelbimas dar egzistuoja'}
+                    </p>
+                  </span>
+                  <span>
+                    <p>{formatFriendly(viewing.from)}</p>
+                    <p className="muted">iki {formatFriendly(viewing.to)}</p>
+                  </span>
+                  <span className="table__actions">
+                    <button className="btn btn--ghost" onClick={() => handleViewingDecision(viewing.idViewing, 2)}>
+                      Patvirtinti
+                    </button>
+                    <button className="btn btn--ghost" onClick={() => handleViewingDecision(viewing.idViewing, 3)}>
+                      Atmesti
+                    </button>
+                  </span>
+                </div>
+              )
+            })}
             {viewings.length === 0 && <p className="muted">Šiuo metu neturite užklausų.</p>}
           </div>
         </div>
@@ -588,15 +619,25 @@ export const BrokersPage = () => {
       <section className="card">
         <h3>Skelbimų suvestinė</h3>
         <div className="listing-grid">
-          {listings.map((listing) => (
-            <article key={listing.idListing} className="card card--subtle">
-              <h4>#{listing.idListing}</h4>
-              <p>{listing.description}</p>
-              <p>{formatPrice(listing.askingprice)}</p>
-              <p>{listing.rent ? 'Nuoma' : 'Pardavimas'}</p>
-              <p className="muted">Nuotrauka {listing.fkPictureid}</p>
-            </article>
-          ))}
+          {listings.map((listing) => {
+            const coverPicture = listing.fkPictureid ? pictureDirectory.get(listing.fkPictureid) : undefined
+            return (
+              <article key={listing.idListing} className="card card--subtle">
+                <p className="muted">{listing.rent ? 'Nuomos pasiūlymas' : 'Pardavimo pasiūlymas'}</p>
+                <h4>{listing.description || 'Skelbimas be aprašo'}</h4>
+                <p>{formatPrice(listing.askingprice)}</p>
+                <p className="muted">
+                  {!listing.fkPictureid
+                    ? 'Viršelio nuotrauka nepasirinkta'
+                    : coverPicture
+                      ? coverPicture.public
+                        ? 'Viršelio nuotrauka vieša'
+                        : 'Viršelio nuotrauka privati'
+                      : 'Viršelio nuotraukos duomenys nepasiekiami'}
+                </p>
+              </article>
+            )
+          })}
           {listings.length === 0 && <p className="muted">Dar nesukūrėte skelbimų.</p>}
         </div>
       </section>

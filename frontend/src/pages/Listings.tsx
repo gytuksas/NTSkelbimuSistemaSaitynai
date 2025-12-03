@@ -3,7 +3,7 @@ import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { client, publicClient } from '../api/client'
 import type { Listing, PublicListing } from '../types/api'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 import { formatPrice } from '../utils/text'
 import { formatFriendly } from '../utils/dates'
 import { resolvePictureSrc } from '../utils/pictures'
@@ -27,6 +27,16 @@ type ListingCard = {
   buildingAddress?: string
   nextViewingFrom?: string | null
   nextViewingTo?: string | null
+}
+
+const describeListingBadge = (listing: ListingCard) => {
+  if (listing.buildingCity) {
+    return listing.buildingAddress ? `${listing.buildingCity} · ${listing.buildingAddress}` : listing.buildingCity
+  }
+  if (listing.nextViewingFrom) {
+    return `Artimiausia apžiūra ${formatFriendly(listing.nextViewingFrom)}`
+  }
+  return listing.rent ? 'Nuomos pasiūlymas' : 'Pardavimo pasiūlymas'
 }
 
 export const ListingsPage = () => {
@@ -189,7 +199,7 @@ export const ListingsPage = () => {
                 >
                   {!listing.pictureUrl && <span>Nuotrauka ruošiama</span>}
                 </div>
-                <div className="listing-card__badge">#{listing.id}</div>
+                <div className="listing-card__badge">{describeListingBadge(listing)}</div>
                 <h4>{listing.description}</h4>
                 <p className="listing-card__price">{formatPrice(listing.price)}</p>
                 <p className="listing-card__meta">{listing.rent ? 'Nuoma' : 'Pardavimas'}</p>

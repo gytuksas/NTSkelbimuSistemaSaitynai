@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { client } from '../api/client'
 import type { Buyer } from '../types/api'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 import { toDateTimeLocal } from '../utils/dates'
 
 export const ProfilePage = () => {
   const { user, isAuthenticated } = useAuth()
   const [buyerInfo, setBuyerInfo] = useState<Buyer | null>(null)
-  const [confirmDate, setConfirmDate] = useState(toDateTimeLocal(new Date(Date.now() + 1000 * 60 * 60 * 24)))
+  const [confirmDate, setConfirmDate] = useState(() => toDateTimeLocal(new Date(Date.now() + 1000 * 60 * 60 * 24)))
   const [confirmationMessage, setConfirmationMessage] = useState<string | null>(null)
 
   useEffect(() => {
