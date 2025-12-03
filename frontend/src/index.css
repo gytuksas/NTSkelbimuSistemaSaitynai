@@ -443,11 +443,67 @@ a {
   padding-top: 1rem;
 }
 
+.management-edit--split {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+
+.management-media-panel {
+  border: 1px dashed var(--border);
+  border-radius: 18px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  background: rgba(15, 23, 42, 0.35);
+}
+
+.management-edit--highlight {
+  border: 1px solid rgba(249, 115, 22, 0.35);
+  border-radius: 20px;
+  padding: 1.25rem;
+  margin-top: 1rem;
+  background: rgba(249, 115, 22, 0.08);
+}
+
+.management-edit__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
 .management-edit__actions {
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
   margin-top: 1rem;
+}
+
+.tab-strip {
+  display: inline-flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  background: rgba(15, 23, 42, 0.45);
+  border-radius: 999px;
+  padding: 0.35rem;
+}
+
+.tab-strip__tab {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tab-strip__tab--active {
+  background: rgba(249, 115, 22, 0.2);
+  color: #fff;
 }
 
 .apartments-header {
@@ -907,6 +963,10 @@ textarea {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 1rem;
+}
+
+.picture-grid--compact {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
 }
 
 .picture-card {
