@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { client, baseURL } from '../api/client'
-import type { Apartment, Availability, Building, Listing, Picture, Viewing } from '../types/api'
+import type { Apartment, Building, Listing, Picture } from '../types/api'
 import { useAuth } from '../context/useAuth'
-import { toDateTimeLocal, formatFriendly } from '../utils/dates'
 
 const defaultBuilding = {
   city: 'Vilnius',
@@ -19,11 +18,6 @@ const defaultListing = {
   description: '',
   askingprice: 100000,
   rent: false,
-}
-
-const defaultAvailability = {
-  from: toDateTimeLocal(new Date(Date.now() + 1000 * 60 * 60 * 24)),
-  to: toDateTimeLocal(new Date(Date.now() + 1000 * 60 * 60 * 25)),
 }
 
 type Option = {
@@ -102,26 +96,20 @@ const defaultPictureUpload: PictureUploadFormState = {
 }
 
 type ViewMode = 'buildings' | 'apartments'
-type ApartmentTab = 'units' | 'schedule'
-
 export const BrokersPage = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
   const isBroker = user && (user.role === 'Broker' || user.role === 'Administrator')
 
   const [viewMode, setViewMode] = useState<ViewMode>('buildings')
-  const [apartmentTab, setApartmentTab] = useState<ApartmentTab>('units')
   const [buildings, setBuildings] = useState<Building[]>([])
   const [apartments, setApartments] = useState<Apartment[]>([])
   const [pictures, setPictures] = useState<Picture[]>([])
-  const [availabilities, setAvailabilities] = useState<Availability[]>([])
-  const [viewings, setViewings] = useState<Viewing[]>([])
   const [listings, setListings] = useState<Listing[]>([])
 
   const [buildingForm, setBuildingForm] = useState(defaultBuilding)
   const [buildingEditForm, setBuildingEditForm] = useState(defaultBuilding)
   const [listingForm, setListingForm] = useState(defaultListing)
-  const [availabilityForm, setAvailabilityForm] = useState(defaultAvailability)
   const [apartmentForm, setApartmentForm] = useState(defaultApartmentForm)
   const [apartmentEditForm, setApartmentEditForm] = useState(defaultApartmentForm)
   const [pictureUploadForm, setPictureUploadForm] = useState(defaultPictureUpload)
@@ -141,19 +129,15 @@ export const BrokersPage = () => {
     const loadBrokerData = async () => {
       if (!isBroker) return
       try {
-        const [buildingsRes, apartmentsRes, picturesRes, availabilitiesRes, viewingsRes, listingsRes] = await Promise.all([
+        const [buildingsRes, apartmentsRes, picturesRes, listingsRes] = await Promise.all([
           client.get<Building[]>('/api/Buildings'),
           client.get<Apartment[]>('/api/Apartments'),
           client.get<Picture[]>('/api/Pictures'),
-          client.get<Availability[]>('/api/Availabilities'),
-          client.get<Viewing[]>('/api/Viewings'),
           client.get<Listing[]>('/api/Listings'),
         ])
         setBuildings(buildingsRes.data ?? [])
         setApartments(apartmentsRes.data ?? [])
         setPictures(picturesRes.data ?? [])
-        setAvailabilities(availabilitiesRes.data ?? [])
-        setViewings(viewingsRes.data ?? [])
         setListings(listingsRes.data ?? [])
       } catch (error) {
         console.error(error)
@@ -164,11 +148,7 @@ export const BrokersPage = () => {
     void loadBrokerData()
   }, [isBroker])
 
-  useEffect(() => {
-    if (viewMode === 'apartments' && buildings.length === 0) {
-      setViewMode('buildings')
-    }
-  }, [viewMode, buildings.length])
+  const effectiveViewMode: ViewMode = viewMode === 'apartments' && buildings.length === 0 ? 'buildings' : viewMode
 
   const selectedBuildingId = useMemo(() => {
     if (buildings.length === 0) {
@@ -217,26 +197,7 @@ export const BrokersPage = () => {
   }, [selectedPictureIdInput, picturesInApartment, selectedApartmentId])
 
   const selectedBuilding = buildings.find((building) => building.idBuilding === selectedBuildingId)
-  const selectedPicture = pictures.find((picture) => picture.id === selectedPictureId)
-  const selectedApartment = apartments.find((apartment) => apartment.idApartment === selectedApartmentId)
   const pictureDirectory = useMemo(() => new Map(pictures.map((picture) => [picture.id, picture])), [pictures])
-  const selectedPicturePosition = selectedPictureId ? picturesInApartment.findIndex((picture) => picture.id === selectedPictureId) : -1
-  const selectedApartmentSummary = selectedApartment
-    ? [
-        selectedApartment.apartmentnumber ? `Nr. ${selectedApartment.apartmentnumber}` : null,
-        `${selectedApartment.rooms} kamb.`,
-        `${selectedApartment.area} m²`,
-      ]
-        .filter(Boolean)
-        .join(' · ')
-    : null
-  const selectedPictureSummary = selectedPicture
-    ? selectedPicturePosition >= 0 && picturesInApartment.length > 0
-      ? `Nuotrauka ${selectedPicturePosition + 1}/${picturesInApartment.length} · ${selectedPicture.public ? 'vieša' : 'privati'}`
-      : selectedPicture.public
-        ? 'Vieša nuotrauka'
-        : 'Privati nuotrauka'
-    : null
   const listingPicture = listingPictureId ? pictureDirectory.get(listingPictureId) : undefined
   const listingPictureAlreadyUsed = listingPictureId
     ? listings.some((listing) => listing.fkPictureid === listingPictureId && listing.idListing !== editingListingId)
@@ -259,7 +220,6 @@ export const BrokersPage = () => {
     setEditingApartmentId(null)
     setActiveListingApartmentId(null)
     setListingPictureId(null)
-    setApartmentTab('units')
     setViewMode('apartments')
   }
 
@@ -268,7 +228,6 @@ export const BrokersPage = () => {
     setEditingApartmentId(null)
     setActiveListingApartmentId(null)
     setListingPictureId(null)
-    setApartmentTab('units')
   }
 
   const startBuildingEdit = (building: Building) => {
@@ -507,22 +466,6 @@ export const BrokersPage = () => {
     }
   }
 
-  const handleAvailabilityCreate = async () => {
-    if (!user) return
-    try {
-      const { data } = await client.post<Availability>('/api/Availabilities', {
-        ...availabilityForm,
-        fkBrokeridUser: user.id,
-      })
-      setAvailabilities((prev) => [...prev, data])
-      setAvailabilityForm(defaultAvailability)
-      setFeedback('Prieinamumo langas išsaugotas!')
-    } catch (error) {
-      console.error(error)
-      setFeedback('Nepavyko užregistruoti laiko lango.')
-    }
-  }
-
   const handlePictureVisibilityChange = async (pictureId: string, isPublic: boolean) => {
     try {
       await client.patch(`/api/Pictures/${pictureId}`, { public: isPublic })
@@ -605,16 +548,6 @@ export const BrokersPage = () => {
     }
   }
 
-  const handleViewingDecision = async (id: number, status: number) => {
-    try {
-      await client.patch(`/api/Viewings/${id}`, { status })
-      setViewings((prev) => prev.map((viewing) => (viewing.idViewing === id ? { ...viewing, status } : viewing)))
-    } catch (error) {
-      console.error(error)
-      setFeedback('Nepavyko atnaujinti peržiūros būsenos.')
-    }
-  }
-
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files ? Array.from(event.target.files) : []
     setPictureUploadForm((prev) => ({ ...prev, files }))
@@ -628,7 +561,7 @@ export const BrokersPage = () => {
     <div className="page brokers">
       {feedback && <p className="hint">{feedback}</p>}
 
-      {viewMode === 'buildings' && (
+  {effectiveViewMode === 'buildings' && (
         <>
         <section className="card">
             <h3>Jūsų pastatai</h3>
@@ -755,7 +688,7 @@ export const BrokersPage = () => {
         </>
       )}
 
-      {viewMode === 'apartments' && (
+  {effectiveViewMode === 'apartments' && (
         <>
           <section className="card card--subtle">
             <div className="apartments-header">
@@ -767,30 +700,9 @@ export const BrokersPage = () => {
                 <h3>{selectedBuilding ? `${selectedBuilding.city}, ${selectedBuilding.address}` : 'Nepasirinkta'}</h3>
               </div>
             </div>
-            <ul className="cascade-panel__summary">
-              <li>
-                <strong>Pastatas:</strong> {selectedBuilding ? `${selectedBuilding.area} m² · ${selectedBuilding.floors} aukšt.` : 'nepasirinkta'}
-              </li>
-              <li>
-                <strong>Butas:</strong> {selectedApartmentSummary ?? 'nepasirinkta'}
-              </li>
-              <li>
-                <strong>Nuotrauka:</strong> {selectedPictureSummary ?? 'nepasirinkta'}
-              </li>
-            </ul>
-            <div className="tab-strip">
-              <button className={apartmentTab === 'units' ? 'tab-strip__tab tab-strip__tab--active' : 'tab-strip__tab'} onClick={() => setApartmentTab('units')}>
-                Butai
-              </button>
-              <button className={apartmentTab === 'schedule' ? 'tab-strip__tab tab-strip__tab--active' : 'tab-strip__tab'} onClick={() => setApartmentTab('schedule')}>
-                Grafikas
-              </button>
-            </div>
           </section>
 
-          {apartmentTab === 'units' && (
-            <>
-            <section className="card">
+          <section className="card">
             <h3>Butų sąrašas</h3>
             <div className="table">
               <div className="table__row table__row--head table__row--apartments">
@@ -1076,9 +988,9 @@ export const BrokersPage = () => {
             </div>
           </section>
 
-              <section className="card">
-                <h3>Naujas butas šiame pastate</h3>
-                <div className="form-grid">
+          <section className="card">
+            <h3>Naujas butas šiame pastate</h3>
+            <div className="form-grid">
               <label>
                 Buto numeris
                 <input value={apartmentForm.apartmentnumber} onChange={(event) => setApartmentForm((prev) => ({ ...prev, apartmentnumber: event.target.value }))} />
@@ -1127,86 +1039,11 @@ export const BrokersPage = () => {
                   <option value="taip">Taip</option>
                 </select>
               </label>
-                </div>
-                <button className="btn" onClick={handleApartmentCreate}>
-                  Pridėti butą
-                </button>
-              </section>
-                </>
-              )}
-
-          {apartmentTab === 'schedule' && (
-            <section className="grid-two">
-              <div className="card">
-                <h3>Laisvi laikai</h3>
-                <div className="timeline">
-                  {availabilities.map((slot) => (
-                    <div key={slot.idAvailability} className="timeline__item">
-                      <div>
-                        <p>{formatFriendly(slot.from)}</p>
-                        <p className="muted">iki {formatFriendly(slot.to)}</p>
-                      </div>
-                    </div>
-                  ))}
-                  {availabilities.length === 0 && <p className="muted">Dar neregistravote prieinamumo.</p>}
-                </div>
-                <div className="form-grid">
-                  <label>
-                    Pradžia
-                    <input value={availabilityForm.from} onChange={(event) => setAvailabilityForm((prev) => ({ ...prev, from: event.target.value }))} />
-                  </label>
-                  <label>
-                    Pabaiga
-                    <input value={availabilityForm.to} onChange={(event) => setAvailabilityForm((prev) => ({ ...prev, to: event.target.value }))} />
-                  </label>
-                </div>
-                <button className="btn" onClick={handleAvailabilityCreate}>
-                  Pridėti laiką
-                </button>
-              </div>
-
-              <div className="card">
-                <h3>Peržiūrų užklausos</h3>
-                <div className="table">
-                  <div className="table__row table__row--head">
-                    <span>Skelbimas</span>
-                    <span>Laikas</span>
-                    <span>Veiksmas</span>
-                  </div>
-                  {viewings.map((viewing) => {
-                    const relatedListing = listings.find((listing) => listing.idListing === viewing.fkListingidListing)
-                    return (
-                      <div key={viewing.idViewing} className="table__row">
-                        <span>
-                          <strong>{relatedListing?.description ?? 'Skelbimo duomenys nepasiekiami'}</strong>
-                          <p className="muted">
-                            {relatedListing
-                              ? relatedListing.rent
-                                ? 'Nuomos pasiūlymas'
-                                : 'Pardavimo pasiūlymas'
-                              : 'Patikrinkite ar skelbimas dar egzistuoja'}
-                          </p>
-                        </span>
-                        <span>
-                          <p>{formatFriendly(viewing.from)}</p>
-                          <p className="muted">iki {formatFriendly(viewing.to)}</p>
-                        </span>
-                        <span className="table__actions">
-                          <button className="btn btn--ghost" onClick={() => handleViewingDecision(viewing.idViewing, 2)}>
-                            Patvirtinti
-                          </button>
-                          <button className="btn btn--ghost" onClick={() => handleViewingDecision(viewing.idViewing, 3)}>
-                            Atmesti
-                          </button>
-                        </span>
-                      </div>
-                    )
-                  })}
-                  {viewings.length === 0 && <p className="muted">Šiuo metu neturite užklausų.</p>}
-                </div>
-              </div>
-            </section>
-          )}
+            </div>
+            <button className="btn" onClick={handleApartmentCreate}>
+              Pridėti butą
+            </button>
+          </section>
         </>
       )}
     </div>

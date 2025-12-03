@@ -14,6 +14,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
     { to: '/skelbimai', label: 'Skelbimai', show: true },
     { to: '/apziuros', label: 'Apžiūros', show: true },
     { to: '/brokeriams', label: 'Brokeriams', show: isBroker },
+    { to: '/brokeriams/grafikas', label: 'Brokerio grafikas', show: isBroker },
     { to: '/administratoriams', label: 'Administratoriui', show: isAdmin },
     { to: '/profilis', label: 'Profilis', show: isAuthenticated },
   ].filter((link) => link.show)
