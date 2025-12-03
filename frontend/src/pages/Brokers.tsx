@@ -58,10 +58,13 @@ const defaultPictureUpload: PictureUploadFormState = {
   public: true,
 }
 
+type ViewMode = 'buildings' | 'apartments'
+
 export const BrokersPage = () => {
   const { user } = useAuth()
   const isBroker = user && (user.role === 'Broker' || user.role === 'Administrator')
 
+  const [viewMode, setViewMode] = useState<ViewMode>('buildings')
   const [buildings, setBuildings] = useState<Building[]>([])
   const [apartments, setApartments] = useState<Apartment[]>([])
   const [pictures, setPictures] = useState<Picture[]>([])
@@ -70,14 +73,18 @@ export const BrokersPage = () => {
   const [listings, setListings] = useState<Listing[]>([])
 
   const [buildingForm, setBuildingForm] = useState(defaultBuilding)
+  const [buildingEditForm, setBuildingEditForm] = useState(defaultBuilding)
   const [listingForm, setListingForm] = useState(defaultListing)
   const [availabilityForm, setAvailabilityForm] = useState(defaultAvailability)
   const [apartmentForm, setApartmentForm] = useState(defaultApartmentForm)
+  const [apartmentEditForm, setApartmentEditForm] = useState(defaultApartmentForm)
   const [pictureUploadForm, setPictureUploadForm] = useState(defaultPictureUpload)
 
   const [selectedBuildingIdInput, setSelectedBuildingIdInput] = useState<number | null>(null)
   const [selectedApartmentIdInput, setSelectedApartmentIdInput] = useState<number | null>(null)
   const [selectedPictureIdInput, setSelectedPictureIdInput] = useState<string | null>(null)
+  const [editingBuildingId, setEditingBuildingId] = useState<number | null>(null)
+  const [editingApartmentId, setEditingApartmentId] = useState<number | null>(null)
   const [feedback, setFeedback] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -107,6 +114,12 @@ export const BrokersPage = () => {
 
     void loadBrokerData()
   }, [isBroker])
+
+  useEffect(() => {
+    if (viewMode === 'apartments' && buildings.length === 0) {
+      setViewMode('buildings')
+    }
+  }, [viewMode, buildings.length])
 
   const selectedBuildingId = useMemo(() => {
     if (buildings.length === 0) {
@@ -177,18 +190,172 @@ export const BrokersPage = () => {
         : 'Privati nuotrauka'
     : null
 
+  const goToApartmentsView = (buildingId: number) => {
+    setSelectedBuildingIdInput(buildingId)
+    setSelectedApartmentIdInput(null)
+    setSelectedPictureIdInput(null)
+    setEditingApartmentId(null)
+    setViewMode('apartments')
+  }
+
+  const handleBackToBuildings = () => {
+    setViewMode('buildings')
+    setEditingApartmentId(null)
+  }
+
+  const startBuildingEdit = (building: Building) => {
+    setEditingBuildingId(building.idBuilding)
+    setBuildingEditForm({
+      city: building.city,
+      address: building.address,
+      area: building.area,
+      year: building.year,
+      lastrenovationyear: building.lastrenovationyear ?? building.year,
+      floors: building.floors,
+      energy: building.energy ?? defaultBuilding.energy,
+    })
+  }
+
   const handleBuildingCreate = async () => {
     if (!user) return
     try {
       const payload = { ...buildingForm, fkBrokeridUser: user.id }
       const { data } = await client.post<Building>('/api/Buildings', payload)
-  setBuildings((prev) => [...prev, data])
-  setBuildingForm(defaultBuilding)
-  setSelectedBuildingIdInput(data.idBuilding)
+      setBuildings((prev) => [...prev, data])
+      setBuildingForm(defaultBuilding)
+      setSelectedBuildingIdInput(data.idBuilding)
+      setViewMode('apartments')
       setFeedback('Pastatas išsaugotas!')
     } catch (error) {
       console.error(error)
       setFeedback('Nepavyko sukurti pastato. Patikrinkite laukus.')
+    }
+  }
+
+  const handleBuildingUpdate = async () => {
+    if (editingBuildingId === null) return
+    const existing = buildings.find((building) => building.idBuilding === editingBuildingId)
+    if (!existing) return
+    try {
+      const payload = { ...buildingEditForm, fkBrokeridUser: existing.fkBrokeridUser }
+      await client.put(`/api/Buildings/${editingBuildingId}`, payload)
+      setBuildings((prev) =>
+        prev.map((building) => (building.idBuilding === editingBuildingId ? { ...building, ...payload } : building)),
+      )
+      setFeedback('Pastato informacija atnaujinta!')
+      setEditingBuildingId(null)
+    } catch (error) {
+      console.error(error)
+      setFeedback('Nepavyko atnaujinti pastato.')
+    }
+  }
+
+  const handleBuildingDelete = async (buildingId: number) => {
+    if (typeof window !== 'undefined' && !window.confirm('Ar tikrai norite ištrinti pastatą?')) {
+      return
+    }
+    const buildingApartmentIds = apartments
+      .filter((apartment) => apartment.fkBuildingidBuilding === buildingId)
+      .map((apartment) => apartment.idApartment)
+    try {
+      await client.delete(`/api/Buildings/${buildingId}`)
+      setBuildings((prev) => prev.filter((building) => building.idBuilding !== buildingId))
+      setApartments((prev) => prev.filter((apartment) => apartment.fkBuildingidBuilding !== buildingId))
+      setPictures((prev) => prev.filter((picture) => !buildingApartmentIds.includes(picture.fkApartmentidApartment)))
+      if (selectedBuildingId === buildingId) {
+        setSelectedBuildingIdInput(null)
+        setSelectedApartmentIdInput(null)
+        setSelectedPictureIdInput(null)
+        setViewMode('buildings')
+      }
+      setFeedback('Pastatas pašalintas.')
+    } catch (error) {
+      console.error(error)
+      setFeedback('Nepavyko pašalinti pastato.')
+    }
+  }
+
+  const startApartmentEdit = (apartment: Apartment) => {
+    setEditingApartmentId(apartment.idApartment)
+    setApartmentEditForm({
+      apartmentnumber: apartment.apartmentnumber?.toString() ?? '',
+      rooms: apartment.rooms.toString(),
+      area: apartment.area.toString(),
+      floor: apartment.floor?.toString() ?? '',
+      finish: apartment.finish.toString(),
+      heating: apartment.heating?.toString() ?? '',
+      notes: apartment.notes ?? '',
+      isWholeBuilding: apartment.isWholeBuilding,
+    })
+  }
+
+  const handleApartmentUpdate = async () => {
+    if (editingApartmentId === null) return
+    const existing = apartments.find((apartment) => apartment.idApartment === editingApartmentId)
+    if (!existing) return
+    try {
+      const payload = {
+        fkBuildingidBuilding: existing.fkBuildingidBuilding,
+        apartmentnumber: apartmentEditForm.apartmentnumber ? Number(apartmentEditForm.apartmentnumber) : undefined,
+        rooms: Number(apartmentEditForm.rooms),
+        area: Number(apartmentEditForm.area),
+        floor: apartmentEditForm.floor ? Number(apartmentEditForm.floor) : undefined,
+        finish: Number(apartmentEditForm.finish),
+        heating: apartmentEditForm.heating ? Number(apartmentEditForm.heating) : undefined,
+        notes: apartmentEditForm.notes || undefined,
+        isWholeBuilding: apartmentEditForm.isWholeBuilding,
+      }
+      await client.put(`/api/Apartments/${editingApartmentId}`, payload)
+      setApartments((prev) =>
+        prev.map((apartment) => (apartment.idApartment === editingApartmentId ? { ...apartment, ...payload } : apartment)),
+      )
+      setFeedback('Butas atnaujintas!')
+      setEditingApartmentId(null)
+    } catch (error) {
+      console.error(error)
+      setFeedback('Nepavyko atnaujinti buto.')
+    }
+  }
+
+  const handleApartmentDelete = async (apartmentId: number) => {
+    if (typeof window !== 'undefined' && !window.confirm('Ar tikrai norite ištrinti butą?')) {
+      return
+    }
+    try {
+      await client.delete(`/api/Apartments/${apartmentId}`)
+      setApartments((prev) => prev.filter((apartment) => apartment.idApartment !== apartmentId))
+      setPictures((prev) => prev.filter((picture) => picture.fkApartmentidApartment !== apartmentId))
+      if (selectedApartmentId === apartmentId) {
+        setSelectedApartmentIdInput(null)
+        setSelectedPictureIdInput(null)
+      }
+      setFeedback('Butas pašalintas.')
+    } catch (error) {
+      console.error(error)
+      setFeedback('Nepavyko pašalinti buto.')
+    }
+  }
+
+  const handleListingShortcut = (apartmentId: number) => {
+    setSelectedApartmentIdInput(apartmentId)
+    const apartmentPictures = pictures.filter((picture) => picture.fkApartmentidApartment === apartmentId)
+    if (apartmentPictures.length > 0) {
+      setSelectedPictureIdInput(apartmentPictures[0].id)
+    }
+    if (typeof window !== 'undefined') {
+      document.getElementById('listing-creator')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
+  const handleBuildingFormChange = (key: keyof typeof defaultBuilding, value: number | string) => {
+    setBuildingForm((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const handleBuildingCreateChange = (field: keyof typeof defaultBuilding, rawValue: string) => {
+    if (typeof defaultBuilding[field] === 'number') {
+      handleBuildingFormChange(field, Number(rawValue) || 0)
+    } else {
+      handleBuildingFormChange(field, rawValue)
     }
   }
 
@@ -210,9 +377,9 @@ export const BrokersPage = () => {
         isWholeBuilding: apartmentForm.isWholeBuilding,
       }
       const { data } = await client.post<Apartment>('/api/Apartments', payload)
-  setApartments((prev) => [...prev, data])
-  setApartmentForm(defaultApartmentForm)
-  setSelectedApartmentIdInput(data.idApartment)
+      setApartments((prev) => [...prev, data])
+      setApartmentForm(defaultApartmentForm)
+      setSelectedApartmentIdInput(data.idApartment)
       setFeedback('Butas pridėtas!')
     } catch (error) {
       console.error(error)
@@ -266,8 +433,8 @@ export const BrokersPage = () => {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
       if (Array.isArray(data) && data.length > 0) {
-  setPictures((prev) => [...prev, ...data])
-  setSelectedPictureIdInput(data[data.length - 1].id)
+        setPictures((prev) => [...prev, ...data])
+        setSelectedPictureIdInput(data[data.length - 1].id)
         setFeedback(data.length > 1 ? `Įkeltos ${data.length} nuotraukos!` : 'Nuotrauka įkelta!')
       } else {
         setFeedback('Įkėlimas atliktas, bet negrįžo nuotraukų duomenys.')
@@ -322,325 +489,489 @@ export const BrokersPage = () => {
     <div className="page brokers">
       {feedback && <p className="hint">{feedback}</p>}
 
-      <section className="card">
-        <h3>Pastatų portfelis</h3>
-        <div className="selector-list">
-          {buildings.map((building) => (
-            <button
-              type="button"
-              key={building.idBuilding}
-              className={selectedBuildingId === building.idBuilding ? 'selector-list__item selector-list__item--active' : 'selector-list__item'}
-              onClick={() => setSelectedBuildingIdInput(building.idBuilding)}
-            >
-              <strong>{building.city}</strong>
-              <span>{building.address}</span>
-              <span className="muted">{building.area} m² · {building.floors} aukšt.</span>
-            </button>
-          ))}
-          {buildings.length === 0 && <p className="muted">Kol kas neturite pastatų.</p>}
-        </div>
-        <ul className="cascade-panel__summary">
-          <li>
-            <strong>Pasirinktas pastatas:</strong> {selectedBuilding ? `${selectedBuilding.city}, ${selectedBuilding.address}` : 'nepasirinkta'}
-          </li>
-          <li>
-            <strong>Butas:</strong> {selectedApartmentSummary ?? 'nepasirinkta'}
-          </li>
-          <li>
-            <strong>Nuotrauka:</strong> {selectedPictureSummary ?? 'nepasirinkta'}
-          </li>
-        </ul>
-      </section>
-
-      <section className="grid-two">
-        <div className="card">
-          <h3>Naujas pastatas</h3>
-          <div className="form-grid">
-            <label>
-              Miestas
-              <input value={buildingForm.city} onChange={(event) => setBuildingForm((prev) => ({ ...prev, city: event.target.value }))} />
-            </label>
-            <label>
-              Adresas
-              <input value={buildingForm.address} onChange={(event) => setBuildingForm((prev) => ({ ...prev, address: event.target.value }))} />
-            </label>
-            <label>
-              Plotas (m²)
-              <input type="number" value={buildingForm.area} onChange={(event) => setBuildingForm((prev) => ({ ...prev, area: Number(event.target.value) }))} />
-            </label>
-            <label>
-              Metai
-              <input type="number" value={buildingForm.year} onChange={(event) => setBuildingForm((prev) => ({ ...prev, year: Number(event.target.value) }))} />
-            </label>
-          </div>
-          <button className="btn" onClick={handleBuildingCreate}>
-            Išsaugoti pastatą
-          </button>
-        </div>
-
-        <div className="card">
-          <h3>Butai pasirinktame pastate</h3>
-          <div className="table">
-            <div className="table__row table__row--head">
-              <span>Nr.</span>
-              <span>Kamb.</span>
-              <span>Plotas</span>
-              <span>Aukštas</span>
-            </div>
-            {apartmentsInBuilding.map((apartment) => (
-              <div
-                key={apartment.idApartment}
-                className="table__row"
-                role="button"
-                tabIndex={0}
-                onClick={() => setSelectedApartmentIdInput(apartment.idApartment)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault()
-                    setSelectedApartmentIdInput(apartment.idApartment)
-                  }
-                }}
-              >
-                <span>{apartment.apartmentnumber ?? '—'}</span>
-                <span>{apartment.rooms}</span>
-                <span>{apartment.area} m²</span>
-                <span>{apartment.floor ?? '—'}</span>
-              </div>
-            ))}
-            {apartmentsInBuilding.length === 0 && <p className="muted">Šiame pastate dar nėra butų.</p>}
-          </div>
-          <div className="form-grid">
-            <label>
-              Buto numeris
-              <input value={apartmentForm.apartmentnumber} onChange={(event) => setApartmentForm((prev) => ({ ...prev, apartmentnumber: event.target.value }))} />
-            </label>
-            <label>
-              Kambariai
-              <input type="number" value={apartmentForm.rooms} onChange={(event) => setApartmentForm((prev) => ({ ...prev, rooms: event.target.value }))} />
-            </label>
-            <label>
-              Plotas m²
-              <input type="number" value={apartmentForm.area} onChange={(event) => setApartmentForm((prev) => ({ ...prev, area: event.target.value }))} />
-            </label>
-            <label>
-              Aukštas
-              <input type="number" value={apartmentForm.floor} onChange={(event) => setApartmentForm((prev) => ({ ...prev, floor: event.target.value }))} />
-            </label>
-            <label>
-              Apdaila ID
-              <input type="number" value={apartmentForm.finish} onChange={(event) => setApartmentForm((prev) => ({ ...prev, finish: event.target.value }))} />
-            </label>
-            <label>
-              Šildymas ID
-              <input type="number" value={apartmentForm.heating} onChange={(event) => setApartmentForm((prev) => ({ ...prev, heating: event.target.value }))} />
-            </label>
-            <label>
-              Pastabos
-              <input value={apartmentForm.notes} onChange={(event) => setApartmentForm((prev) => ({ ...prev, notes: event.target.value }))} />
-            </label>
-            <label>
-              <span>Visa pastato dalis?</span>
-              <select value={apartmentForm.isWholeBuilding ? 'taip' : 'ne'} onChange={(event) => setApartmentForm((prev) => ({ ...prev, isWholeBuilding: event.target.value === 'taip' }))}>
-                <option value="ne">Ne</option>
-                <option value="taip">Taip</option>
-              </select>
-            </label>
-          </div>
-          <button className="btn" onClick={handleApartmentCreate}>
-            Pridėti butą
-          </button>
-        </div>
-      </section>
-
-      <section className="grid-two">
-        <div className="card">
-          <h3>Nuotraukos ir įkėlimas</h3>
-          {selectedApartmentId ? (
-            <>
-              <div className="picture-grid">
-                {picturesInApartment.map((picture) => {
-                  const coverStyle = { backgroundImage: `url(${baseURL}/uploads/${picture.id})` }
-                  return (
-                    <div
-                      key={picture.id}
-                      className={selectedPictureId === picture.id ? 'picture-card picture-card--selected' : 'picture-card'}
-                      onClick={() => setSelectedPictureIdInput(picture.id)}
-                    >
-                      <div className="picture-card__media" style={coverStyle}>
-                        {selectedPictureId === picture.id && <span className="badge">Pasirinkta</span>}
-                        <span className="badge">{picture.public ? 'Vieša' : 'Privatu'}</span>
+      {viewMode === 'buildings' && (
+        <>
+          <section className="card">
+            <h3>Jūsų pastatai</h3>
+            <p className="muted">Pasirinkite pastatą ir pereikite prie jo butų valdymo.</p>
+            <div className="management-list">
+              {buildings.map((building) => (
+                <article key={building.idBuilding} className="management-card">
+                  <div className="management-card__header">
+                    <div>
+                      <h4>{building.city}</h4>
+                      <p className="muted">{building.address}</p>
+                      <p className="muted">
+                        {building.area} m² · {building.floors} aukštai · Pastatyta {building.year}
+                      </p>
+                    </div>
+                    <div className="management-card__actions">
+                      <button className="btn" onClick={() => goToApartmentsView(building.idBuilding)}>
+                        Peržiūrėti butus
+                      </button>
+                      <button className="btn btn--ghost" onClick={() => startBuildingEdit(building)}>
+                        Redaguoti
+                      </button>
+                      <button className="btn btn--ghost" onClick={() => handleBuildingDelete(building.idBuilding)}>
+                        Pašalinti
+                      </button>
+                    </div>
+                  </div>
+                  {editingBuildingId === building.idBuilding && (
+                    <div className="management-edit">
+                      <div className="form-grid">
+                        <label>
+                          Miestas
+                          <input value={buildingEditForm.city} onChange={(event) => setBuildingEditForm((prev) => ({ ...prev, city: event.target.value }))} />
+                        </label>
+                        <label>
+                          Adresas
+                          <input value={buildingEditForm.address} onChange={(event) => setBuildingEditForm((prev) => ({ ...prev, address: event.target.value }))} />
+                        </label>
+                        <label>
+                          Plotas (m²)
+                          <input type="number" value={buildingEditForm.area} onChange={(event) => setBuildingEditForm((prev) => ({ ...prev, area: Number(event.target.value) || 0 }))} />
+                        </label>
+                        <label>
+                          Aukštai
+                          <input type="number" value={buildingEditForm.floors} onChange={(event) => setBuildingEditForm((prev) => ({ ...prev, floors: Number(event.target.value) || 0 }))} />
+                        </label>
+                        <label>
+                          Metai
+                          <input type="number" value={buildingEditForm.year} onChange={(event) => setBuildingEditForm((prev) => ({ ...prev, year: Number(event.target.value) || 0 }))} />
+                        </label>
+                        <label>
+                          Renovacija
+                          <input type="number" value={buildingEditForm.lastrenovationyear} onChange={(event) => setBuildingEditForm((prev) => ({ ...prev, lastrenovationyear: Number(event.target.value) || 0 }))} />
+                        </label>
+                        <label>
+                          Energijos klasė ID
+                          <input type="number" value={buildingEditForm.energy} onChange={(event) => setBuildingEditForm((prev) => ({ ...prev, energy: Number(event.target.value) || 0 }))} />
+                        </label>
                       </div>
-                      <div className="picture-card__actions">
-                        <button
-                          type="button"
-                          className="btn btn--ghost"
-                          onClick={(event) => {
-                            event.stopPropagation()
-                            handlePictureVisibilityChange(picture.id, !picture.public)
-                          }}
-                        >
-                          {picture.public ? 'Slėpti viešai' : 'Skelbti viešai'}
+                      <div className="management-edit__actions">
+                        <button className="btn" onClick={handleBuildingUpdate}>
+                          Išsaugoti
+                        </button>
+                        <button className="btn btn--ghost" onClick={() => setEditingBuildingId(null)}>
+                          Atšaukti
                         </button>
                       </div>
                     </div>
-                  )
-                })}
-                {picturesInApartment.length === 0 && <p className="muted">Šiam butui dar nėra nuotraukų.</p>}
+                  )}
+                </article>
+              ))}
+              {buildings.length === 0 && <p className="muted">Kol kas neturite pastatų. Pridėkite pirmąjį žemiau.</p>}
+            </div>
+          </section>
+
+          <section className="card">
+            <h3>Naujas pastatas</h3>
+            <div className="form-grid">
+              <label>
+                Miestas
+                <input value={buildingForm.city} onChange={(event) => setBuildingForm((prev) => ({ ...prev, city: event.target.value }))} />
+              </label>
+              <label>
+                Adresas
+                <input value={buildingForm.address} onChange={(event) => setBuildingForm((prev) => ({ ...prev, address: event.target.value }))} />
+              </label>
+              <label>
+                Plotas (m²)
+                <input type="number" value={buildingForm.area} onChange={(event) => handleBuildingCreateChange('area', event.target.value)} />
+              </label>
+              <label>
+                Aukštai
+                <input type="number" value={buildingForm.floors} onChange={(event) => handleBuildingCreateChange('floors', event.target.value)} />
+              </label>
+              <label>
+                Metai
+                <input type="number" value={buildingForm.year} onChange={(event) => handleBuildingCreateChange('year', event.target.value)} />
+              </label>
+              <label>
+                Renovacija
+                <input type="number" value={buildingForm.lastrenovationyear} onChange={(event) => handleBuildingCreateChange('lastrenovationyear', event.target.value)} />
+              </label>
+              <label>
+                Energijos klasė ID
+                <input type="number" value={buildingForm.energy} onChange={(event) => handleBuildingCreateChange('energy', event.target.value)} />
+              </label>
+            </div>
+            <button className="btn" onClick={handleBuildingCreate}>
+              Išsaugoti pastatą
+            </button>
+          </section>
+        </>
+      )}
+
+      {viewMode === 'apartments' && (
+        <>
+          <section className="card card--subtle">
+            <div className="apartments-header">
+              <button className="btn btn--ghost" onClick={handleBackToBuildings}>
+                ← Grįžti į pastatus
+              </button>
+              <div>
+                <p className="muted">Tvarkote pastatą</p>
+                <h3>{selectedBuilding ? `${selectedBuilding.city}, ${selectedBuilding.address}` : 'Nepasirinkta'}</h3>
               </div>
-              <form className="upload-form" onSubmit={handleUploadPicture}>
+            </div>
+            <ul className="cascade-panel__summary">
+              <li>
+                <strong>Pastatas:</strong> {selectedBuilding ? `${selectedBuilding.area} m² · ${selectedBuilding.floors} aukšt.` : 'nepasirinkta'}
+              </li>
+              <li>
+                <strong>Butas:</strong> {selectedApartmentSummary ?? 'nepasirinkta'}
+              </li>
+              <li>
+                <strong>Nuotrauka:</strong> {selectedPictureSummary ?? 'nepasirinkta'}
+              </li>
+            </ul>
+          </section>
+
+          <section className="card">
+            <h3>Butų sąrašas</h3>
+            <div className="table">
+              <div className="table__row table__row--head">
+                <span>Buto informacija</span>
+                <span>Parametrai</span>
+                <span>Pastabos</span>
+                <span>Veiksmai</span>
+              </div>
+              {apartmentsInBuilding.map((apartment) => (
+                <div key={apartment.idApartment} className="table__group">
+                  <div className="table__row" onClick={() => setSelectedApartmentIdInput(apartment.idApartment)}>
+                    <span>
+                      <strong>{apartment.apartmentnumber ? `Nr. ${apartment.apartmentnumber}` : 'Be numerio'}</strong>
+                      <p className="muted">{apartment.floor ? `${apartment.floor} aukštas` : 'Aukštas nenurodytas'}</p>
+                    </span>
+                    <span>
+                      <p>{apartment.rooms} kamb. · {apartment.area} m²</p>
+                      <p className="muted">Apdaila #{apartment.finish} · Šildymas {apartment.heating ?? '—'}</p>
+                    </span>
+                    <span>
+                      <p className="muted">{apartment.notes || 'Pastabų nėra'}</p>
+                      <p className="muted">{apartment.isWholeBuilding ? 'Visas pastatas' : 'Individualus butas'}</p>
+                    </span>
+                    <span className="table__actions">
+                      <button
+                        className="btn btn--ghost"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          startApartmentEdit(apartment)
+                        }}
+                      >
+                        Redaguoti
+                      </button>
+                      <button
+                        className="btn btn--ghost"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          handleApartmentDelete(apartment.idApartment)
+                        }}
+                      >
+                        Pašalinti
+                      </button>
+                      <button
+                        className="btn"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          handleListingShortcut(apartment.idApartment)
+                        }}
+                      >
+                        Kurti skelbimą
+                      </button>
+                    </span>
+                  </div>
+                  {editingApartmentId === apartment.idApartment && (
+                    <div className="management-edit">
+                      <div className="form-grid">
+                        <label>
+                          Buto numeris
+                          <input value={apartmentEditForm.apartmentnumber} onChange={(event) => setApartmentEditForm((prev) => ({ ...prev, apartmentnumber: event.target.value }))} />
+                        </label>
+                        <label>
+                          Kambariai
+                          <input type="number" value={apartmentEditForm.rooms} onChange={(event) => setApartmentEditForm((prev) => ({ ...prev, rooms: event.target.value }))} />
+                        </label>
+                        <label>
+                          Plotas m²
+                          <input type="number" value={apartmentEditForm.area} onChange={(event) => setApartmentEditForm((prev) => ({ ...prev, area: event.target.value }))} />
+                        </label>
+                        <label>
+                          Aukštas
+                          <input type="number" value={apartmentEditForm.floor} onChange={(event) => setApartmentEditForm((prev) => ({ ...prev, floor: event.target.value }))} />
+                        </label>
+                        <label>
+                          Apdaila ID
+                          <input type="number" value={apartmentEditForm.finish} onChange={(event) => setApartmentEditForm((prev) => ({ ...prev, finish: event.target.value }))} />
+                        </label>
+                        <label>
+                          Šildymas ID
+                          <input type="number" value={apartmentEditForm.heating} onChange={(event) => setApartmentEditForm((prev) => ({ ...prev, heating: event.target.value }))} />
+                        </label>
+                        <label>
+                          Pastabos
+                          <input value={apartmentEditForm.notes} onChange={(event) => setApartmentEditForm((prev) => ({ ...prev, notes: event.target.value }))} />
+                        </label>
+                        <label>
+                          <span>Visa pastato dalis?</span>
+                          <select value={apartmentEditForm.isWholeBuilding ? 'taip' : 'ne'} onChange={(event) => setApartmentEditForm((prev) => ({ ...prev, isWholeBuilding: event.target.value === 'taip' }))}>
+                            <option value="ne">Ne</option>
+                            <option value="taip">Taip</option>
+                          </select>
+                        </label>
+                      </div>
+                      <div className="management-edit__actions">
+                        <button className="btn" onClick={handleApartmentUpdate}>
+                          Išsaugoti
+                        </button>
+                        <button className="btn btn--ghost" onClick={() => setEditingApartmentId(null)}>
+                          Atšaukti
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+              {apartmentsInBuilding.length === 0 && <p className="muted">Šiame pastate dar nėra butų.</p>}
+            </div>
+          </section>
+
+          <section className="card">
+            <h3>Naujas butas šiame pastate</h3>
+            <div className="form-grid">
+              <label>
+                Buto numeris
+                <input value={apartmentForm.apartmentnumber} onChange={(event) => setApartmentForm((prev) => ({ ...prev, apartmentnumber: event.target.value }))} />
+              </label>
+              <label>
+                Kambariai
+                <input type="number" value={apartmentForm.rooms} onChange={(event) => setApartmentForm((prev) => ({ ...prev, rooms: event.target.value }))} />
+              </label>
+              <label>
+                Plotas m²
+                <input type="number" value={apartmentForm.area} onChange={(event) => setApartmentForm((prev) => ({ ...prev, area: event.target.value }))} />
+              </label>
+              <label>
+                Aukštas
+                <input type="number" value={apartmentForm.floor} onChange={(event) => setApartmentForm((prev) => ({ ...prev, floor: event.target.value }))} />
+              </label>
+              <label>
+                Apdaila ID
+                <input type="number" value={apartmentForm.finish} onChange={(event) => setApartmentForm((prev) => ({ ...prev, finish: event.target.value }))} />
+              </label>
+              <label>
+                Šildymas ID
+                <input type="number" value={apartmentForm.heating} onChange={(event) => setApartmentForm((prev) => ({ ...prev, heating: event.target.value }))} />
+              </label>
+              <label>
+                Pastabos
+                <input value={apartmentForm.notes} onChange={(event) => setApartmentForm((prev) => ({ ...prev, notes: event.target.value }))} />
+              </label>
+              <label>
+                <span>Visa pastato dalis?</span>
+                <select value={apartmentForm.isWholeBuilding ? 'taip' : 'ne'} onChange={(event) => setApartmentForm((prev) => ({ ...prev, isWholeBuilding: event.target.value === 'taip' }))}>
+                  <option value="ne">Ne</option>
+                  <option value="taip">Taip</option>
+                </select>
+              </label>
+            </div>
+            <button className="btn" onClick={handleApartmentCreate}>
+              Pridėti butą
+            </button>
+          </section>
+
+          <section className="grid-two">
+            <div className="card" id="pictures-panel">
+              <h3>Nuotraukos ir įkėlimas</h3>
+              {selectedApartmentId ? (
+                <>
+                  <p className="muted">Pasirinkite nuotrauką, kurią norėsite naudoti skelbime, arba įkelkite naujų.</p>
+                  <div className="picture-grid">
+                    {picturesInApartment.map((picture) => {
+                      const coverStyle = { backgroundImage: `url(${baseURL}/uploads/${picture.id})` }
+                      return (
+                        <div
+                          key={picture.id}
+                          className={selectedPictureId === picture.id ? 'picture-card picture-card--selected' : 'picture-card'}
+                          onClick={() => setSelectedPictureIdInput(picture.id)}
+                        >
+                          <div className="picture-card__media" style={coverStyle}>
+                            {selectedPictureId === picture.id && <span className="badge">Pasirinkta</span>}
+                            <span className="badge">{picture.public ? 'Vieša' : 'Privatu'}</span>
+                          </div>
+                          <div className="picture-card__actions">
+                            <button
+                              type="button"
+                              className="btn btn--ghost"
+                              onClick={(event) => {
+                                event.stopPropagation()
+                                handlePictureVisibilityChange(picture.id, !picture.public)
+                              }}
+                            >
+                              {picture.public ? 'Slėpti viešai' : 'Skelbti viešai'}
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                    {picturesInApartment.length === 0 && <p className="muted">Šiam butui dar nėra nuotraukų.</p>}
+                  </div>
+                  <form className="upload-form" onSubmit={handleUploadPicture}>
+                    <label>
+                      Nuotraukų failai
+                      <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={handleFileChange} />
+                    </label>
+                    <label>
+                      Rodoma viešai?
+                      <select value={pictureUploadForm.public ? 'taip' : 'ne'} onChange={(event) => setPictureUploadForm((prev) => ({ ...prev, public: event.target.value === 'taip' }))}>
+                        <option value="ne">Ne</option>
+                        <option value="taip">Taip</option>
+                      </select>
+                    </label>
+                    <button type="submit" className="btn">
+                      Įkelti nuotrauką
+                    </button>
+                  </form>
+                </>
+              ) : (
+                <p className="muted">Pasirinkite butą, kad pamatytumėte nuotraukas.</p>
+              )}
+            </div>
+
+            <div className="card" id="listing-creator">
+              <h3>Skelbimo kūrimas</h3>
+              <p className="muted">
+                Nuotrauka: <strong>{selectedPictureSummary ?? 'nepasirinkta'}</strong>
+              </p>
+              {selectedPicture && <p className="muted">Matomumas: {selectedPicture.public ? 'Vieša' : 'Privatu'}</p>}
+              {selectedListing && (
+                <p className="hint">
+                  Ši nuotrauka jau naudojama skelbime „{selectedListing.description || formatPrice(selectedListing.askingprice)}“
+                </p>
+              )}
+              <label>
+                Aprašymas
+                <textarea value={listingForm.description} onChange={(event) => setListingForm((prev) => ({ ...prev, description: event.target.value }))} />
+              </label>
+              <div className="form-grid">
                 <label>
-                  Nuotraukų failai
-                  <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={handleFileChange} />
+                  Kaina
+                  <input type="number" value={listingForm.askingprice} onChange={(event) => setListingForm((prev) => ({ ...prev, askingprice: Number(event.target.value) }))} />
                 </label>
                 <label>
-                  Rodoma viešai?
-                  <select value={pictureUploadForm.public ? 'taip' : 'ne'} onChange={(event) => setPictureUploadForm((prev) => ({ ...prev, public: event.target.value === 'taip' }))}>
+                  Nuoma?
+                  <select value={listingForm.rent ? 'taip' : 'ne'} onChange={(event) => setListingForm((prev) => ({ ...prev, rent: event.target.value === 'taip' }))}>
                     <option value="ne">Ne</option>
                     <option value="taip">Taip</option>
                   </select>
                 </label>
-                <button type="submit" className="btn">
-                  Įkelti nuotrauką
-                </button>
-              </form>
-            </>
-          ) : (
-            <p className="muted">Pasirinkite butą, kad pamatytumėte nuotraukas.</p>
-          )}
-        </div>
-
-        <div className="card">
-          <h3>Skelbimo kūrimas</h3>
-          <p className="muted">
-            Nuotrauka: <strong>{selectedPictureSummary ?? 'nepasirinkta'}</strong>
-          </p>
-          {selectedPicture && (
-            <p className="muted">Matomumas: {selectedPicture.public ? 'Vieša' : 'Privatu'}</p>
-          )}
-          {selectedListing && (
-            <p className="hint">
-              Ši nuotrauka jau naudojama skelbime „{selectedListing.description || formatPrice(selectedListing.askingprice)}“
-            </p>
-          )}
-          <label>
-            Aprašymas
-            <textarea value={listingForm.description} onChange={(event) => setListingForm((prev) => ({ ...prev, description: event.target.value }))} />
-          </label>
-          <div className="form-grid">
-            <label>
-              Kaina
-              <input type="number" value={listingForm.askingprice} onChange={(event) => setListingForm((prev) => ({ ...prev, askingprice: Number(event.target.value) }))} />
-            </label>
-            <label>
-              Nuoma?
-              <select value={listingForm.rent ? 'taip' : 'ne'} onChange={(event) => setListingForm((prev) => ({ ...prev, rent: event.target.value === 'taip' }))}>
-                <option value="ne">Ne</option>
-                <option value="taip">Taip</option>
-              </select>
-            </label>
-          </div>
-          <button className="btn" onClick={handleListingCreate}>
-            Skelbti
-          </button>
-        </div>
-      </section>
-
-      <section className="grid-two">
-        <div className="card">
-          <h3>Laisvi laikai</h3>
-          <div className="timeline">
-            {availabilities.map((slot) => (
-              <div key={slot.idAvailability} className="timeline__item">
-                <div>
-                  <p>{formatFriendly(slot.from)}</p>
-                  <p className="muted">iki {formatFriendly(slot.to)}</p>
-                </div>
               </div>
-            ))}
-            {availabilities.length === 0 && <p className="muted">Dar neregistravote prieinamumo.</p>}
-          </div>
-          <div className="form-grid">
-            <label>
-              Pradžia
-              <input value={availabilityForm.from} onChange={(event) => setAvailabilityForm((prev) => ({ ...prev, from: event.target.value }))} />
-            </label>
-            <label>
-              Pabaiga
-              <input value={availabilityForm.to} onChange={(event) => setAvailabilityForm((prev) => ({ ...prev, to: event.target.value }))} />
-            </label>
-          </div>
-          <button className="btn" onClick={handleAvailabilityCreate}>
-            Pridėti laiką
-          </button>
-        </div>
-
-        <div className="card">
-          <h3>Peržiūrų užklausos</h3>
-          <div className="table">
-            <div className="table__row table__row--head">
-              <span>Skelbimas</span>
-              <span>Laikas</span>
-              <span>Veiksmas</span>
+              <button className="btn" onClick={handleListingCreate}>
+                Skelbti
+              </button>
             </div>
-            {viewings.map((viewing) => {
-              const relatedListing = listings.find((listing) => listing.idListing === viewing.fkListingidListing)
-              return (
-                <div key={viewing.idViewing} className="table__row">
-                  <span>
-                    <strong>{relatedListing?.description ?? 'Skelbimo duomenys nepasiekiami'}</strong>
-                    <p className="muted">
-                      {relatedListing
-                        ? relatedListing.rent
-                          ? 'Nuomos pasiūlymas'
-                          : 'Pardavimo pasiūlymas'
-                        : 'Patikrinkite ar skelbimas dar egzistuoja'}
-                    </p>
-                  </span>
-                  <span>
-                    <p>{formatFriendly(viewing.from)}</p>
-                    <p className="muted">iki {formatFriendly(viewing.to)}</p>
-                  </span>
-                  <span className="table__actions">
-                    <button className="btn btn--ghost" onClick={() => handleViewingDecision(viewing.idViewing, 2)}>
-                      Patvirtinti
-                    </button>
-                    <button className="btn btn--ghost" onClick={() => handleViewingDecision(viewing.idViewing, 3)}>
-                      Atmesti
-                    </button>
-                  </span>
-                </div>
-              )
-            })}
-            {viewings.length === 0 && <p className="muted">Šiuo metu neturite užklausų.</p>}
-          </div>
-        </div>
-      </section>
+          </section>
 
-      <section className="card">
-        <h3>Skelbimų suvestinė</h3>
-        <div className="listing-grid">
-          {listings.map((listing) => {
-            const coverPicture = listing.fkPictureid ? pictureDirectory.get(listing.fkPictureid) : undefined
-            return (
-              <article key={listing.idListing} className="card card--subtle">
-                <p className="muted">{listing.rent ? 'Nuomos pasiūlymas' : 'Pardavimo pasiūlymas'}</p>
-                <h4>{listing.description || 'Skelbimas be aprašo'}</h4>
-                <p>{formatPrice(listing.askingprice)}</p>
-                <p className="muted">
-                  {!listing.fkPictureid
-                    ? 'Viršelio nuotrauka nepasirinkta'
-                    : coverPicture
-                      ? coverPicture.public
-                        ? 'Viršelio nuotrauka vieša'
-                        : 'Viršelio nuotrauka privati'
-                      : 'Viršelio nuotraukos duomenys nepasiekiami'}
-                </p>
-              </article>
-            )
-          })}
-          {listings.length === 0 && <p className="muted">Dar nesukūrėte skelbimų.</p>}
-        </div>
-      </section>
+          <section className="grid-two">
+            <div className="card">
+              <h3>Laisvi laikai</h3>
+              <div className="timeline">
+                {availabilities.map((slot) => (
+                  <div key={slot.idAvailability} className="timeline__item">
+                    <div>
+                      <p>{formatFriendly(slot.from)}</p>
+                      <p className="muted">iki {formatFriendly(slot.to)}</p>
+                    </div>
+                  </div>
+                ))}
+                {availabilities.length === 0 && <p className="muted">Dar neregistravote prieinamumo.</p>}
+              </div>
+              <div className="form-grid">
+                <label>
+                  Pradžia
+                  <input value={availabilityForm.from} onChange={(event) => setAvailabilityForm((prev) => ({ ...prev, from: event.target.value }))} />
+                </label>
+                <label>
+                  Pabaiga
+                  <input value={availabilityForm.to} onChange={(event) => setAvailabilityForm((prev) => ({ ...prev, to: event.target.value }))} />
+                </label>
+              </div>
+              <button className="btn" onClick={handleAvailabilityCreate}>
+                Pridėti laiką
+              </button>
+            </div>
+
+            <div className="card">
+              <h3>Peržiūrų užklausos</h3>
+              <div className="table">
+                <div className="table__row table__row--head">
+                  <span>Skelbimas</span>
+                  <span>Laikas</span>
+                  <span>Veiksmas</span>
+                </div>
+                {viewings.map((viewing) => {
+                  const relatedListing = listings.find((listing) => listing.idListing === viewing.fkListingidListing)
+                  return (
+                    <div key={viewing.idViewing} className="table__row">
+                      <span>
+                        <strong>{relatedListing?.description ?? 'Skelbimo duomenys nepasiekiami'}</strong>
+                        <p className="muted">
+                          {relatedListing
+                            ? relatedListing.rent
+                              ? 'Nuomos pasiūlymas'
+                              : 'Pardavimo pasiūlymas'
+                            : 'Patikrinkite ar skelbimas dar egzistuoja'}
+                        </p>
+                      </span>
+                      <span>
+                        <p>{formatFriendly(viewing.from)}</p>
+                        <p className="muted">iki {formatFriendly(viewing.to)}</p>
+                      </span>
+                      <span className="table__actions">
+                        <button className="btn btn--ghost" onClick={() => handleViewingDecision(viewing.idViewing, 2)}>
+                          Patvirtinti
+                        </button>
+                        <button className="btn btn--ghost" onClick={() => handleViewingDecision(viewing.idViewing, 3)}>
+                          Atmesti
+                        </button>
+                      </span>
+                    </div>
+                  )
+                })}
+                {viewings.length === 0 && <p className="muted">Šiuo metu neturite užklausų.</p>}
+              </div>
+            </div>
+          </section>
+
+          <section className="card">
+            <h3>Skelbimų suvestinė</h3>
+            <div className="listing-grid">
+              {listings.map((listing) => {
+                const coverPicture = listing.fkPictureid ? pictureDirectory.get(listing.fkPictureid) : undefined
+                return (
+                  <article key={listing.idListing} className="card card--subtle">
+                    <p className="muted">{listing.rent ? 'Nuomos pasiūlymas' : 'Pardavimo pasiūlymas'}</p>
+                    <h4>{listing.description || 'Skelbimas be aprašo'}</h4>
+                    <p>{formatPrice(listing.askingprice)}</p>
+                    <p className="muted">
+                      {!listing.fkPictureid
+                        ? 'Viršelio nuotrauka nepasirinkta'
+                        : coverPicture
+                          ? coverPicture.public
+                            ? 'Viršelio nuotrauka vieša'
+                            : 'Viršelio nuotrauka privati'
+                          : 'Viršelio nuotraukos duomenys nepasiekiami'}
+                    </p>
+                  </article>
+                )
+              })}
+              {listings.length === 0 && <p className="muted">Dar nesukūrėte skelbimų.</p>}
+            </div>
+          </section>
+        </>
+      )}
     </div>
   )
 }
