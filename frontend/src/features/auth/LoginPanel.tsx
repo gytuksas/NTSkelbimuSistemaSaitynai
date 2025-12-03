@@ -24,7 +24,7 @@ export const LoginPanel = () => {
     return (
       <div className="auth-panel">
         <div>
-          <p className="auth-panel__hello">Sveiki, {user.name ?? user.email ?? 'naudotojau'}!</p>
+          <p className="auth-panel__hello">Sveiki, {user.name ?? user.surname ?? 'naudotojau'}!</p>
           <p className="auth-panel__role">Rolė: {user.role}</p>
         </div>
         <button className="btn btn--ghost" onClick={() => logout()}>
@@ -39,7 +39,7 @@ export const LoginPanel = () => {
       <div className="auth-panel__fields">
         <input
           type="email"
-          placeholder="El. paštas"
+          placeholder="Prisijungimo ID"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           required

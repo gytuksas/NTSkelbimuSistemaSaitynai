@@ -182,7 +182,6 @@ export const ListingsPage = () => {
         </div>
         <div className="listing-grid">
           {filteredListings.map((listing) => {
-            const coverStyle = listing.pictureUrl ? { backgroundImage: `url(${listing.pictureUrl})` } : undefined
             const card = (
               <article
                 className={
@@ -195,9 +194,17 @@ export const ListingsPage = () => {
                       ? 'listing-card__media'
                       : 'listing-card__media listing-card__media--empty'
                   }
-                  style={coverStyle}
                 >
-                  {!listing.pictureUrl && <span>Nuotrauka ruošiama</span>}
+                  {listing.pictureUrl ? (
+                    <img
+                      src={listing.pictureUrl}
+                      alt={listing.description}
+                      className="listing-card__image"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <span>Nuotrauka ruošiama</span>
+                  )}
                 </div>
                 <div className="listing-card__badge">{describeListingBadge(listing)}</div>
                 <h4>{listing.description}</h4>

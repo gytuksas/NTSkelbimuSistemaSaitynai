@@ -81,7 +81,6 @@ export const AdminPage = () => {
         <div className="table">
           <div className="table__row table__row--head">
             <span>Naudotojas</span>
-            <span>El. paštas</span>
             <span>Telefonas</span>
             <span>Registracija</span>
           </div>
@@ -90,7 +89,6 @@ export const AdminPage = () => {
               <span>
                 {item.name} {item.surname}
               </span>
-              <span>{item.email}</span>
               <span>{item.phone || '—'}</span>
               <span>{formatFriendly(item.registrationtime)}</span>
             </div>
@@ -109,10 +107,7 @@ export const AdminPage = () => {
                   <p>
                     {profile ? `${profile.name} ${profile.surname}` : 'Neidentifikuotas brokeris'}
                   </p>
-                  <p className="muted">
-                    {profile?.email ?? 'El. paštas neprieinamas'}
-                    {profile?.phone ? ` · ${profile.phone}` : ''}
-                  </p>
+                  <p className="muted">{profile?.phone ?? 'Telefono numeris neprieinamas'}</p>
                   <p className="muted">
                     {broker.confirmed ? 'Patvirtintas' : 'Laukia patvirtinimo'} ·{' '}
                     {broker.blocked ? 'Blokuotas' : 'Aktyvus'}
@@ -139,10 +134,7 @@ export const AdminPage = () => {
               <div key={buyer.idUser} className="admin-toggle">
                 <div>
                   <p>{profile ? `${profile.name} ${profile.surname}` : 'Neidentifikuotas pirkėjas'}</p>
-                  <p className="muted">
-                    {profile?.email ?? 'El. paštas neprieinamas'}
-                    {profile?.phone ? ` · ${profile.phone}` : ''}
-                  </p>
+                  <p className="muted">{profile?.phone ?? 'Telefono numeris neprieinamas'}</p>
                   <p className="muted">
                     {buyer.confirmed ? 'Dokumentai patvirtinti' : 'Laukia tapatybės'} ·{' '}
                     {buyer.blocked ? 'Blokuotas' : 'Aktyvus'}

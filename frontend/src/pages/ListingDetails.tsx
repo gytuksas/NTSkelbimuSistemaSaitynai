@@ -5,7 +5,7 @@ import type { AvailabilitySlot, PublicListingDetails } from '../types/api'
 import { formatPrice, translateFinishType, translateHeatingType } from '../utils/text'
 import { formatFriendly } from '../utils/dates'
 import { useAuth } from '../context/useAuth'
-import { buildCoverStyle, resolvePictureSrc } from '../utils/pictures'
+import { resolvePictureSrc } from '../utils/pictures'
 
 const makeSlotKey = (slot: AvailabilitySlot) => `${slot.availabilityId}-${slot.from}`
 
@@ -312,9 +312,7 @@ export const ListingDetailsPage = () => {
   const apartmentDescription = listing?.apartmentNotes?.trim() || null
 
   const heroHasImage = lightboxImages.length > 0
-  const heroStyle = heroHasImage
-    ? { backgroundImage: `url(${lightboxImages[carouselIndex]})` }
-    : buildCoverStyle(listing?.pictureUrl, listing?.pictureId)
+  const heroImageSrc = heroHasImage ? lightboxImages[carouselIndex] : null
   const heroEyebrow = listing
     ? listing.buildingCity
       ? `${listing.buildingCity}${listing.buildingAddress ? `, ${listing.buildingAddress}` : ''}`
@@ -336,12 +334,16 @@ export const ListingDetailsPage = () => {
         <>
           <section className="card details-hero">
             <div
-              className={heroHasImage ? 'details-hero__media' : 'details-hero__media details-hero__media--empty'}
-              style={heroStyle}
+              className={heroImageSrc ? 'details-hero__media' : 'details-hero__media details-hero__media--empty'}
             >
-              {!heroHasImage && <span>Nuotrauka ruošiama</span>}
-              {heroHasImage && (
+              {!heroImageSrc && <span>Nuotrauka ruošiama</span>}
+              {heroImageSrc && (
                 <>
+                  <img
+                    src={heroImageSrc}
+                    alt={listing.description}
+                    className="details-hero__image"
+                  />
                   {lightboxImages.length > 1 && (
                     <>
                       <button
@@ -513,7 +515,7 @@ export const ListingDetailsPage = () => {
                 )}
                 {selectedSlot && (
                   <p className="muted">
-                    Patvirtinus vizitą gausite el. laišką su informacija apie {formatFriendly(selectedSlot.from)}.
+                    Patvirtinus vizitą jo statusą rasite savo apžiūrų skiltyje ({formatFriendly(selectedSlot.from)}).
                   </p>
                 )}
               </div>

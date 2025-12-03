@@ -65,10 +65,6 @@ export const ProfilePage = () => {
               </strong>
             </li>
             <li>
-              <span>El. paštas</span>
-              <strong>{user.email ?? 'Nenurodytas'}</strong>
-            </li>
-            <li>
               <span>Rolė</span>
               <strong>{user.role}</strong>
             </li>

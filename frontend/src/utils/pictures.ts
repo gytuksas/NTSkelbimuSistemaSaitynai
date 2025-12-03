@@ -11,8 +11,3 @@ export const resolvePictureSrc = (pictureUrl?: string | null, pictureId?: string
   }
   return undefined
 }
-
-export const buildCoverStyle = (pictureUrl?: string | null, pictureId?: string | null) => {
-  const resolved = resolvePictureSrc(pictureUrl, pictureId)
-  return resolved ? { backgroundImage: `url(${resolved})` } : undefined
-}
