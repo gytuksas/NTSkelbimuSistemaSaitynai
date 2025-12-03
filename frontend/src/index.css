@@ -396,6 +396,11 @@ a {
   border: 1px solid var(--border);
 }
 
+.table__row--apartments {
+  grid-template-columns: minmax(160px, 1fr) minmax(200px, 1fr) minmax(200px, 1fr) minmax(220px, auto);
+  align-items: flex-start;
+}
+
 .table__row--head {
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -406,6 +411,36 @@ a {
 .table__actions {
   display: flex;
   gap: 0.5rem;
+}
+
+.table__actions--stacked {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.table__actions--stacked .btn {
+  flex: 1 1 140px;
+  min-width: 130px;
+  white-space: normal;
+}
+
+.table__actions--stacked .btn:last-child {
+  flex-basis: 100%;
+}
+
+@media (max-width: 900px) {
+  .table__row--apartments {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .table__actions--stacked {
+    flex-direction: column;
+  }
+
+  .table__actions--stacked .btn,
+  .table__actions--stacked .btn:last-child {
+    flex-basis: 100%;
+  }
 }
 
 .management-list {
@@ -436,6 +471,10 @@ a {
   gap: 0.5rem;
   flex-wrap: wrap;
   justify-content: flex-end;
+}
+
+.management-card__actions.table__actions--stacked {
+  justify-content: flex-start;
 }
 
 .management-edit {

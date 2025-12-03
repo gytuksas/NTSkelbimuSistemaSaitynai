@@ -26,6 +26,49 @@ const defaultAvailability = {
   to: toDateTimeLocal(new Date(Date.now() + 1000 * 60 * 60 * 25)),
 }
 
+type Option = {
+  value: number
+  label: string
+}
+
+const energyClassOptions: Option[] = [
+  { value: 1, label: 'A+++' },
+  { value: 2, label: 'A++' },
+  { value: 3, label: 'A+' },
+  { value: 4, label: 'A' },
+  { value: 5, label: 'B' },
+  { value: 6, label: 'C' },
+  { value: 7, label: 'D' },
+  { value: 8, label: 'E' },
+  { value: 9, label: 'F' },
+  { value: 10, label: 'G' },
+]
+
+const finishTypeOptions: Option[] = [
+  { value: 1, label: 'Pilnai įrengtas' },
+  { value: 2, label: 'Dalinė apdaila' },
+  { value: 3, label: 'Neįrengtas' },
+  { value: 4, label: 'Statomas' },
+  { value: 5, label: 'Pamatai' },
+  { value: 6, label: 'Kita' },
+]
+
+const heatingTypeOptions: Option[] = [
+  { value: 1, label: 'Centrinis' },
+  { value: 2, label: 'Dujinis' },
+  { value: 3, label: 'Kietas kuras' },
+  { value: 4, label: 'Elektrinis' },
+  { value: 5, label: 'Šilumos siurblys' },
+  { value: 6, label: 'Kita' },
+]
+
+const getOptionLabel = (options: Option[], value?: number | null) => {
+  if (value === null || value === undefined) {
+    return 'Nenurodyta'
+  }
+  return options.find((option) => option.value === value)?.label ?? `ID ${value}`
+}
+
 type ApartmentFormState = {
   apartmentnumber: string
   rooms: string
@@ -536,7 +579,7 @@ export const BrokersPage = () => {
                         {building.area} m² · {building.floors} aukštai · Pastatyta {building.year}
                       </p>
                     </div>
-                    <div className="management-card__actions">
+                    <div className="management-card__actions table__actions table__actions--stacked">
                       <button className="btn" onClick={() => goToApartmentsView(building.idBuilding)}>
                         Peržiūrėti butus
                       </button>
@@ -576,8 +619,14 @@ export const BrokersPage = () => {
                           <input type="number" value={buildingEditForm.lastrenovationyear} onChange={(event) => setBuildingEditForm((prev) => ({ ...prev, lastrenovationyear: Number(event.target.value) || 0 }))} />
                         </label>
                         <label>
-                          Energijos klasė ID
-                          <input type="number" value={buildingEditForm.energy} onChange={(event) => setBuildingEditForm((prev) => ({ ...prev, energy: Number(event.target.value) || 0 }))} />
+                          Energijos klasė
+                          <select value={buildingEditForm.energy?.toString() ?? ''} onChange={(event) => setBuildingEditForm((prev) => ({ ...prev, energy: Number(event.target.value) }))}>
+                            {energyClassOptions.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
                         </label>
                       </div>
                       <div className="management-edit__actions">
@@ -624,8 +673,14 @@ export const BrokersPage = () => {
                 <input type="number" value={buildingForm.lastrenovationyear} onChange={(event) => handleBuildingCreateChange('lastrenovationyear', event.target.value)} />
               </label>
               <label>
-                Energijos klasė ID
-                <input type="number" value={buildingForm.energy} onChange={(event) => handleBuildingCreateChange('energy', event.target.value)} />
+                Energijos klasė
+                <select value={buildingForm.energy.toString()} onChange={(event) => handleBuildingCreateChange('energy', event.target.value)}>
+                  {energyClassOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
               </label>
             </div>
             <button className="btn" onClick={handleBuildingCreate}>
@@ -673,7 +728,7 @@ export const BrokersPage = () => {
             <section className="card">
             <h3>Butų sąrašas</h3>
             <div className="table">
-              <div className="table__row table__row--head">
+              <div className="table__row table__row--head table__row--apartments">
                 <span>Buto informacija</span>
                 <span>Parametrai</span>
                 <span>Pastabos</span>
@@ -682,7 +737,7 @@ export const BrokersPage = () => {
               {apartmentsInBuilding.map((apartment) => (
                 <div key={apartment.idApartment} className="table__group">
                   <div
-                    className="table__row"
+                    className="table__row table__row--apartments"
                     onClick={() => {
                       setSelectedApartmentIdInput(apartment.idApartment)
                       if (activeListingApartmentId && activeListingApartmentId !== apartment.idApartment) {
@@ -696,13 +751,15 @@ export const BrokersPage = () => {
                     </span>
                     <span>
                       <p>{apartment.rooms} kamb. · {apartment.area} m²</p>
-                      <p className="muted">Apdaila #{apartment.finish} · Šildymas {apartment.heating ?? '—'}</p>
+                      <p className="muted">
+                        Apdaila {getOptionLabel(finishTypeOptions, apartment.finish)} · Šildymas {getOptionLabel(heatingTypeOptions, apartment.heating ?? null)}
+                      </p>
                     </span>
                     <span>
                       <p className="muted">{apartment.notes || 'Pastabų nėra'}</p>
                       <p className="muted">{apartment.isWholeBuilding ? 'Visas pastatas' : 'Individualus butas'}</p>
                     </span>
-                    <span className="table__actions">
+                    <span className="table__actions table__actions--stacked">
                       <button
                         className="btn btn--ghost"
                         onClick={(event) => {
@@ -753,12 +810,25 @@ export const BrokersPage = () => {
                           <input type="number" value={apartmentEditForm.floor} onChange={(event) => setApartmentEditForm((prev) => ({ ...prev, floor: event.target.value }))} />
                         </label>
                         <label>
-                          Apdaila ID
-                          <input type="number" value={apartmentEditForm.finish} onChange={(event) => setApartmentEditForm((prev) => ({ ...prev, finish: event.target.value }))} />
+                          Apdaila
+                          <select value={apartmentEditForm.finish} onChange={(event) => setApartmentEditForm((prev) => ({ ...prev, finish: event.target.value }))}>
+                            {finishTypeOptions.map((option) => (
+                              <option key={option.value} value={String(option.value)}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
                         </label>
                         <label>
-                          Šildymas ID
-                          <input type="number" value={apartmentEditForm.heating} onChange={(event) => setApartmentEditForm((prev) => ({ ...prev, heating: event.target.value }))} />
+                          Šildymas
+                          <select value={apartmentEditForm.heating} onChange={(event) => setApartmentEditForm((prev) => ({ ...prev, heating: event.target.value }))}>
+                            <option value="">Nepriskirta</option>
+                            {heatingTypeOptions.map((option) => (
+                              <option key={option.value} value={String(option.value)}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
                         </label>
                         <label>
                           Pastabos
@@ -925,12 +995,25 @@ export const BrokersPage = () => {
                 <input type="number" value={apartmentForm.floor} onChange={(event) => setApartmentForm((prev) => ({ ...prev, floor: event.target.value }))} />
               </label>
               <label>
-                Apdaila ID
-                <input type="number" value={apartmentForm.finish} onChange={(event) => setApartmentForm((prev) => ({ ...prev, finish: event.target.value }))} />
+                Apdaila
+                <select value={apartmentForm.finish} onChange={(event) => setApartmentForm((prev) => ({ ...prev, finish: event.target.value }))}>
+                  {finishTypeOptions.map((option) => (
+                    <option key={option.value} value={String(option.value)}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label>
-                Šildymas ID
-                <input type="number" value={apartmentForm.heating} onChange={(event) => setApartmentForm((prev) => ({ ...prev, heating: event.target.value }))} />
+                Šildymas
+                <select value={apartmentForm.heating} onChange={(event) => setApartmentForm((prev) => ({ ...prev, heating: event.target.value }))}>
+                  <option value="">Nepriskirta</option>
+                  {heatingTypeOptions.map((option) => (
+                    <option key={option.value} value={String(option.value)}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label>
                 Pastabos
