@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { client, baseURL } from '../api/client'
 import type { Apartment, Availability, Building, Listing, Picture, Viewing } from '../types/api'
 import { useAuth } from '../context/useAuth'
 import { toDateTimeLocal, formatFriendly } from '../utils/dates'
-import { formatPrice } from '../utils/text'
 
 const defaultBuilding = {
   city: 'Vilnius',
@@ -106,6 +106,7 @@ type ApartmentTab = 'units' | 'schedule'
 
 export const BrokersPage = () => {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const isBroker = user && (user.role === 'Broker' || user.role === 'Administrator')
 
   const [viewMode, setViewMode] = useState<ViewMode>('buildings')
@@ -132,6 +133,7 @@ export const BrokersPage = () => {
   const [editingApartmentId, setEditingApartmentId] = useState<number | null>(null)
   const [activeListingApartmentId, setActiveListingApartmentId] = useState<number | null>(null)
   const [listingPictureId, setListingPictureId] = useState<string | null>(null)
+  const [editingListingId, setEditingListingId] = useState<number | null>(null)
   const [feedback, setFeedback] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -236,7 +238,19 @@ export const BrokersPage = () => {
         : 'Privati nuotrauka'
     : null
   const listingPicture = listingPictureId ? pictureDirectory.get(listingPictureId) : undefined
-  const listingPictureAlreadyUsed = listingPictureId ? listings.some((listing) => listing.fkPictureid === listingPictureId) : false
+  const listingPictureAlreadyUsed = listingPictureId
+    ? listings.some((listing) => listing.fkPictureid === listingPictureId && listing.idListing !== editingListingId)
+    : false
+  const listingByApartment = useMemo(() => {
+    const map = new Map<number, Listing>()
+    listings.forEach((listing) => {
+      const listingPictureRef = pictureDirectory.get(listing.fkPictureid)
+      if (listingPictureRef) {
+        map.set(listingPictureRef.fkApartmentidApartment, listing)
+      }
+    })
+    return map
+  }, [listings, pictureDirectory])
 
   const goToApartmentsView = (buildingId: number) => {
     setSelectedBuildingIdInput(buildingId)
@@ -407,12 +421,49 @@ export const BrokersPage = () => {
     setSelectedApartmentIdInput(apartment.idApartment)
     setListingPictureId(defaultPicture)
     setSelectedPictureIdInput(defaultPicture)
+    setEditingListingId(null)
     setListingForm(defaultListing)
+  }
+
+  const startListingEdit = (apartment: Apartment, listing: Listing) => {
+    setActiveListingApartmentId(apartment.idApartment)
+    setEditingApartmentId(null)
+    setSelectedApartmentIdInput(apartment.idApartment)
+    setListingPictureId(listing.fkPictureid)
+    setSelectedPictureIdInput(listing.fkPictureid)
+    setEditingListingId(listing.idListing)
+    setListingForm({
+      description: listing.description ?? '',
+      askingprice: listing.askingprice,
+      rent: listing.rent,
+    })
+  }
+
+  const handleListingView = (listingId: number) => {
+    navigate(`/skelbimai/${listingId}`)
+  }
+
+  const handleListingDelete = async (listingId: number, apartmentId?: number) => {
+    if (typeof window !== 'undefined' && !window.confirm('Ar tikrai norite pašalinti šį skelbimą?')) {
+      return
+    }
+    try {
+      await client.delete(`/api/Listings/${listingId}`)
+      setListings((prev) => prev.filter((listing) => listing.idListing !== listingId))
+      if (editingListingId === listingId || (apartmentId && activeListingApartmentId === apartmentId)) {
+        closeListingPanel()
+      }
+      setFeedback('Skelbimas pašalintas.')
+    } catch (error) {
+      console.error(error)
+      setFeedback('Nepavyko pašalinti skelbimo.')
+    }
   }
 
   const closeListingPanel = () => {
     setActiveListingApartmentId(null)
     setListingPictureId(null)
+    setEditingListingId(null)
     setListingForm(defaultListing)
   }
 
@@ -522,21 +573,35 @@ export const BrokersPage = () => {
     }
   }
 
-  const handleListingCreate = async (pictureId: string | null) => {
+  const handleListingSave = async (pictureId: string | null) => {
     if (!pictureId) {
       setFeedback('Pasirinkite nuotrauką, kuri bus skelbime.')
       return
     }
     try {
       const payload = { ...listingForm, fkPictureid: pictureId }
-      const { data } = await client.post<Listing>('/api/Listings', payload)
-      setListings((prev) => [...prev, data])
+      if (editingListingId) {
+        const listingId = editingListingId
+        const updatePayload: Listing = {
+          idListing: listingId,
+          description: payload.description,
+          askingprice: payload.askingprice,
+          rent: payload.rent,
+          fkPictureid: payload.fkPictureid,
+        }
+        await client.put(`/api/Listings/${listingId}`, updatePayload)
+        setListings((prev) => prev.map((listing) => (listing.idListing === listingId ? { ...listing, ...updatePayload } : listing)))
+        setFeedback('Skelbimas atnaujintas!')
+      } else {
+        const { data } = await client.post<Listing>('/api/Listings', payload)
+        setListings((prev) => [...prev, data])
+        setFeedback('Skelbimas sukurtas!')
+      }
       setListingForm(defaultListing)
       closeListingPanel()
-      setFeedback('Skelbimas sukurtas!')
     } catch (error) {
       console.error(error)
-      setFeedback('Nepavyko sukurti skelbimo. Įsitikinkite, kad nuotrauka priklauso jums.')
+      setFeedback('Nepavyko išsaugoti skelbimo. Įsitikinkite, kad nuotrauka priklauso jums.')
     }
   }
 
@@ -734,8 +799,11 @@ export const BrokersPage = () => {
                 <span>Pastabos</span>
                 <span>Veiksmai</span>
               </div>
-              {apartmentsInBuilding.map((apartment) => (
-                <div key={apartment.idApartment} className="table__group">
+              {apartmentsInBuilding.map((apartment) => {
+                const listingForApartment = listingByApartment.get(apartment.idApartment)
+                const isEditingThisListing = listingForApartment ? editingListingId === listingForApartment.idListing : false
+                return (
+                  <div key={apartment.idApartment} className="table__group">
                   <div
                     className="table__row table__row--apartments"
                     onClick={() => {
@@ -778,15 +846,47 @@ export const BrokersPage = () => {
                       >
                         Pašalinti
                       </button>
-                      <button
-                        className="btn"
-                        onClick={(event) => {
-                          event.stopPropagation()
-                          startListingCreation(apartment)
-                        }}
-                      >
-                        Kurti skelbimą
-                      </button>
+                      {listingForApartment ? (
+                        <>
+                          <button
+                            className="btn"
+                            onClick={(event) => {
+                              event.stopPropagation()
+                              handleListingView(listingForApartment.idListing)
+                            }}
+                          >
+                            Peržiūrėti skelbimą
+                          </button>
+                          <button
+                            className="btn btn--ghost"
+                            onClick={(event) => {
+                              event.stopPropagation()
+                              startListingEdit(apartment, listingForApartment)
+                            }}
+                          >
+                            Redaguoti skelbimą
+                          </button>
+                          <button
+                            className="btn btn--ghost"
+                            onClick={(event) => {
+                              event.stopPropagation()
+                              handleListingDelete(listingForApartment.idListing, apartment.idApartment)
+                            }}
+                          >
+                            Pašalinti skelbimą
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          className="btn"
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            startListingCreation(apartment)
+                          }}
+                        >
+                          Kurti skelbimą
+                        </button>
+                      )}
                     </span>
                   </div>
                   {editingApartmentId === apartment.idApartment && (
@@ -911,7 +1011,7 @@ export const BrokersPage = () => {
                   {activeListingApartmentId === apartment.idApartment && (
                     <div className="management-edit management-edit--highlight">
                       <div className="management-edit__header">
-                        <h4>Skelbimo kūrimas</h4>
+                        <h4>{isEditingThisListing ? 'Skelbimo redagavimas' : 'Skelbimo kūrimas'}</h4>
                         <button className="btn btn--ghost" onClick={closeListingPanel}>
                           Užverti
                         </button>
@@ -960,8 +1060,8 @@ export const BrokersPage = () => {
                         </label>
                       </div>
                       <div className="management-edit__actions">
-                        <button className="btn" disabled={!listingPictureId} onClick={() => handleListingCreate(listingPictureId)}>
-                          Skelbti
+                        <button className="btn" disabled={!listingPictureId} onClick={() => handleListingSave(listingPictureId)}>
+                          {isEditingThisListing ? 'Išsaugoti pakeitimus' : 'Skelbti'}
                         </button>
                         <button className="btn btn--ghost" onClick={closeListingPanel}>
                           Atšaukti
@@ -970,7 +1070,8 @@ export const BrokersPage = () => {
                     </div>
                   )}
                 </div>
-              ))}
+                )
+              })}
               {apartmentsInBuilding.length === 0 && <p className="muted">Šiame pastate dar nėra butų.</p>}
             </div>
           </section>
@@ -1031,31 +1132,6 @@ export const BrokersPage = () => {
                   Pridėti butą
                 </button>
               </section>
-              <section className="card">
-                <h3>Skelbimų suvestinė</h3>
-                <div className="listing-grid">
-              {listings.map((listing) => {
-                const coverPicture = listing.fkPictureid ? pictureDirectory.get(listing.fkPictureid) : undefined
-                return (
-                  <article key={listing.idListing} className="card card--subtle">
-                    <p className="muted">{listing.rent ? 'Nuomos pasiūlymas' : 'Pardavimo pasiūlymas'}</p>
-                    <h4>{listing.description || 'Skelbimas be aprašo'}</h4>
-                    <p>{formatPrice(listing.askingprice)}</p>
-                    <p className="muted">
-                      {!listing.fkPictureid
-                        ? 'Viršelio nuotrauka nepasirinkta'
-                        : coverPicture
-                          ? coverPicture.public
-                            ? 'Viršelio nuotrauka vieša'
-                            : 'Viršelio nuotrauka privati'
-                          : 'Viršelio nuotraukos duomenys nepasiekiami'}
-                    </p>
-                  </article>
-                )
-              })}
-              {listings.length === 0 && <p className="muted">Dar nesukūrėte skelbimų.</p>}
-                </div>
-                  </section>
                 </>
               )}
 
