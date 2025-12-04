@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { client, baseURL } from '../api/client'
+import { PaginationControls } from '../components/PaginationControls'
+import { usePagination } from '../hooks/usePagination'
 import type { Apartment, Building, Listing, Picture } from '../types/api'
 import { useAuth } from '../context/useAuth'
 
@@ -180,6 +182,9 @@ export const BrokersPage = () => {
     [apartments, selectedBuildingId],
   )
 
+  const buildingPagination = usePagination(buildings)
+  const apartmentsPagination = usePagination(apartmentsInBuilding)
+
   const selectedApartmentId = useMemo(() => {
     if (!selectedBuildingId || apartmentsInBuilding.length === 0) {
       return null
@@ -267,6 +272,7 @@ export const BrokersPage = () => {
 
   const goToApartmentsView = (buildingId: number) => {
     setSelectedBuildingIdInput(buildingId)
+    apartmentsPagination.reset()
     setSelectedApartmentIdInput(null)
     setSelectedPictureIdInput(null)
     setEditingApartmentId(null)
@@ -307,6 +313,7 @@ export const BrokersPage = () => {
       setBuildings((prev) => [...prev, data])
       setBuildingForm(defaultBuilding)
       setSelectedBuildingIdInput(data.idBuilding)
+  apartmentsPagination.reset()
       setViewMode('apartments')
       setFeedback('Pastatas išsaugotas!')
     } catch (error) {
@@ -349,6 +356,7 @@ export const BrokersPage = () => {
         setSelectedBuildingIdInput(null)
         setSelectedApartmentIdInput(null)
         setSelectedPictureIdInput(null)
+        apartmentsPagination.reset()
         setViewMode('buildings')
       }
       setFeedback('Pastatas pašalintas.')
@@ -689,7 +697,7 @@ export const BrokersPage = () => {
             <h3>Jūsų pastatai</h3>
             <p className="muted">Pasirinkite pastatą ir pereikite prie jo butų valdymo.</p>
             <div className="management-list">
-              {buildings.map((building) => (
+              {buildingPagination.pageItems.map((building) => (
                 <article key={building.idBuilding} className="management-card">
                   <div className="management-card__header">
                     <div>
@@ -763,6 +771,19 @@ export const BrokersPage = () => {
               ))}
               {buildings.length === 0 && <p className="muted">Kol kas neturite pastatų. Pridėkite pirmąjį žemiau.</p>}
             </div>
+            {buildings.length > 0 && (
+              <PaginationControls
+                page={buildingPagination.page}
+                pageSize={buildingPagination.pageSize}
+                totalItems={buildingPagination.totalItems}
+                totalPages={buildingPagination.totalPages}
+                rangeStart={buildingPagination.rangeStart}
+                rangeEnd={buildingPagination.rangeEnd}
+                pageSizeOptions={buildingPagination.pageSizeOptions}
+                onPageChange={buildingPagination.goToPage}
+                onPageSizeChange={buildingPagination.setPageSize}
+              />
+            )}
           </section>
 
         <section className="card">
@@ -833,7 +854,7 @@ export const BrokersPage = () => {
                 <span>Pastabos</span>
                 <span>Veiksmai</span>
               </div>
-              {apartmentsInBuilding.map((apartment) => {
+              {apartmentsPagination.pageItems.map((apartment) => {
                 const listingForApartment = listingByApartment.get(apartment.idApartment)
                 const isEditingThisListing = listingForApartment ? editingListingId === listingForApartment.idListing : false
                 const hasApartmentPhotos = (picturesByApartment.get(apartment.idApartment)?.length ?? 0) > 0
@@ -1131,6 +1152,19 @@ export const BrokersPage = () => {
               })}
               {apartmentsInBuilding.length === 0 && <p className="muted">Šiame pastate dar nėra butų.</p>}
             </div>
+            {apartmentsInBuilding.length > 0 && (
+              <PaginationControls
+                page={apartmentsPagination.page}
+                pageSize={apartmentsPagination.pageSize}
+                totalItems={apartmentsPagination.totalItems}
+                totalPages={apartmentsPagination.totalPages}
+                rangeStart={apartmentsPagination.rangeStart}
+                rangeEnd={apartmentsPagination.rangeEnd}
+                pageSizeOptions={apartmentsPagination.pageSizeOptions}
+                onPageChange={apartmentsPagination.goToPage}
+                onPageSizeChange={apartmentsPagination.setPageSize}
+              />
+            )}
           </section>
 
           <section className="card">

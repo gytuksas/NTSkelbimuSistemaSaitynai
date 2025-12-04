@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { client } from '../api/client'
+import { PaginationControls } from '../components/PaginationControls'
+import { usePagination } from '../hooks/usePagination'
 import type { AppUser, Broker, Buyer, Listing } from '../types/api'
 import { useAuth } from '../context/useAuth'
 import { formatFriendly } from '../utils/dates'
@@ -14,6 +16,8 @@ export const AdminPage = () => {
   const [listings, setListings] = useState<Listing[]>([])
   const [message, setMessage] = useState<string | null>(null)
   const userDirectory = useMemo(() => new Map(users.map((entry) => [entry.idUser, entry])), [users])
+  const userPagination = usePagination(users)
+  const listingsPagination = usePagination(listings)
 
   useEffect(() => {
     const loadAdminData = async () => {
@@ -81,19 +85,35 @@ export const AdminPage = () => {
         <div className="table">
           <div className="table__row table__row--head">
             <span>Naudotojas</span>
+            <span>El. paštas</span>
             <span>Telefonas</span>
             <span>Registracija</span>
           </div>
-          {users.map((item) => (
+          {userPagination.pageItems.map((item) => (
             <div key={item.idUser} className="table__row">
               <span>
                 {item.name} {item.surname}
               </span>
+              <span>{item.email}</span>
               <span>{item.phone || '—'}</span>
               <span>{formatFriendly(item.registrationtime)}</span>
             </div>
           ))}
+          {userPagination.totalItems === 0 && <p className="muted">Naudotojų nėra.</p>}
         </div>
+        {userPagination.totalItems > 0 && (
+          <PaginationControls
+            page={userPagination.page}
+            pageSize={userPagination.pageSize}
+            totalItems={userPagination.totalItems}
+            totalPages={userPagination.totalPages}
+            rangeStart={userPagination.rangeStart}
+            rangeEnd={userPagination.rangeEnd}
+            pageSizeOptions={userPagination.pageSizeOptions}
+            onPageChange={userPagination.goToPage}
+            onPageSizeChange={userPagination.setPageSize}
+          />
+        )}
       </section>
 
       <section className="grid-two">
@@ -107,7 +127,10 @@ export const AdminPage = () => {
                   <p>
                     {profile ? `${profile.name} ${profile.surname}` : 'Neidentifikuotas brokeris'}
                   </p>
-                  <p className="muted">{profile?.phone ?? 'Telefono numeris neprieinamas'}</p>
+                  <p className="muted">
+                    {profile?.email ?? 'El. paštas neprieinamas'}
+                    {profile?.phone ? ` · ${profile.phone}` : ''}
+                  </p>
                   <p className="muted">
                     {broker.confirmed ? 'Patvirtintas' : 'Laukia patvirtinimo'} ·{' '}
                     {broker.blocked ? 'Blokuotas' : 'Aktyvus'}
@@ -134,7 +157,10 @@ export const AdminPage = () => {
               <div key={buyer.idUser} className="admin-toggle">
                 <div>
                   <p>{profile ? `${profile.name} ${profile.surname}` : 'Neidentifikuotas pirkėjas'}</p>
-                  <p className="muted">{profile?.phone ?? 'Telefono numeris neprieinamas'}</p>
+                  <p className="muted">
+                    {profile?.email ?? 'El. paštas neprieinamas'}
+                    {profile?.phone ? ` · ${profile.phone}` : ''}
+                  </p>
                   <p className="muted">
                     {buyer.confirmed ? 'Dokumentai patvirtinti' : 'Laukia tapatybės'} ·{' '}
                     {buyer.blocked ? 'Blokuotas' : 'Aktyvus'}
@@ -157,7 +183,7 @@ export const AdminPage = () => {
       <section className="card">
         <h3>Skelbimų moderavimas</h3>
         <div className="listing-grid">
-          {listings.map((listing) => (
+          {listingsPagination.pageItems.map((listing) => (
             <article key={listing.idListing} className="card card--subtle">
               <p className="muted">{listing.rent ? 'Nuomos pasiūlymas' : 'Pardavimo pasiūlymas'}</p>
               <h4>{listing.description || 'Skelbimas be aprašo'}</h4>
@@ -168,7 +194,21 @@ export const AdminPage = () => {
               </button>
             </article>
           ))}
+          {listingsPagination.totalItems === 0 && <p className="muted">Skelbimų nėra.</p>}
         </div>
+        {listingsPagination.totalItems > 0 && (
+          <PaginationControls
+            page={listingsPagination.page}
+            pageSize={listingsPagination.pageSize}
+            totalItems={listingsPagination.totalItems}
+            totalPages={listingsPagination.totalPages}
+            rangeStart={listingsPagination.rangeStart}
+            rangeEnd={listingsPagination.rangeEnd}
+            pageSizeOptions={listingsPagination.pageSizeOptions}
+            onPageChange={listingsPagination.goToPage}
+            onPageSizeChange={listingsPagination.setPageSize}
+          />
+        )}
       </section>
     </div>
   )

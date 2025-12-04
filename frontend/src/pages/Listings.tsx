@@ -2,6 +2,8 @@ import axios from 'axios'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { client, publicClient } from '../api/client'
+import { PaginationControls } from '../components/PaginationControls'
+import { usePagination } from '../hooks/usePagination'
 import type { Listing, PublicListing } from '../types/api'
 import { useAuth } from '../context/useAuth'
 import { formatPrice } from '../utils/text'
@@ -133,6 +135,10 @@ export const ListingsPage = () => {
     })
   }, [listingCards, search, rentFilter])
 
+  const listingPagination = usePagination(filteredListings)
+  const displayedListings = listingPagination.pageItems
+  const showPagination = filteredListings.length > 0
+
   return (
     <div className="page listings">
       <section className="hero">
@@ -150,7 +156,10 @@ export const ListingsPage = () => {
             type="search"
             placeholder="Aprašymas arba raktažodis"
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={(event) => {
+              setSearch(event.target.value)
+              listingPagination.reset()
+            }}
           />
           <div className="chip-row">
             {rentFilterOptions.map((option) => (
@@ -158,7 +167,12 @@ export const ListingsPage = () => {
                 key={option.value}
                 type="button"
                 className={rentFilter === option.value ? 'chip chip--active' : 'chip'}
-                onClick={() => setRentFilter(option.value)}
+                onClick={() => {
+                  if (rentFilter !== option.value) {
+                    setRentFilter(option.value)
+                    listingPagination.reset()
+                  }
+                }}
               >
                 {option.label}
               </button>
@@ -181,7 +195,7 @@ export const ListingsPage = () => {
           {loading && <span>Kraunama...</span>}
         </div>
         <div className="listing-grid">
-          {filteredListings.map((listing) => {
+          {displayedListings.map((listing) => {
             const card = (
               <article
                 className={
@@ -242,6 +256,19 @@ export const ListingsPage = () => {
             <p className="muted">Nėra skelbimų, atitinkančių filtrus.</p>
           )}
         </div>
+        {showPagination && (
+          <PaginationControls
+            page={listingPagination.page}
+            pageSize={listingPagination.pageSize}
+            totalItems={listingPagination.totalItems}
+            totalPages={listingPagination.totalPages}
+            rangeStart={listingPagination.rangeStart}
+            rangeEnd={listingPagination.rangeEnd}
+            pageSizeOptions={listingPagination.pageSizeOptions}
+            onPageChange={listingPagination.goToPage}
+            onPageSizeChange={listingPagination.setPageSize}
+          />
+        )}
       </section>
 
       {!canSeePrivateListings && (
