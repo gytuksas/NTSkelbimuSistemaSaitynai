@@ -249,6 +249,7 @@ export const BrokersPage = () => {
 
   const previewImage = photoPreviewPictures[photoPreviewIndex] ?? null
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (photoPreviewApartmentId === null) {
       return
@@ -262,6 +263,7 @@ export const BrokersPage = () => {
       setPhotoPreviewIndex(0)
     }
   }, [photoPreviewApartmentId, photoPreviewPictures, photoPreviewIndex])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const goToApartmentsView = (buildingId: number) => {
     setSelectedBuildingIdInput(buildingId)
@@ -647,7 +649,19 @@ export const BrokersPage = () => {
   return (
     <div className="page brokers">
       {feedback && <p className="hint">{feedback}</p>}
-      {photoWarning && <p className="hint">{photoWarning}</p>}
+      {photoWarning && (
+        <div className="toast toast--warning" role="status" aria-live="polite">
+          <span>{photoWarning}</span>
+          <button
+            type="button"
+            className="toast__close"
+            onClick={() => setPhotoWarning(null)}
+            aria-label="Uždaryti pranešimą"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
   {effectiveViewMode === 'buildings' && (
         <>
@@ -849,7 +863,7 @@ export const BrokersPage = () => {
                       </button>
                       <button
                         className="btn btn--ghost"
-                        disabled={!hasApartmentPhotos}
+                        aria-disabled={!hasApartmentPhotos}
                         title={hasApartmentPhotos ? 'Peržiūrėti buto nuotraukas' : 'Šiam butui dar nėra nuotraukų'}
                         onClick={(event) => {
                           event.stopPropagation()
