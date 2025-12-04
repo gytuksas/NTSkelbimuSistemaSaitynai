@@ -206,8 +206,12 @@ export const BrokerSchedulePage = () => {
               Pradžia
               <input
                 type="datetime-local"
+                lang="lt-LT"
+                inputMode="numeric"
+                placeholder="2025-12-04T13:30"
                 value={availabilityForm.from}
                 step="900"
+                pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}T([01][0-9]|2[0-3]):[0-5][0-9]"
                 onChange={(event) => setAvailabilityForm((prev) => ({ ...prev, from: event.target.value }))}
               />
             </label>
@@ -215,8 +219,12 @@ export const BrokerSchedulePage = () => {
               Pabaiga
               <input
                 type="datetime-local"
+                lang="lt-LT"
+                inputMode="numeric"
+                placeholder="2025-12-04T14:30"
                 value={availabilityForm.to}
                 step="900"
+                pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}T([01][0-9]|2[0-3]):[0-5][0-9]"
                 onChange={(event) => setAvailabilityForm((prev) => ({ ...prev, to: event.target.value }))}
               />
             </label>

@@ -42,14 +42,19 @@ export const toUtcDateTimeString = (value: string) => {
   return `${year}-${month}-${day} ${hours}:${minutes}`
 }
 
+const dateFormatter = new Intl.DateTimeFormat('lt-LT', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+})
+
 export const formatFriendly = (value?: string) => {
   if (!value) return 'Nenurodyta'
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) {
     return value
   }
-  return new Intl.DateTimeFormat('lt-LT', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(date)
+  const datePart = dateFormatter.format(date)
+  const timePart = `${pad(date.getHours())}:${pad(date.getMinutes())}`
+  return `${datePart} ${timePart}`
 }

@@ -122,6 +122,9 @@ export const BrokersPage = () => {
   const [activeListingApartmentId, setActiveListingApartmentId] = useState<number | null>(null)
   const [listingPictureId, setListingPictureId] = useState<string | null>(null)
   const [editingListingId, setEditingListingId] = useState<number | null>(null)
+  const [photoPreviewApartmentId, setPhotoPreviewApartmentId] = useState<number | null>(null)
+  const [photoPreviewIndex, setPhotoPreviewIndex] = useState(0)
+  const [photoWarning, setPhotoWarning] = useState<string | null>(null)
   const [feedback, setFeedback] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -147,6 +150,15 @@ export const BrokersPage = () => {
 
     void loadBrokerData()
   }, [isBroker])
+
+  useEffect(() => {
+    if (!photoWarning) {
+      return
+    }
+    const timeout = window.setTimeout(() => setPhotoWarning(null), 3000)
+    return () => window.clearTimeout(timeout)
+  }, [photoWarning])
+
 
   const effectiveViewMode: ViewMode = viewMode === 'apartments' && buildings.length === 0 ? 'buildings' : viewMode
 
@@ -181,9 +193,22 @@ export const BrokersPage = () => {
     return apartmentsInBuilding[0].idApartment
   }, [selectedApartmentIdInput, apartmentsInBuilding, selectedBuildingId])
 
+  const picturesByApartment = useMemo(() => {
+    const directory = new Map<number, Picture[]>()
+    pictures.forEach((picture) => {
+      const existing = directory.get(picture.fkApartmentidApartment)
+      if (existing) {
+        existing.push(picture)
+      } else {
+        directory.set(picture.fkApartmentidApartment, [picture])
+      }
+    })
+    return directory
+  }, [pictures])
+
   const picturesInApartment = useMemo(
-    () => (selectedApartmentId ? pictures.filter((picture) => picture.fkApartmentidApartment === selectedApartmentId) : []),
-    [pictures, selectedApartmentId],
+    () => (selectedApartmentId ? picturesByApartment.get(selectedApartmentId) ?? [] : []),
+    [selectedApartmentId, picturesByApartment],
   )
 
   const selectedPictureId = useMemo(() => {
@@ -213,6 +238,31 @@ export const BrokersPage = () => {
     return map
   }, [listings, pictureDirectory])
 
+  const photoPreviewPictures = useMemo(
+    () => (photoPreviewApartmentId ? picturesByApartment.get(photoPreviewApartmentId) ?? [] : []),
+    [photoPreviewApartmentId, picturesByApartment],
+  )
+
+  const photoPreviewApartment = photoPreviewApartmentId
+    ? apartments.find((apartment) => apartment.idApartment === photoPreviewApartmentId)
+    : undefined
+
+  const previewImage = photoPreviewPictures[photoPreviewIndex] ?? null
+
+  useEffect(() => {
+    if (photoPreviewApartmentId === null) {
+      return
+    }
+    if (photoPreviewPictures.length === 0) {
+      setPhotoPreviewApartmentId(null)
+      setPhotoPreviewIndex(0)
+      return
+    }
+    if (photoPreviewIndex >= photoPreviewPictures.length) {
+      setPhotoPreviewIndex(0)
+    }
+  }, [photoPreviewApartmentId, photoPreviewPictures, photoPreviewIndex])
+
   const goToApartmentsView = (buildingId: number) => {
     setSelectedBuildingIdInput(buildingId)
     setSelectedApartmentIdInput(null)
@@ -220,6 +270,8 @@ export const BrokersPage = () => {
     setEditingApartmentId(null)
     setActiveListingApartmentId(null)
     setListingPictureId(null)
+    setPhotoPreviewApartmentId(null)
+    setPhotoPreviewIndex(0)
     setViewMode('apartments')
   }
 
@@ -228,6 +280,8 @@ export const BrokersPage = () => {
     setEditingApartmentId(null)
     setActiveListingApartmentId(null)
     setListingPictureId(null)
+    setPhotoPreviewApartmentId(null)
+    setPhotoPreviewIndex(0)
   }
 
   const startBuildingEdit = (building: Building) => {
@@ -553,6 +607,39 @@ export const BrokersPage = () => {
     setPictureUploadForm((prev) => ({ ...prev, files }))
   }
 
+  const openPhotoPreview = (apartmentId: number) => {
+    const apartmentPictures = picturesByApartment.get(apartmentId) ?? []
+    if (apartmentPictures.length === 0) {
+      setPhotoWarning('Šis butas dar neturi nuotraukų. Pridėkite jas skiltyje „Nuotraukos“.')
+      return
+    }
+    setPhotoPreviewApartmentId(apartmentId)
+    setPhotoPreviewIndex(0)
+  }
+
+  const closePhotoPreview = () => {
+    setPhotoPreviewApartmentId(null)
+    setPhotoPreviewIndex(0)
+  }
+
+  const showNextPhoto = () => {
+    setPhotoPreviewIndex((prev) => {
+      if (photoPreviewPictures.length === 0) {
+        return 0
+      }
+      return (prev + 1) % photoPreviewPictures.length
+    })
+  }
+
+  const showPrevPhoto = () => {
+    setPhotoPreviewIndex((prev) => {
+      if (photoPreviewPictures.length === 0) {
+        return 0
+      }
+      return (prev - 1 + photoPreviewPictures.length) % photoPreviewPictures.length
+    })
+  }
+
   if (!isBroker) {
     return <p className="muted">Ši skiltis pasiekiama tik brokeriams ir administratoriams.</p>
   }
@@ -560,6 +647,7 @@ export const BrokersPage = () => {
   return (
     <div className="page brokers">
       {feedback && <p className="hint">{feedback}</p>}
+      {photoWarning && <p className="hint">{photoWarning}</p>}
 
   {effectiveViewMode === 'buildings' && (
         <>
@@ -714,6 +802,7 @@ export const BrokersPage = () => {
               {apartmentsInBuilding.map((apartment) => {
                 const listingForApartment = listingByApartment.get(apartment.idApartment)
                 const isEditingThisListing = listingForApartment ? editingListingId === listingForApartment.idListing : false
+                const hasApartmentPhotos = (picturesByApartment.get(apartment.idApartment)?.length ?? 0) > 0
                 return (
                   <div key={apartment.idApartment} className="table__group">
                   <div
@@ -757,6 +846,17 @@ export const BrokersPage = () => {
                         }}
                       >
                         Pašalinti
+                      </button>
+                      <button
+                        className="btn btn--ghost"
+                        disabled={!hasApartmentPhotos}
+                        title={hasApartmentPhotos ? 'Peržiūrėti buto nuotraukas' : 'Šiam butui dar nėra nuotraukų'}
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          openPhotoPreview(apartment.idApartment)
+                        }}
+                      >
+                        Nuotraukos
                       </button>
                       {listingForApartment ? (
                         <>
@@ -1045,6 +1145,48 @@ export const BrokersPage = () => {
             </button>
           </section>
         </>
+      )}
+      {photoPreviewApartmentId !== null && previewImage && (
+        <div
+          className="lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-label={photoPreviewApartment ? `Nuotraukos butui ${photoPreviewApartment.apartmentnumber ?? ''}` : 'Buto nuotraukos'}
+        >
+          <button
+            type="button"
+            className="lightbox__close"
+            onClick={closePhotoPreview}
+            aria-label="Uždaryti nuotraukų peržiūrą"
+          >
+            ×
+          </button>
+          {photoPreviewPictures.length > 1 && (
+            <>
+              <button
+                type="button"
+                className="lightbox__nav lightbox__nav--prev"
+                onClick={showPrevPhoto}
+                aria-label="Ankstesnė nuotrauka"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                className="lightbox__nav lightbox__nav--next"
+                onClick={showNextPhoto}
+                aria-label="Kita nuotrauka"
+              >
+                ›
+              </button>
+            </>
+          )}
+          <img
+            src={`${baseURL}/uploads/${previewImage.id}`}
+            alt="Buto nuotrauka"
+            className="lightbox__image"
+          />
+        </div>
       )}
     </div>
   )

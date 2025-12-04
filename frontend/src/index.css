@@ -397,7 +397,7 @@ a {
 }
 
 .table__row--apartments {
-  grid-template-columns: minmax(160px, 1fr) minmax(200px, 1fr) minmax(200px, 1fr) minmax(220px, auto);
+  grid-template-columns: minmax(160px, 1fr) minmax(220px, 1fr) minmax(220px, 1fr) minmax(220px, 1fr);
   align-items: flex-start;
 }
 
