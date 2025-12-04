@@ -15,6 +15,7 @@ export const AdminPage = () => {
   const [buyers, setBuyers] = useState<Buyer[]>([])
   const [listings, setListings] = useState<Listing[]>([])
   const [message, setMessage] = useState<string | null>(null)
+  const [previewListingId, setPreviewListingId] = useState<number | null>(null)
   const userDirectory = useMemo(() => new Map(users.map((entry) => [entry.idUser, entry])), [users])
   const userPagination = usePagination(users)
   const listingsPagination = usePagination(listings)
@@ -71,6 +72,12 @@ export const AdminPage = () => {
       setMessage('Skelbimo pašalinti nepavyko.')
     }
   }
+
+  const handlePreview = (listingId: number) => {
+    setPreviewListingId(listingId)
+  }
+
+  const closePreview = () => setPreviewListingId(null)
 
   if (!isAdmin) {
     return <p className="muted">Norint pasiekti skiltį, reikalinga administratoriaus rolė.</p>
@@ -184,14 +191,22 @@ export const AdminPage = () => {
         <h3>Skelbimų moderavimas</h3>
         <div className="listing-grid">
           {listingsPagination.pageItems.map((listing) => (
-            <article key={listing.idListing} className="card card--subtle">
-              <p className="muted">{listing.rent ? 'Nuomos pasiūlymas' : 'Pardavimo pasiūlymas'}</p>
-              <h4>{listing.description || 'Skelbimas be aprašo'}</h4>
-              <p>{formatPrice(listing.askingprice)}</p>
-              <p className="muted">{listing.fkPictureid ? 'Viršelio nuotrauka priskirta' : 'Viršelio nuotrauka nepasirinkta'}</p>
-              <button className="btn btn--ghost" onClick={() => deleteListing(listing.idListing)}>
-                Pašalinti
-              </button>
+            <article key={listing.idListing} className="card card--subtle listing-moderation-card">
+              <div className="listing-moderation-card__content">
+                <p className="muted listing-moderation-card__badge">
+                  {listing.rent ? 'Nuomos pasiūlymas' : 'Pardavimo pasiūlymas'}
+                </p>
+                <h4 className="listing-moderation-card__title">{listing.description || 'Skelbimas be aprašo'}</h4>
+                <p className="listing-moderation-card__price">{formatPrice(listing.askingprice)}</p>
+              </div>
+              <div className="listing-moderation-card__actions">
+                <button className="btn btn--ghost" onClick={() => handlePreview(listing.idListing)}>
+                  Peržiūrėti
+                </button>
+                <button className="btn btn--ghost" onClick={() => deleteListing(listing.idListing)}>
+                  Pašalinti
+                </button>
+              </div>
             </article>
           ))}
           {listingsPagination.totalItems === 0 && <p className="muted">Skelbimų nėra.</p>}
@@ -210,6 +225,24 @@ export const AdminPage = () => {
           />
         )}
       </section>
+
+      {previewListingId !== null && (
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Skelbimo peržiūra">
+          <div className="modal-frame">
+            <div className="modal-frame__header">
+              <h4>Skelbimo peržiūra #{previewListingId}</h4>
+              <button type="button" className="btn btn--ghost" onClick={closePreview}>
+                Uždaryti
+              </button>
+            </div>
+            <iframe
+              title={`Skelbimas ${previewListingId}`}
+              src={`/skelbimai/${previewListingId}`}
+              className="modal-frame__iframe"
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
