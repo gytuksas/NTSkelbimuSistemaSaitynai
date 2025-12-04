@@ -430,7 +430,7 @@ export const BrokersPage = () => {
 
   const startListingCreation = (apartment: Apartment) => {
     const picturesForApartment = pictures.filter((picture) => picture.fkApartmentidApartment === apartment.idApartment)
-    const defaultPicture = picturesForApartment[0]?.id ?? null
+    const defaultPicture = picturesForApartment.find((picture) => picture.public)?.id ?? null
     setActiveListingApartmentId(apartment.idApartment)
     setEditingApartmentId(null)
     setSelectedApartmentIdInput(apartment.idApartment)
@@ -441,11 +441,16 @@ export const BrokersPage = () => {
   }
 
   const startListingEdit = (apartment: Apartment, listing: Listing) => {
+    const listingPictureRef = pictures.find((picture) => picture.id === listing.fkPictureid)
+    const usablePictureId = listingPictureRef && listingPictureRef.public ? listing.fkPictureid : null
+    if (listingPictureRef && !listingPictureRef.public) {
+      setFeedback('Šio skelbimo viršelio nuotrauka privati. Pasirinkite viešą nuotrauką.')
+    }
     setActiveListingApartmentId(apartment.idApartment)
     setEditingApartmentId(null)
     setSelectedApartmentIdInput(apartment.idApartment)
-    setListingPictureId(listing.fkPictureid)
-    setSelectedPictureIdInput(listing.fkPictureid)
+    setListingPictureId(usablePictureId)
+    setSelectedPictureIdInput(usablePictureId)
     setEditingListingId(listing.idListing)
     setListingForm({
       description: listing.description ?? '',
@@ -523,6 +528,13 @@ export const BrokersPage = () => {
   }
 
   const handlePictureVisibilityChange = async (pictureId: string, isPublic: boolean) => {
+    if (!isPublic) {
+      const listingUsingPicture = listings.find((listing) => listing.fkPictureid === pictureId)
+      if (listingUsingPicture) {
+        setFeedback('Negalite paslėpti šios nuotraukos, nes ji naudojama skelbimo viršelyje.')
+        return
+      }
+    }
     try {
       await client.patch(`/api/Pictures/${pictureId}`, { public: isPublic })
       setPictures((prev) => prev.map((picture) => (picture.id === pictureId ? { ...picture, public: isPublic } : picture)))
@@ -556,7 +568,10 @@ export const BrokersPage = () => {
         setPictures((prev) => [...prev, ...data])
         setSelectedPictureIdInput(latestId)
         if (activeListingApartmentId !== null && activeListingApartmentId === selectedApartmentId) {
-          setListingPictureId(latestId)
+          const newestPublicPicture = [...data].reverse().find((picture) => picture.public)
+          if (newestPublicPicture) {
+            setListingPictureId(newestPublicPicture.id)
+          }
         }
         setFeedback(data.length > 1 ? `Įkeltos ${data.length} nuotraukos!` : 'Nuotrauka įkelta!')
       } else {
@@ -575,6 +590,11 @@ export const BrokersPage = () => {
   const handleListingSave = async (pictureId: string | null) => {
     if (!pictureId) {
       setFeedback('Pasirinkite nuotrauką, kuri bus skelbime.')
+      return
+    }
+    const selectedPicture = pictureDirectory.get(pictureId)
+    if (!selectedPicture || !selectedPicture.public) {
+      setFeedback('Skelbimo viršeliui galima pasirinkti tik viešą nuotrauką.')
       return
     }
     try {
@@ -983,6 +1003,8 @@ export const BrokersPage = () => {
                         <div className="picture-grid">
                           {picturesInApartment.map((picture) => {
                             const coverStyle = { backgroundImage: `url(${baseURL}/uploads/${picture.id})` }
+                            const isCoverPicture = listings.some((listing) => listing.fkPictureid === picture.id)
+                            const toggleDisabled = picture.public && isCoverPicture
                             return (
                               <div
                                 key={picture.id}
@@ -1002,6 +1024,8 @@ export const BrokersPage = () => {
                                   <button
                                     type="button"
                                     className="btn btn--ghost"
+                                    disabled={toggleDisabled}
+                                    title={toggleDisabled ? 'Nuotrauka naudojama skelbimo viršelyje ir negali būti paslėpta.' : undefined}
                                     onClick={(event) => {
                                       event.stopPropagation()
                                       handlePictureVisibilityChange(picture.id, !picture.public)
@@ -1050,11 +1074,18 @@ export const BrokersPage = () => {
                         {picturesInApartment.map((picture) => {
                           const coverStyle = { backgroundImage: `url(${baseURL}/uploads/${picture.id})` }
                           const isSelected = listingPictureId === picture.id
+                          const isSelectable = picture.public
+                          const cardClassName = `picture-card${isSelected ? ' picture-card--selected' : ''}${!isSelectable ? ' picture-card--disabled' : ''}`
                           return (
                             <div
                               key={picture.id}
-                              className={isSelected ? 'picture-card picture-card--selected' : 'picture-card'}
+                              className={cardClassName}
+                              aria-disabled={!isSelectable}
                               onClick={() => {
+                                if (!isSelectable) {
+                                  setFeedback('Privati nuotrauka negali būti naudojama skelbimo viršeliui. Pakeiskite jos matomumą į viešą.')
+                                  return
+                                }
                                 setListingPictureId(picture.id)
                                 setSelectedPictureIdInput(picture.id)
                               }}

@@ -1094,6 +1094,16 @@ textarea {
   box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.3);
 }
 
+.picture-card--disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  border-style: dashed;
+}
+
+.picture-card--disabled .picture-card__media {
+  filter: grayscale(0.7);
+}
+
 .picture-card__media {
   border-radius: 14px;
   height: 140px;
