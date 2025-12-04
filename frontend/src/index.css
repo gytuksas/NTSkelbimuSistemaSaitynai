@@ -243,6 +243,27 @@ a {
   background: var(--surface);
 }
 
+.card__toolbar {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.input {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.65rem 1.1rem;
+  background: rgba(2, 6, 23, 0.5);
+  color: #fff;
+  width: 100%;
+}
+
+.input::placeholder {
+  color: var(--muted);
+}
+
 .card--subtle {
   background: rgba(255, 255, 255, 0.02);
 }
@@ -446,6 +467,26 @@ a {
   border: 1px solid var(--border);
 }
 
+.status--positive {
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #4ade80;
+}
+
+.status--warning {
+  border-color: rgba(251, 191, 36, 0.35);
+  color: #facc15;
+}
+
+.status--danger {
+  border-color: rgba(248, 113, 113, 0.35);
+  color: #f87171;
+}
+
+.status--muted {
+  border-color: rgba(148, 163, 184, 0.35);
+  color: var(--muted);
+}
+
 .table {
   display: flex;
   flex-direction: column;
@@ -459,6 +500,20 @@ a {
   padding: 0.75rem 1rem;
   border-radius: 16px;
   border: 1px solid var(--border);
+}
+
+.table__row--users {
+  grid-template-columns: minmax(180px, 1.1fr) minmax(180px, 1fr) minmax(120px, 0.8fr) minmax(220px, 1.1fr) minmax(180px, 1fr);
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.table__cell--email {
+  display: block;
+  min-width: 0;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .table__row--apartments {
@@ -487,6 +542,12 @@ a {
   flex: 1 1 140px;
   min-width: 130px;
   white-space: normal;
+}
+
+.table__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
 }
 
 .modal-overlay {

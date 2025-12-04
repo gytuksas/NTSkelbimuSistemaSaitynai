@@ -7,6 +7,11 @@ import { useAuth } from '../context/useAuth'
 import { formatFriendly } from '../utils/dates'
 import { formatPrice } from '../utils/text'
 
+const includesQuery = (value: unknown, query: string) => {
+  if (!query) return true
+  return String(value ?? '').toLowerCase().includes(query)
+}
+
 export const AdminPage = () => {
   const { user } = useAuth()
   const isAdmin = user?.role === 'Administrator'
@@ -16,9 +21,51 @@ export const AdminPage = () => {
   const [listings, setListings] = useState<Listing[]>([])
   const [message, setMessage] = useState<string | null>(null)
   const [previewListingId, setPreviewListingId] = useState<number | null>(null)
+  const [userSearch, setUserSearch] = useState('')
+  const [listingSearch, setListingSearch] = useState('')
   const userDirectory = useMemo(() => new Map(users.map((entry) => [entry.idUser, entry])), [users])
-  const userPagination = usePagination(users)
-  const listingsPagination = usePagination(listings)
+  const brokerDirectory = useMemo(() => new Map(brokers.map((entry) => [entry.idUser, entry])), [brokers])
+  const buyerDirectory = useMemo(() => new Map(buyers.map((entry) => [entry.idUser, entry])), [buyers])
+  const normalizedUserQuery = userSearch.trim().toLowerCase()
+  const normalizedListingQuery = listingSearch.trim().toLowerCase()
+  const filteredUsers = useMemo(() => {
+    if (!normalizedUserQuery) {
+      return users
+    }
+
+    return users.filter((entry) => {
+      const fields = [
+        entry.name,
+        entry.surname,
+        `${entry.name} ${entry.surname}`,
+        entry.email,
+        entry.phone,
+        entry.idUser,
+      ]
+
+      return fields.some((field) => includesQuery(field, normalizedUserQuery))
+    })
+  }, [normalizedUserQuery, users])
+  const filteredListings = useMemo(() => {
+    if (!normalizedListingQuery) {
+      return listings
+    }
+
+    return listings.filter((listing) => {
+      const lookupValues = [
+        listing.description,
+        listing.idListing,
+        listing.askingprice,
+        listing.rent ? 'nuoma' : 'pardavimas',
+      ]
+
+      return lookupValues.some((value) => includesQuery(value, normalizedListingQuery))
+    })
+  }, [listings, normalizedListingQuery])
+  const pendingBrokers = useMemo(() => brokers.filter((broker) => !broker.confirmed && !broker.blocked), [brokers])
+  const pendingBuyers = useMemo(() => buyers.filter((buyer) => !buyer.confirmed && !buyer.blocked), [buyers])
+  const userPagination = usePagination(filteredUsers)
+  const listingsPagination = usePagination(filteredListings)
 
   useEffect(() => {
     const loadAdminData = async () => {
@@ -89,24 +136,97 @@ export const AdminPage = () => {
 
       <section className="card">
         <h3>Naudotojai</h3>
+        <div className="card__toolbar">
+          <input
+            type="search"
+            className="input"
+            placeholder="Ieškoti pagal vardą, el. paštą, telefoną ar ID"
+            value={userSearch}
+            onChange={(event) => setUserSearch(event.target.value)}
+          />
+        </div>
         <div className="table">
-          <div className="table__row table__row--head">
+          <div className="table__row table__row--head table__row--users">
             <span>Naudotojas</span>
             <span>El. paštas</span>
             <span>Telefonas</span>
-            <span>Registracija</span>
+            <span>Statusas</span>
+            <span>Veiksmai</span>
           </div>
-          {userPagination.pageItems.map((item) => (
-            <div key={item.idUser} className="table__row">
-              <span>
-                {item.name} {item.surname}
-              </span>
-              <span>{item.email}</span>
-              <span>{item.phone || '—'}</span>
-              <span>{formatFriendly(item.registrationtime)}</span>
-            </div>
-          ))}
-          {userPagination.totalItems === 0 && <p className="muted">Naudotojų nėra.</p>}
+          {userPagination.pageItems.map((item) => {
+            const brokerProfile = brokerDirectory.get(item.idUser)
+            const buyerProfile = buyerDirectory.get(item.idUser)
+            const moderationMeta = brokerProfile
+              ? {
+                  label: 'Brokeris',
+                  confirmed: brokerProfile.confirmed,
+                  blocked: brokerProfile.blocked,
+                  setConfirmed: (value: boolean) => toggleBrokerField(item.idUser, 'confirmed', value),
+                  setBlocked: (value: boolean) => toggleBrokerField(item.idUser, 'blocked', value),
+                }
+              : buyerProfile
+                ? {
+                    label: 'Pirkėjas',
+                    confirmed: buyerProfile.confirmed,
+                    blocked: buyerProfile.blocked,
+                    setConfirmed: (value: boolean) => toggleBuyerField(item.idUser, 'confirmed', value),
+                    setBlocked: (value: boolean) => toggleBuyerField(item.idUser, 'blocked', value),
+                  }
+                : null
+
+            return (
+              <div key={item.idUser} className="table__row table__row--users">
+                <span>
+                  {item.name} {item.surname}
+                </span>
+                <span className="table__cell--email">{item.email}</span>
+                <span>{item.phone || '—'}</span>
+                <span>
+                  {moderationMeta ? (
+                    <div className="table__badges">
+                      <span className="status">{moderationMeta.label}</span>
+                      <span
+                        className={`status ${moderationMeta.confirmed ? 'status--positive' : 'status--warning'}`}
+                      >
+                        {moderationMeta.confirmed ? 'Patvirtintas' : 'Nepatvirtintas'}
+                      </span>
+                      <span className={`status ${moderationMeta.blocked ? 'status--danger' : 'status--positive'}`}>
+                        {moderationMeta.blocked ? 'Blokuotas' : 'Aktyvus'}
+                      </span>
+                      <span className="status status--muted">
+                        Registracija {formatFriendly(item.registrationtime)}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="muted">Rolė nenurodyta</span>
+                  )}
+                </span>
+                <span>
+                  {moderationMeta ? (
+                    <div className="table__actions table__actions--stacked">
+                      <button
+                        className="btn btn--ghost"
+                        onClick={() => moderationMeta.setConfirmed(!moderationMeta.confirmed)}
+                      >
+                        {moderationMeta.confirmed ? 'Atšaukti patvirtinimą' : 'Patvirtinti'}
+                      </button>
+                      <button
+                        className="btn btn--ghost"
+                        onClick={() => moderationMeta.setBlocked(!moderationMeta.blocked)}
+                      >
+                        {moderationMeta.blocked ? 'Atblokuoti' : 'Blokuoti'}
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="muted">Veiksmai neprieinami</span>
+                  )}
+                </span>
+              </div>
+            )
+          })}
+          {userPagination.totalItems === 0 && (
+            <p className="muted">{userSearch.trim() ? 'Pagal paiešką naudotojų nerasta.' : 'Naudotojų nėra.'}</p>
+          )}
         </div>
         {userPagination.totalItems > 0 && (
           <PaginationControls
@@ -126,7 +246,7 @@ export const AdminPage = () => {
       <section className="grid-two">
         <div className="card">
           <h3>Brokerių patvirtinimai</h3>
-          {brokers.map((broker) => {
+          {pendingBrokers.map((broker) => {
             const profile = userDirectory.get(broker.idUser)
             return (
               <div key={broker.idUser} className="admin-toggle">
@@ -143,22 +263,23 @@ export const AdminPage = () => {
                     {broker.blocked ? 'Blokuotas' : 'Aktyvus'}
                   </p>
                 </div>
-              <div className="admin-toggle__actions">
-                <button className="btn btn--ghost" onClick={() => toggleBrokerField(broker.idUser, 'confirmed', !broker.confirmed)}>
-                  {broker.confirmed ? 'Atšaukti patvirtinimą' : 'Patvirtinti'}
-                </button>
-                <button className="btn btn--ghost" onClick={() => toggleBrokerField(broker.idUser, 'blocked', !broker.blocked)}>
-                  {broker.blocked ? 'Atblokuoti' : 'Blokuoti'}
-                </button>
-              </div>
+                <div className="admin-toggle__actions">
+                  <button className="btn btn--ghost" onClick={() => toggleBrokerField(broker.idUser, 'confirmed', true)}>
+                    Patvirtinti
+                  </button>
+                  <button className="btn btn--ghost" onClick={() => toggleBrokerField(broker.idUser, 'blocked', !broker.blocked)}>
+                    {broker.blocked ? 'Atblokuoti' : 'Blokuoti'}
+                  </button>
+                </div>
               </div>
             )
           })}
+          {pendingBrokers.length === 0 && <p className="muted">Nėra laukiančių brokerių patvirtinimų.</p>}
         </div>
 
         <div className="card">
-          <h3>Pirkėjų statusas</h3>
-          {buyers.map((buyer) => {
+          <h3>Pirkėjų patvirtinimai</h3>
+          {pendingBuyers.map((buyer) => {
             const profile = userDirectory.get(buyer.idUser)
             return (
               <div key={buyer.idUser} className="admin-toggle">
@@ -169,26 +290,36 @@ export const AdminPage = () => {
                     {profile?.phone ? ` · ${profile.phone}` : ''}
                   </p>
                   <p className="muted">
-                    {buyer.confirmed ? 'Dokumentai patvirtinti' : 'Laukia tapatybės'} ·{' '}
+                    {buyer.confirmed ? 'Dokumentai patvirtinti' : 'Laukia patvirtinimo'} ·{' '}
                     {buyer.blocked ? 'Blokuotas' : 'Aktyvus'}
                   </p>
                 </div>
-              <div className="admin-toggle__actions">
-                <button className="btn btn--ghost" onClick={() => toggleBuyerField(buyer.idUser, 'confirmed', !buyer.confirmed)}>
-                  {buyer.confirmed ? 'Atšaukti' : 'Patvirtinti'}
-                </button>
-                <button className="btn btn--ghost" onClick={() => toggleBuyerField(buyer.idUser, 'blocked', !buyer.blocked)}>
-                  {buyer.blocked ? 'Atblokuoti' : 'Blokuoti'}
-                </button>
-              </div>
+                <div className="admin-toggle__actions">
+                  <button className="btn btn--ghost" onClick={() => toggleBuyerField(buyer.idUser, 'confirmed', true)}>
+                    Patvirtinti
+                  </button>
+                  <button className="btn btn--ghost" onClick={() => toggleBuyerField(buyer.idUser, 'blocked', !buyer.blocked)}>
+                    {buyer.blocked ? 'Atblokuoti' : 'Blokuoti'}
+                  </button>
+                </div>
               </div>
             )
           })}
+          {pendingBuyers.length === 0 && <p className="muted">Nėra laukiančių pirkėjų patvirtinimų.</p>}
         </div>
       </section>
 
       <section className="card">
         <h3>Skelbimų moderavimas</h3>
+        <div className="card__toolbar">
+          <input
+            type="search"
+            className="input"
+            placeholder="Ieškoti pagal aprašymą, tipą, kainą ar ID"
+            value={listingSearch}
+            onChange={(event) => setListingSearch(event.target.value)}
+          />
+        </div>
         <div className="listing-grid">
           {listingsPagination.pageItems.map((listing) => (
             <article key={listing.idListing} className="card card--subtle listing-moderation-card">
@@ -209,7 +340,11 @@ export const AdminPage = () => {
               </div>
             </article>
           ))}
-          {listingsPagination.totalItems === 0 && <p className="muted">Skelbimų nėra.</p>}
+          {listingsPagination.totalItems === 0 && (
+            <p className="muted">
+              {listingSearch.trim() ? 'Pagal paiešką skelbimų nerasta.' : 'Skelbimų nėra.'}
+            </p>
+          )}
         </div>
         {listingsPagination.totalItems > 0 && (
           <PaginationControls
