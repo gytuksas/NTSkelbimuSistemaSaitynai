@@ -356,8 +356,6 @@ public partial class PostgresContext : DbContext
 
             entity.ToTable("viewing");
 
-            entity.HasIndex(e => e.FkListingidListing, "viewing_fk_listingid_listing_key").IsUnique();
-
             entity.Property(e => e.IdViewing)
                 .UseIdentityAlwaysColumn()
                 .HasColumnName("id_viewing");
@@ -372,8 +370,8 @@ public partial class PostgresContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("viewing_fk_availabilityid_availability_fkey");
 
-            entity.HasOne(d => d.FkListingidListingNavigation).WithOne(p => p.Viewing)
-                .HasForeignKey<Viewing>(d => d.FkListingidListing)
+            entity.HasOne(d => d.FkListingidListingNavigation).WithMany(p => p.Viewings)
+                .HasForeignKey(d => d.FkListingidListing)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("viewing_fk_listingid_listing_fkey");
 

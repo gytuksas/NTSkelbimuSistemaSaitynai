@@ -208,6 +208,18 @@ a {
   margin-top: 0;
 }
 
+
+.timeline__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.timeline__actions .btn {
+  flex: 1 1 140px;
+  min-width: 130px;
+}
 .hero__card {
   padding: 1.5rem;
   border-radius: 20px;
@@ -521,6 +533,11 @@ a {
   align-items: flex-start;
 }
 
+.table__row--viewings {
+  grid-template-columns: minmax(220px, 1.2fr) minmax(200px, 1fr) minmax(240px, 1fr);
+  align-items: center;
+}
+
 .table__row--head {
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -648,6 +665,10 @@ a {
 
 @media (max-width: 900px) {
   .table__row--apartments {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .table__row--viewings {
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }
 

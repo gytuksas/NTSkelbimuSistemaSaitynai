@@ -38,8 +38,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<PublicListingDto>))]
         public async Task<ActionResult<IEnumerable<PublicListingDto>>> GetPublicListings()
         {
-            var listingsQuery = from listing in _context.Listings.Include(l => l.Viewing)
-                                let viewing = listing.Viewing
+            var listingsQuery = from listing in _context.Listings
                                 join picture in _context.Pictures on listing.FkPictureid equals picture.Id into pictureGroup
                                 from picture in pictureGroup.DefaultIfEmpty()
                                 join apartment in _context.Apartments on picture.FkApartmentidApartment equals apartment.IdApartment into apartmentGroup
@@ -55,13 +54,19 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                                     PictureId = picture != null && picture.Public ? picture.Id : null,
                                     BuildingCity = building != null ? building.City : null,
                                     BuildingAddress = building != null ? building.Address : null,
-                                    NextViewingFrom = viewing != null ? viewing.From : (DateTime?)null,
-                                    NextViewingTo = viewing != null ? viewing.To : (DateTime?)null,
+                                    NextViewingFrom = null,
+                                    NextViewingTo = null,
                                 };
 
             var listings = await listingsQuery.ToListAsync();
+            var nextPublicViewings = await LoadNextPublicViewingsAsync(listings.Select(l => l.Id));
             foreach (var listing in listings)
             {
+                if (nextPublicViewings.TryGetValue(listing.Id, out var nextViewing))
+                {
+                    listing.NextViewingFrom = nextViewing.From;
+                    listing.NextViewingTo = nextViewing.To;
+                }
                 listing.PictureUrl = ResolvePictureUrl(listing.PictureId);
             }
             return Ok(listings);
@@ -77,7 +82,6 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         public async Task<ActionResult<PublicListingDetailsDto>> GetPublicListing(long id)
         {
             var listing = await _context.Listings
-                .Include(l => l.Viewing)
                 .Include(l => l.FkPicture)
                     .ThenInclude(p => p.FkApartmentidApartmentNavigation)
                         .ThenInclude(a => a.FkBuildingidBuildingNavigation)
@@ -128,6 +132,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
 
             var availableSlots = await BuildAvailableSlotsAsync(availabilities);
             var publicViewings = await BuildPublicViewingsAsync(listing.IdListing);
+            var nextPublicViewing = publicViewings.FirstOrDefault();
 
             var details = new PublicListingDetailsDto
             {
@@ -138,8 +143,8 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 PictureId = picture != null && picture.Public ? picture.Id : null,
                 BuildingCity = building?.City,
                 BuildingAddress = building?.Address,
-                NextViewingFrom = listing.Viewing?.From,
-                NextViewingTo = listing.Viewing?.To,
+                NextViewingFrom = nextPublicViewing?.From,
+                NextViewingTo = nextPublicViewing?.To,
                 ApartmentArea = apartment?.Area,
                 Rooms = apartment?.Rooms,
                 ApartmentId = apartment?.IdApartment,
@@ -224,7 +229,6 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             to = DateTime.SpecifyKind(to, DateTimeKind.Utc);
 
             var listing = await _context.Listings
-                .Include(l => l.Viewing)
                 .FirstOrDefaultAsync(l => l.IdListing == id);
 
             if (listing == null)
@@ -238,10 +242,13 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Public viewing status is not configured.");
             }
 
+            var existingPublicViewing = await _context.Viewings
+                .FirstOrDefaultAsync(v => v.FkListingidListing == id && v.Status == publicStatusId.Value);
+
             Viewing viewing;
-            if (listing.Viewing != null)
+            if (existingPublicViewing != null)
             {
-                viewing = listing.Viewing;
+                viewing = existingPublicViewing;
                 viewing.From = from;
                 viewing.To = to;
                 viewing.Status = publicStatusId.Value;
@@ -280,7 +287,6 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 availability.Viewings.Add(viewing);
                 _context.Availabilities.Add(availability);
                 _context.Viewings.Add(viewing);
-                listing.Viewing = viewing;
             }
 
             await _context.SaveChangesAsync();
@@ -312,7 +318,6 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             }
 
             var listing = await _context.Listings
-                .Include(l => l.Viewing)
                 .FirstOrDefaultAsync(l => l.IdListing == id);
 
             if (listing == null)
@@ -320,12 +325,20 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 return NotFound();
             }
 
-            if (listing.Viewing == null)
+            var publicStatusId = await ResolvePublicViewingStatusIdAsync();
+            if (!publicStatusId.HasValue)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Public viewing status is not configured.");
+            }
+
+            var viewing = await _context.Viewings
+                .FirstOrDefaultAsync(v => v.FkListingidListing == id && v.Status == publicStatusId.Value);
+
+            if (viewing == null)
             {
                 return NotFound();
             }
 
-            var viewing = listing.Viewing;
             var availability = await _context.Availabilities
                 .Include(a => a.Viewings)
                 .FirstOrDefaultAsync(a => a.IdAvailability == viewing.FkAvailabilityidAvailability);
@@ -360,17 +373,17 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             {
                 return Forbid();
             }
+
             var listings = await _context.Listings
-                .Where(l => true) // anchor
-                .Join(_context.Pictures, l => l.FkPictureid, p => p.Id, (l,p) => new { l, p })
-                .Join(_context.Apartments, lp => lp.p.FkApartmentidApartment, a => a.IdApartment, (lp,a) => new { lp.l, a })
-                .Join(_context.Buildings, la => la.a.FkBuildingidBuilding, b => b.IdBuilding, (la,b) => new { la.l, b })
-                .Where(x => x.b.FkBrokeridUser == currentId)
+                .Join(_context.Pictures, l => l.FkPictureid, p => p.Id, (l, p) => new { l, p })
+                .Join(_context.Apartments, lp => lp.p.FkApartmentidApartment, a => a.IdApartment, (lp, a) => new { lp.l, a })
+                .Join(_context.Buildings, la => la.a.FkBuildingidBuilding, b => b.IdBuilding, (la, b) => new { la.l, b })
+                .Where(x => x.b.FkBrokeridUser == currentId.Value)
                 .Select(x => x.l)
                 .ToListAsync();
+
             return listings;
         }
-
         /// <summary>
         /// Get a listing by ID.
         /// </summary>
@@ -599,6 +612,50 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                     To = v.To
                 })
                 .ToListAsync();
+        }
+
+        private async Task<Dictionary<long, PublicViewingDto>> LoadNextPublicViewingsAsync(IEnumerable<long> listingIds)
+        {
+            var ids = listingIds?.Distinct().ToList() ?? new List<long>();
+            if (ids.Count == 0)
+            {
+                return new Dictionary<long, PublicViewingDto>();
+            }
+
+            var publicStatusId = await ResolvePublicViewingStatusIdAsync();
+            if (!publicStatusId.HasValue)
+            {
+                return new Dictionary<long, PublicViewingDto>();
+            }
+
+            var now = DateTime.UtcNow;
+
+            var viewings = await _context.Viewings
+                .Where(v => ids.Contains(v.FkListingidListing) && v.Status == publicStatusId.Value && v.To >= now)
+                .OrderBy(v => v.From)
+                .Select(v => new
+                {
+                    v.FkListingidListing,
+                    v.IdViewing,
+                    v.From,
+                    v.To
+                })
+                .ToListAsync();
+
+            return viewings
+                .GroupBy(v => v.FkListingidListing)
+                .ToDictionary(
+                    g => g.Key,
+                    g =>
+                    {
+                        var first = g.First();
+                        return new PublicViewingDto
+                        {
+                            Id = first.IdViewing,
+                            From = first.From,
+                            To = first.To
+                        };
+                    });
         }
 
         private async Task<int?> ResolvePublicViewingStatusIdAsync()

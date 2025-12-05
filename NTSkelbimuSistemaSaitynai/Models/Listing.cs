@@ -24,5 +24,5 @@ public partial class Listing
     [BindNever]
     [ValidateNever]
     [JsonIgnore]
-    public virtual Viewing? Viewing { get; set; }
+    public virtual ICollection<Viewing> Viewings { get; set; } = new List<Viewing>();
 }

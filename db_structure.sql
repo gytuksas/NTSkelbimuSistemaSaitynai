@@ -171,7 +171,6 @@ CREATE TABLE Viewing
     fk_Availabilityid_Availability bigint NOT NULL,
     fk_Listingid_Listing bigint NOT NULL,
     PRIMARY KEY(id_Viewing),
-    UNIQUE(fk_Listingid_Listing),
     FOREIGN KEY(status) REFERENCES ViewingStatus(id_ViewingStatus),
     FOREIGN KEY(fk_Availabilityid_Availability) REFERENCES Availability(id_Availability) ON DELETE CASCADE,
     FOREIGN KEY(fk_Listingid_Listing) REFERENCES Listing(id_Listing) ON DELETE CASCADE

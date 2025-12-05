@@ -10,10 +10,10 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const isAdmin = user?.role === 'Administrator'
 
   const navLinks = [
-    { to: '/', label: 'Pagrindinis', show: true },
+    { to: '/', label: 'Pagrindinis', show: true, end: true },
     { to: '/skelbimai', label: 'Skelbimai', show: true },
     { to: '/apziuros', label: 'Apžiūros', show: true },
-    { to: '/brokeriams', label: 'Brokeriams', show: isBroker },
+    { to: '/brokeriams', label: 'Brokeriams', show: isBroker, end: true },
     { to: '/brokeriams/grafikas', label: 'Brokerio grafikas', show: isBroker },
     { to: '/administratoriams', label: 'Administratoriui', show: isAdmin },
     { to: '/profilis', label: 'Profilis', show: isAuthenticated },
@@ -38,6 +38,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
             <NavLink
               key={link.to}
               to={link.to}
+              end={link.end}
               className={({ isActive }) => (isActive ? 'nav-link nav-link--active' : 'nav-link')}
               onClick={() => setOpen(false)}
             >

@@ -288,7 +288,6 @@ export const BrokersPage = () => {
 
   const previewImage = photoPreviewPictures[photoPreviewIndex] ?? null
 
-  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (photoPreviewApartmentId === null) {
       return
@@ -302,7 +301,6 @@ export const BrokersPage = () => {
       setPhotoPreviewIndex(0)
     }
   }, [photoPreviewApartmentId, photoPreviewPictures, photoPreviewIndex])
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   const goToApartmentsView = (buildingId: number) => {
     setSelectedBuildingIdInput(buildingId)

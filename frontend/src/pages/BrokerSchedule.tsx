@@ -5,7 +5,13 @@ import type { Availability, Viewing, Listing } from '../types/api'
 import { useAuth } from '../context/useAuth'
 import { formatFriendly, toDateTimeLocalInput, toUtcDateTimeString } from '../utils/dates'
 
-const CONFIRMED_VIEWING_STATUS = 2
+const VIEWING_STATUS = {
+  pending: 1,
+  confirmed: 2,
+  rejected: 3,
+  cancelled: 4,
+  public: 5,
+} as const
 
 type AvailabilityFormState = {
   from: string
@@ -38,7 +44,7 @@ export const BrokerSchedulePage = () => {
     viewings.forEach((viewing) => {
       const entry = map.get(viewing.fkAvailabilityidAvailability) ?? { total: 0, confirmed: 0 }
       entry.total += 1
-      if (viewing.status === CONFIRMED_VIEWING_STATUS) {
+      if (viewing.status === VIEWING_STATUS.confirmed) {
         entry.confirmed += 1
       }
       map.set(viewing.fkAvailabilityidAvailability, entry)
@@ -46,9 +52,23 @@ export const BrokerSchedulePage = () => {
     return map
   }, [viewings])
 
-  const canDeleteAvailability = (slotId: number) => (viewingStatsByAvailability.get(slotId)?.confirmed ?? 0) === 0
+  const pendingViewings = useMemo(
+    () =>
+      viewings
+        .filter((viewing) => viewing.status === VIEWING_STATUS.pending)
+        .sort((a, b) => new Date(a.from).getTime() - new Date(b.from).getTime()),
+    [viewings],
+  )
 
-  const getSlotStats = (slotId: number) => viewingStatsByAvailability.get(slotId) ?? { total: 0, confirmed: 0 }
+  const confirmedViewings = useMemo(
+    () =>
+      viewings
+        .filter((viewing) => viewing.status === VIEWING_STATUS.confirmed)
+        .sort((a, b) => new Date(a.from).getTime() - new Date(b.from).getTime()),
+    [viewings],
+  )
+
+  const canDeleteAvailability = (slotId: number) => (viewingStatsByAvailability.get(slotId)?.confirmed ?? 0) === 0
 
   const fromDate = availabilityForm.from ? new Date(availabilityForm.from) : null
   const toDate = availabilityForm.to ? new Date(availabilityForm.to) : null
@@ -155,9 +175,6 @@ export const BrokerSchedulePage = () => {
 
       <section className="card card--subtle">
         <div className="apartments-header">
-          <button className="btn btn--ghost" onClick={() => navigate('/brokeriams')}>
-            ← Grįžti į butų valdymą
-          </button>
           <div>
             <p className="muted">Tvarkote brokerio darbo laikus</p>
             <h3>Susitikimų grafikas</h3>
@@ -173,18 +190,12 @@ export const BrokerSchedulePage = () => {
             {loading && <p className="muted">Kraunama...</p>}
             {!loading &&
               availabilities.map((slot) => {
-                const slotStats = getSlotStats(slot.idAvailability)
                 const deletable = canDeleteAvailability(slot.idAvailability)
                 return (
                   <div key={slot.idAvailability} className="timeline__item timeline__item--actions">
                     <div>
                       <p>{formatFriendly(slot.from)}</p>
                       <p className="muted">iki {formatFriendly(slot.to)}</p>
-                      {slotStats.total > 0 && (
-                        <p className="muted">
-                          Užklausos: {slotStats.total} · Patvirtinta: {slotStats.confirmed}
-                        </p>
-                      )}
                     </div>
                     <div className="timeline__actions">
                       <button
@@ -240,17 +251,17 @@ export const BrokerSchedulePage = () => {
           <h3>Peržiūrų užklausos</h3>
           <p className="muted">Patvirtinkite ar atmeskite suplanuotas apžiūras.</p>
           <div className="table">
-            <div className="table__row table__row--head">
+            <div className="table__row table__row--head table__row--viewings">
               <span>Skelbimas</span>
               <span>Laikas</span>
               <span>Veiksmas</span>
             </div>
             {loading && <p className="muted">Kraunama...</p>}
             {!loading &&
-              viewings.map((viewing) => {
+              pendingViewings.map((viewing) => {
                 const relatedListing = listings.find((listing) => listing.idListing === viewing.fkListingidListing)
                 return (
-                  <div key={viewing.idViewing} className="table__row">
+                  <div key={viewing.idViewing} className="table__row table__row--viewings">
                     <span>
                       <strong>{relatedListing?.description ?? 'Skelbimo duomenys nepasiekiami'}</strong>
                       <p className="muted">
@@ -265,7 +276,7 @@ export const BrokerSchedulePage = () => {
                       <p>{formatFriendly(viewing.from)}</p>
                       <p className="muted">iki {formatFriendly(viewing.to)}</p>
                     </span>
-                    <span className="table__actions">
+                    <span className="table__actions table__actions--stacked">
                       <button
                         className="btn"
                         disabled={!relatedListing}
@@ -273,18 +284,64 @@ export const BrokerSchedulePage = () => {
                       >
                         Peržiūrėti skelbimą
                       </button>
-                      <button className="btn btn--ghost" onClick={() => handleViewingDecision(viewing.idViewing, 2)}>
+                      <button
+                        className="btn btn--ghost"
+                        onClick={() => handleViewingDecision(viewing.idViewing, VIEWING_STATUS.confirmed)}
+                      >
                         Patvirtinti
                       </button>
-                      <button className="btn btn--ghost" onClick={() => handleViewingDecision(viewing.idViewing, 3)}>
+                      <button
+                        className="btn btn--ghost"
+                        onClick={() => handleViewingDecision(viewing.idViewing, VIEWING_STATUS.rejected)}
+                      >
                         Atmesti
                       </button>
                     </span>
                   </div>
                 )
               })}
-            {!loading && viewings.length === 0 && <p className="muted">Šiuo metu neturite užklausų.</p>}
+            {!loading && pendingViewings.length === 0 && <p className="muted">Šiuo metu neturite užklausų.</p>}
           </div>
+        </div>
+      </section>
+
+      <section className="card">
+        <h3>Patvirtintos apžiūros</h3>
+        <p className="muted">Matykite suplanuotus susitikimus ir atšaukite prireikus.</p>
+        <div className="timeline">
+          {loading && <p className="muted">Kraunama...</p>}
+          {!loading &&
+            confirmedViewings.map((viewing) => {
+              const relatedListing = listings.find((listing) => listing.idListing === viewing.fkListingidListing)
+              return (
+                <div key={viewing.idViewing} className="timeline__item timeline__item--actions">
+                  <div>
+                    <p>{formatFriendly(viewing.from)}</p>
+                    <p className="muted">iki {formatFriendly(viewing.to)}</p>
+                    <p className="muted">
+                      {relatedListing?.description ?? 'Skelbimo duomenys nepasiekiami'} ·{' '}
+                      {relatedListing
+                        ? relatedListing.rent
+                          ? 'Nuomos pasiūlymas'
+                          : 'Pardavimo pasiūlymas'
+                        : 'Patikrinkite skelbimą'}
+                    </p>
+                  </div>
+                  <div className="timeline__actions">
+                    <button className="btn" disabled={!relatedListing} onClick={() => handleListingView(relatedListing?.idListing)}>
+                      Peržiūrėti skelbimą
+                    </button>
+                    <button
+                      className="btn btn--ghost"
+                      onClick={() => handleViewingDecision(viewing.idViewing, VIEWING_STATUS.cancelled)}
+                    >
+                      Atšaukti apžiūrą
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          {!loading && confirmedViewings.length === 0 && <p className="muted">Šiuo metu neturite patvirtintų apžiūrų.</p>}
         </div>
       </section>
     </div>
