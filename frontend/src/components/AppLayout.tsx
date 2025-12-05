@@ -6,7 +6,7 @@ import { useAuth } from '../context/useAuth'
 export const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, isAuthenticated } = useAuth()
   const [open, setOpen] = useState(false)
-  const isBroker = Boolean(user && (user.role === 'Broker' || user.role === 'Administrator'))
+  const isBroker = user?.role === 'Broker'
   const isAdmin = user?.role === 'Administrator'
 
   const navLinks = [
