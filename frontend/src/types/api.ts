@@ -33,6 +33,12 @@ export interface AvailabilitySlot {
   to: string
 }
 
+export interface PublicViewing {
+  id: number
+  from: string
+  to: string
+}
+
 export interface PublicListingDetails extends PublicListing {
   apartmentArea?: number | null
   rooms?: number | null
@@ -54,6 +60,7 @@ export interface PublicListingDetails extends PublicListing {
   galleryPictureUrls: string[]
   availabilities: PublicAvailability[]
   availableSlots: AvailabilitySlot[]
+  publicViewings: PublicViewing[]
 }
 
 export interface Picture {

@@ -94,6 +94,30 @@ export const ListingDetailsPage = () => {
   const dateOptions = slotsData.dates
   const slotsForSelectedDate = selectedDate ? slotsByDate.get(selectedDate) ?? [] : []
 
+  const publicViewings = useMemo(() => {
+    if (!listing) return []
+  const baseViewings = Array.isArray(listing.publicViewings) ? listing.publicViewings : []
+  const sorted = [...baseViewings].sort(
+      (a, b) => new Date(a.from).getTime() - new Date(b.from).getTime(),
+    )
+
+    const fallbackFrom = listing.nextViewingFrom
+    if (fallbackFrom) {
+      const hasFallback = sorted.some((viewing) => viewing.from === fallbackFrom)
+      if (!hasFallback) {
+        sorted.unshift({
+          id: -1,
+          from: fallbackFrom,
+          to: listing.nextViewingTo ?? fallbackFrom,
+        })
+      }
+    }
+
+    return sorted
+  }, [listing])
+
+  const nextPublicViewingLabel = publicViewings[0]?.from ?? null
+
   const dateFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat('lt-LT', {
@@ -257,6 +281,7 @@ export const ListingDetailsPage = () => {
   }
 
   const canBook = Boolean(isAuthenticated && user?.role === 'Buyer' && selectedSlot)
+  const bookingDisabled = !canBook || bookingStatus === 'loading'
 
   const buildingInfoItems = listing
     ? [
@@ -397,8 +422,8 @@ export const ListingDetailsPage = () => {
                   </strong>
                 </li>
               </ul>
-              {listing.nextViewingFrom && (
-                <p className="details-note">Artimiausia vieša apžiūra {formatFriendly(listing.nextViewingFrom)}</p>
+              {nextPublicViewingLabel && (
+                <p className="details-note">Artimiausia vieša apžiūra {formatFriendly(nextPublicViewingLabel)}</p>
               )}
             </div>
           </section>
@@ -445,6 +470,25 @@ export const ListingDetailsPage = () => {
               <p>{apartmentDescription}</p>
             </section>
           )}
+
+          <section className="card details-public-viewings">
+            <h3>Viešos apžiūros</h3>
+            {publicViewings.length === 0 ? (
+              <p className="muted">Šiam skelbimui šiuo metu viešų apžiūrų nenumatyta.</p>
+            ) : (
+              <ul className="details-public-viewings__list">
+                {publicViewings.map((viewing) => {
+                  const endLabel = viewing.to ? formatFriendly(viewing.to) : null
+                  return (
+                    <li key={viewing.id} className="details-public-viewings__item">
+                      <strong>{formatFriendly(viewing.from)}</strong>
+                      <span className="muted">{endLabel ? `iki ${endLabel}` : 'Trukmė neviešinama'}</span>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </section>
 
 
           <section className="details-booking">
@@ -505,7 +549,8 @@ export const ListingDetailsPage = () => {
                 <button
                   type="button"
                   className="btn"
-                  disabled={!canBook || bookingStatus === 'loading'}
+                  aria-disabled={bookingDisabled}
+                  disabled={bookingDisabled}
                   onClick={handleBooking}
                 >
                   {bookingStatus === 'loading' ? 'Siunčiama...' : 'Siųsti užklausą'}

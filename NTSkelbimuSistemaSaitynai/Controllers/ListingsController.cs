@@ -127,6 +127,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                     .ToListAsync();
 
             var availableSlots = await BuildAvailableSlotsAsync(availabilities);
+            var publicViewings = await BuildPublicViewingsAsync(listing.IdListing);
 
             var details = new PublicListingDetailsDto
             {
@@ -162,7 +163,8 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                     .Select(url => url!)
                     .ToList(),
                 Availabilities = availabilities,
-                AvailableSlots = availableSlots
+                AvailableSlots = availableSlots,
+                PublicViewings = publicViewings
             };
 
             details.PictureUrl = ResolvePictureUrl(details.PictureId);
@@ -404,6 +406,32 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return slots
                 .OrderBy(s => s.From)
                 .ToList();
+        }
+
+        private async Task<List<PublicViewingDto>> BuildPublicViewingsAsync(long listingId)
+        {
+            var publicStatusId = await _context.Viewingstatuses
+                .Where(status => status.Name.ToLower() == "public")
+                .Select(status => (int?)status.IdViewingstatus)
+                .FirstOrDefaultAsync();
+
+            if (!publicStatusId.HasValue)
+            {
+                return new List<PublicViewingDto>();
+            }
+
+            var now = DateTime.UtcNow;
+
+            return await _context.Viewings
+                .Where(v => v.FkListingidListing == listingId && v.Status == publicStatusId.Value && v.To >= now)
+                .OrderBy(v => v.From)
+                .Select(v => new PublicViewingDto
+                {
+                    Id = v.IdViewing,
+                    From = v.From,
+                    To = v.To
+                })
+                .ToListAsync();
         }
 
         private bool ListingExists(long id)
