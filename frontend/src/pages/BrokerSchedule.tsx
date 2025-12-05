@@ -272,6 +272,14 @@ export const BrokerSchedulePage = () => {
                           : 'Pardavimo pasiūlymas'
                         : 'Patikrinkite ar skelbimas dar egzistuoja'}
                     </p>
+                    {viewing.buyerPhone && (
+                      <p className="muted">
+                        Pirkėjo tel.:{' '}
+                        <a href={`tel:${viewing.buyerPhone}`}>
+                          {viewing.buyerPhone}
+                        </a>
+                      </p>
+                    )}
                   </span>
                   <span>
                     <p>{formatFriendly(viewing.from)}</p>
@@ -326,6 +334,14 @@ export const BrokerSchedulePage = () => {
                           : 'Pardavimo pasiūlymas'
                         : 'Patikrinkite skelbimą'}
                     </p>
+                    {viewing.buyerPhone && (
+                      <p className="muted">
+                        Pirkėjo tel.:{' '}
+                        <a href={`tel:${viewing.buyerPhone}`}>
+                          {viewing.buyerPhone}
+                        </a>
+                      </p>
+                    )}
                   </div>
                   <div className="timeline__actions">
                     <button className="btn" disabled={!relatedListing} onClick={() => handleListingView(relatedListing?.idListing)}>

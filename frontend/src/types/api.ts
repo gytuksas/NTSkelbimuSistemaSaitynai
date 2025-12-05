@@ -108,6 +108,10 @@ export interface Viewing {
   status: number
   fkAvailabilityidAvailability: number
   fkListingidListing: number
+  fkBuyeridUser?: number | null
+  buyerName?: string | null
+  buyerPhone?: string | null
+  buyerEmail?: string | null
 }
 
 export interface BuyerViewing {

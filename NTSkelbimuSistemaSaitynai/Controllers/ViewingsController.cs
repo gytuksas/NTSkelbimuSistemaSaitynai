@@ -33,26 +33,58 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Viewing>))]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult<IEnumerable<Viewing>>> GetViewings()
+        public async Task<ActionResult<IEnumerable<BrokerViewingDto>>> GetViewings()
         {
+            var baseQuery = from viewing in _context.Viewings
+                            join availability in _context.Availabilities on viewing.FkAvailabilityidAvailability equals availability.IdAvailability
+                            join buyer in _context.Users on viewing.FkBuyeridUser equals buyer.IdUser into buyerGroup
+                            from buyer in buyerGroup.DefaultIfEmpty()
+                            select new { viewing, availability, buyer };
+
             if (User.IsInRole("Administrator"))
             {
-                return await _context.Viewings.ToListAsync();
+                var adminResults = await baseQuery
+                    .Select(x => new BrokerViewingDto
+                    {
+                        IdViewing = x.viewing.IdViewing,
+                        From = x.viewing.From,
+                        To = x.viewing.To,
+                        Status = x.viewing.Status,
+                        FkAvailabilityidAvailability = x.viewing.FkAvailabilityidAvailability,
+                        FkListingidListing = x.viewing.FkListingidListing,
+                        FkBuyeridUser = x.viewing.FkBuyeridUser,
+                        BuyerName = x.buyer == null ? null : $"{x.buyer.Name} {x.buyer.Surname}".Trim(),
+                        BuyerPhone = x.buyer == null ? null : x.buyer.Phone,
+                        BuyerEmail = x.buyer == null ? null : x.buyer.Email
+                    })
+                    .ToListAsync();
+                return adminResults;
             }
+
             var currentId = _ownership.GetCurrentUserId(User);
             if (currentId == null || !User.IsInRole("Broker"))
             {
                 return Forbid();
             }
-            var viewings = await _context.Viewings
-                .Join(_context.Availabilities,
-                      v => v.FkAvailabilityidAvailability,
-                      a => a.IdAvailability,
-                      (v,a) => new { v, a })
-                .Where(x => x.a.FkBrokeridUser == currentId)
-                .Select(x => x.v)
+
+            var brokerResults = await baseQuery
+                .Where(x => x.availability.FkBrokeridUser == currentId)
+                .Select(x => new BrokerViewingDto
+                {
+                    IdViewing = x.viewing.IdViewing,
+                    From = x.viewing.From,
+                    To = x.viewing.To,
+                    Status = x.viewing.Status,
+                    FkAvailabilityidAvailability = x.viewing.FkAvailabilityidAvailability,
+                    FkListingidListing = x.viewing.FkListingidListing,
+                    FkBuyeridUser = x.viewing.FkBuyeridUser,
+                    BuyerName = x.buyer == null ? null : $"{x.buyer.Name} {x.buyer.Surname}".Trim(),
+                    BuyerPhone = x.buyer == null ? null : x.buyer.Phone,
+                    BuyerEmail = x.buyer == null ? null : x.buyer.Email
+                })
                 .ToListAsync();
-            return viewings;
+
+            return brokerResults;
         }
 
         /// <summary>
