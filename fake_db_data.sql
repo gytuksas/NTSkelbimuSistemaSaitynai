@@ -117,14 +117,14 @@ INSERT INTO Listing (description, askingPrice, rent, fk_Pictureid) VALUES
 ('Erdvūs apartamentai', 140000, TRUE, 'pic10');
 
 -- VIEWINGS
-INSERT INTO Viewing ("from", "to", status, fk_Availabilityid_Availability, fk_Listingid_Listing) VALUES
-(NOW() + INTERVAL '2 day', NOW() + INTERVAL '2 day' + INTERVAL '1 hour', 2, 1, 1),
-(NOW() + INTERVAL '3 day', NOW() + INTERVAL '3 day' + INTERVAL '1 hour', 1, 2, 2),
-(NOW() + INTERVAL '4 day', NOW() + INTERVAL '4 day' + INTERVAL '1.5 hour', 2, 3, 3),
-(NOW() + INTERVAL '5 day', NOW() + INTERVAL '5 day' + INTERVAL '1 hour', 5, 4, 4),
-(NOW() + INTERVAL '6 day', NOW() + INTERVAL '6 day' + INTERVAL '1 hour', 2, 5, 5),
-(NOW() + INTERVAL '7 day', NOW() + INTERVAL '7 day' + INTERVAL '1 hour', 1, 6, 6),
-(NOW() + INTERVAL '8 day', NOW() + INTERVAL '8 day' + INTERVAL '1 hour', 5, 7, 7),
-(NOW() + INTERVAL '9 day', NOW() + INTERVAL '9 day' + INTERVAL '1.5 hour', 2, 8, 8),
-(NOW() + INTERVAL '10 day', NOW() + INTERVAL '10 day' + INTERVAL '1 hour', 1, 9, 9),
-(NOW() + INTERVAL '11 day', NOW() + INTERVAL '11 day' + INTERVAL '1.5 hour', 2, 10, 10);
+INSERT INTO Viewing ("from", "to", status, fk_Availabilityid_Availability, fk_Listingid_Listing, fk_Buyerid_User) VALUES
+(NOW() + INTERVAL '2 day', NOW() + INTERVAL '2 day' + INTERVAL '1 hour', 2, 1, 1, 7),
+(NOW() + INTERVAL '3 day', NOW() + INTERVAL '3 day' + INTERVAL '1 hour', 1, 2, 2, 8),
+(NOW() + INTERVAL '4 day', NOW() + INTERVAL '4 day' + INTERVAL '1.5 hour', 2, 3, 3, 9),
+(NOW() + INTERVAL '5 day', NOW() + INTERVAL '5 day' + INTERVAL '1 hour', 5, 4, 4, NULL),
+(NOW() + INTERVAL '6 day', NOW() + INTERVAL '6 day' + INTERVAL '1 hour', 2, 5, 5, 10),
+(NOW() + INTERVAL '7 day', NOW() + INTERVAL '7 day' + INTERVAL '1 hour', 1, 6, 6, 11),
+(NOW() + INTERVAL '8 day', NOW() + INTERVAL '8 day' + INTERVAL '1 hour', 5, 7, 7, NULL),
+(NOW() + INTERVAL '9 day', NOW() + INTERVAL '9 day' + INTERVAL '1.5 hour', 2, 8, 8, 12),
+(NOW() + INTERVAL '10 day', NOW() + INTERVAL '10 day' + INTERVAL '1 hour', 1, 9, 9, (SELECT id_User FROM "User" WHERE email='buyer@example.com')),
+(NOW() + INTERVAL '11 day', NOW() + INTERVAL '11 day' + INTERVAL '1.5 hour', 2, 10, 10, NULL);

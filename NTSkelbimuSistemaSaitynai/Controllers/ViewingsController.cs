@@ -4,6 +4,7 @@ using NTSkelbimuSistemaSaitynai.Authorization;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
 using System;
+using System.Linq;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
@@ -52,6 +53,73 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 .Select(x => x.v)
                 .ToListAsync();
             return viewings;
+        }
+
+        /// <summary>
+        /// Get the authenticated buyer's private viewings with statuses.
+        /// </summary>
+        [HttpGet("my")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<BuyerViewingDto>))]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<ActionResult<IEnumerable<BuyerViewingDto>>> GetMyViewings()
+        {
+            if (!User.IsInRole("Buyer"))
+            {
+                return Forbid();
+            }
+
+            var currentId = _ownership.GetCurrentUserId(User);
+            if (currentId == null)
+            {
+                return Unauthorized();
+            }
+
+            var viewings = await _context.Viewings
+                .Where(v => v.FkBuyeridUser == currentId.Value)
+                .Join(_context.Listings,
+                      v => v.FkListingidListing,
+                      l => l.IdListing,
+                      (v, l) => new { v, l })
+                .Join(_context.Pictures,
+                      vl => vl.l.FkPictureid,
+                      p => p.Id,
+                      (vl, p) => new { vl.v, vl.l, p })
+                .Join(_context.Apartments,
+                      vlp => vlp.p.FkApartmentidApartment,
+                      a => a.IdApartment,
+                      (vlp, a) => new { vlp.v, vlp.l, vlp.p, a })
+                .Join(_context.Buildings,
+                      vlpa => vlpa.a.FkBuildingidBuilding,
+                      b => b.IdBuilding,
+                      (vlpa, b) => new { vlpa.v, vlpa.l, vlpa.p, vlpa.a, b })
+                .Join(_context.Viewingstatuses,
+                      vlpab => vlpab.v.Status,
+                      s => s.IdViewingstatus,
+                      (vlpab, s) => new { vlpab.v, vlpab.l, vlpab.p, vlpab.b, status = s })
+                .Join(_context.Users,
+                      vlpabs => vlpabs.b.FkBrokeridUser,
+                      u => u.IdUser,
+                      (vlpabs, u) => new { vlpabs.v, vlpabs.l, vlpabs.p, vlpabs.b, vlpabs.status, broker = u })
+                .OrderByDescending(x => x.v.From)
+                .Select(x => new BuyerViewingDto
+                {
+                    Id = x.v.IdViewing,
+                    ListingId = x.l.IdListing,
+                    ListingTitle = x.l.Description,
+                    City = x.b.City,
+                    Address = x.b.Address,
+                    From = x.v.From,
+                    To = x.v.To,
+                    StatusId = x.status.IdViewingstatus,
+                    Status = x.status.Name,
+                    PictureId = x.p.Public ? x.p.Id : null,
+                    PictureUrl = null,
+                    BrokerName = $"{x.broker.Name} {x.broker.Surname}".Trim(),
+                    BrokerPhone = x.broker.Phone
+                })
+                .ToListAsync();
+
+            return Ok(viewings);
         }
 
         /// <summary>
@@ -174,19 +242,17 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             dt1 = DateTime.SpecifyKind(dt1, DateTimeKind.Utc);
             dt2 = DateTime.SpecifyKind(dt2, DateTimeKind.Utc);
 
-            Viewing viewing = new Viewing
+            var viewing = await _context.Viewings.FindAsync(id);
+            if (viewing == null)
             {
-                From = dt1,
-                To = dt2,
-                Status = viewingDto.Status,
-                FkAvailabilityidAvailability = viewingDto.FkAvailabilityidAvailability,
-                FkListingidListing = viewingDto.FkListingidListing,
-            };
+                return NotFound();
+            }
 
-            // Set key from route id
-            viewing.IdViewing = id;
-
-            _context.Entry(viewing).State = EntityState.Modified;
+            viewing.From = dt1;
+            viewing.To = dt2;
+            viewing.Status = viewingDto.Status;
+            viewing.FkAvailabilityidAvailability = viewingDto.FkAvailabilityidAvailability;
+            viewing.FkListingidListing = viewingDto.FkListingidListing;
 
             try
             {
@@ -270,6 +336,11 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 }
                 else if (User.IsInRole("Buyer"))
                 {
+                    if (currentId == null)
+                    {
+                        return Forbid();
+                    }
+
                     if (availability.FkBrokeridUser != listingBrokerId)
                     {
                         return UnprocessableEntity("Availability is not owned by the listing broker");
@@ -303,6 +374,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                     viewing.From = slotFrom;
                     viewing.To = slotTo;
                     viewing.Status = 1; // Pending confirmation
+                    viewing.FkBuyeridUser = currentId.Value;
                 }
                 else
                 {

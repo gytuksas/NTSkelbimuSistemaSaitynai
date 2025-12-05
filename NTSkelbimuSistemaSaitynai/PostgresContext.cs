@@ -360,6 +360,7 @@ public partial class PostgresContext : DbContext
                 .UseIdentityAlwaysColumn()
                 .HasColumnName("id_viewing");
             entity.Property(e => e.FkAvailabilityidAvailability).HasColumnName("fk_availabilityid_availability");
+            entity.Property(e => e.FkBuyeridUser).HasColumnName("fk_buyerid_user");
             entity.Property(e => e.FkListingidListing).HasColumnName("fk_listingid_listing");
             entity.Property(e => e.From).HasColumnName("from");
             entity.Property(e => e.Status).HasColumnName("status");
@@ -374,6 +375,11 @@ public partial class PostgresContext : DbContext
                 .HasForeignKey(d => d.FkListingidListing)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("viewing_fk_listingid_listing_fkey");
+
+            entity.HasOne(d => d.FkBuyeridUserNavigation).WithMany(p => p.Viewings)
+                .HasForeignKey(d => d.FkBuyeridUser)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("viewing_fk_buyerid_user_fkey");
 
             entity.HasOne(d => d.StatusNavigation).WithMany(p => p.Viewings)
                 .HasForeignKey(d => d.Status)

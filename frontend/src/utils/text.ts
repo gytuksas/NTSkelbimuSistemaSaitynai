@@ -22,6 +22,14 @@ const heatingTypeTranslations: Record<string, string> = {
   other: 'Kita',
 }
 
+const viewingStatusTranslations: Record<string, string> = {
+  pending: 'Laukia patvirtinimo',
+  confirmed: 'Patvirtinta',
+  rejected: 'Atmesta',
+  cancelled: 'Atšaukta',
+  public: 'Vieša apžiūra',
+}
+
 export const formatPrice = (value?: number) => {
   if (value === undefined || value === null) {
     return '—'
@@ -43,4 +51,12 @@ export const translateHeatingType = (value?: string | null) => {
   }
   const normalized = value.trim().toLowerCase()
   return heatingTypeTranslations[normalized] ?? value
+}
+
+export const translateViewingStatus = (value?: string | null) => {
+  if (!value) {
+    return 'Nežinoma'
+  }
+  const normalized = value.trim().toLowerCase()
+  return viewingStatusTranslations[normalized] ?? value
 }

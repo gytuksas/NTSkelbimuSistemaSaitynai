@@ -8,6 +8,7 @@ import { BrokersPage } from './pages/Brokers'
 import { BrokerSchedulePage } from './pages/BrokerSchedule'
 import { AdminPage } from './pages/Admin'
 import { ListingDetailsPage } from './pages/ListingDetails'
+import { MyViewingsPage } from './pages/MyViewings'
 
 const App = () => {
   return (
@@ -16,6 +17,7 @@ const App = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/skelbimai" element={<ListingsPage />} />
         <Route path="/apziuros" element={<ViewingsPage />} />
+  <Route path="/mano-apziuros" element={<MyViewingsPage />} />
         <Route path="/profilis" element={<ProfilePage />} />
         <Route path="/brokeriams" element={<BrokersPage />} />
   <Route path="/brokeriams/grafikas" element={<BrokerSchedulePage />} />

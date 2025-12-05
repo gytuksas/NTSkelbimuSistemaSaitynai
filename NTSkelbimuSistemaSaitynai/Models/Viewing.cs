@@ -18,6 +18,8 @@ public partial class Viewing
 
     public long FkListingidListing { get; set; }
 
+    public long? FkBuyeridUser { get; set; }
+
     [BindNever]
     [ValidateNever]
     [JsonIgnore]
@@ -27,6 +29,11 @@ public partial class Viewing
     [ValidateNever]
     [JsonIgnore]
     public virtual Listing FkListingidListingNavigation { get; set; } = null!;
+
+    [BindNever]
+    [ValidateNever]
+    [JsonIgnore]
+    public virtual Buyer? FkBuyeridUserNavigation { get; set; }
 
     [BindNever]
     [ValidateNever]

@@ -1407,6 +1407,129 @@ textarea {
   gap: 0.75rem;
 }
 
+.page.my-viewings .hero {
+  margin-bottom: 2rem;
+}
+
+.viewing-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.viewing-card {
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1.25rem;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.viewing-card__media {
+  width: 96px;
+  height: 96px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.viewing-card__media--empty {
+  background: rgba(148, 163, 184, 0.1);
+  border-style: dashed;
+}
+
+.viewing-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.viewing-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.viewing-card__time {
+  margin: 0;
+  font-weight: 600;
+}
+
+.viewing-card__interval {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+.viewing-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.status-chip {
+  border-radius: 999px;
+  padding: 0.1rem 0.85rem;
+  font-size: 0.8rem;
+  border: 1px solid transparent;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.status-chip--pending {
+  border-color: rgba(250, 204, 21, 0.4);
+  background: rgba(250, 204, 21, 0.12);
+  color: #facc15;
+}
+
+.status-chip--confirmed {
+  border-color: rgba(74, 222, 128, 0.45);
+  background: rgba(22, 163, 74, 0.15);
+  color: #4ade80;
+}
+
+.status-chip--rejected,
+.status-chip--cancelled {
+  border-color: rgba(248, 113, 113, 0.45);
+  background: rgba(248, 113, 113, 0.1);
+  color: #f87171;
+}
+
+.status-chip--public {
+  border-color: rgba(96, 165, 250, 0.45);
+  background: rgba(96, 165, 250, 0.12);
+  color: #93c5fd;
+}
+
+.empty-state {
+  border: 1px dashed var(--border);
+  border-radius: 18px;
+  padding: 1.25rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.empty-state .btn {
+  width: auto;
+}
+
+.viewing-card__phone {
+  color: inherit;
+  text-decoration: underline;
+}
+
 @media (max-width: 1200px) {
   .app-shell {
     padding: 1rem;
@@ -1444,5 +1567,21 @@ textarea {
 @media (max-width: 960px) {
   .hero {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .viewing-card {
+    grid-template-columns: 1fr;
+    text-align: left;
+  }
+
+  .viewing-card__media {
+    width: 100%;
+    height: 200px;
+  }
+
+  .viewing-card__actions {
+    width: 100%;
   }
 }

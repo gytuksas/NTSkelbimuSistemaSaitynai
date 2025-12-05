@@ -110,6 +110,22 @@ export interface Viewing {
   fkListingidListing: number
 }
 
+export interface BuyerViewing {
+  id: number
+  listingId: number
+  listingTitle?: string | null
+  city?: string | null
+  address?: string | null
+  from: string
+  to: string
+  statusId: number
+  status: string
+  pictureId?: string | null
+  pictureUrl?: string | null
+  brokerName?: string | null
+  brokerPhone?: string | null
+}
+
 export interface Buyer {
   idUser: number
   confirmed: boolean

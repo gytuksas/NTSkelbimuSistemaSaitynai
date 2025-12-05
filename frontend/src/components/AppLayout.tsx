@@ -8,11 +8,13 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = useState(false)
   const isBroker = user?.role === 'Broker'
   const isAdmin = user?.role === 'Administrator'
+  const isBuyer = user?.role === 'Buyer'
 
   const navLinks = [
     { to: '/', label: 'Pagrindinis', show: true, end: true },
     { to: '/skelbimai', label: 'Skelbimai', show: true },
     { to: '/apziuros', label: 'Apžiūros', show: true },
+  { to: '/mano-apziuros', label: 'Mano apžiūros', show: isBuyer },
     { to: '/brokeriams', label: 'Brokeriams', show: isBroker, end: true },
     { to: '/brokeriams/grafikas', label: 'Brokerio grafikas', show: isBroker },
     { to: '/administratoriams', label: 'Administratoriui', show: isAdmin },
