@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { publicClient } from '../api/client'
 import { PaginationControls } from '../components/PaginationControls'
@@ -45,6 +45,9 @@ export const ListingsPage = () => {
   const [rentFilter, setRentFilter] = useState<RentFilter>('visi')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [maxCardHeight, setMaxCardHeight] = useState(0)
+  const cardRefs = useRef(new Map<number, HTMLDivElement>())
+  const rafRef = useRef<number | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -100,6 +103,65 @@ export const ListingsPage = () => {
   const listingPagination = usePagination(filteredListings)
   const displayedListings = listingPagination.pageItems
   const showPagination = filteredListings.length > 0
+  const listingCardStyle = useMemo(() => (maxCardHeight ? { minHeight: maxCardHeight } : undefined), [maxCardHeight])
+
+  const recalcCardHeights = useCallback(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    if (rafRef.current) {
+      window.cancelAnimationFrame(rafRef.current)
+    }
+
+    rafRef.current = window.requestAnimationFrame(() => {
+      let tallest = 0
+      cardRefs.current.forEach((element) => {
+        if (element) {
+          tallest = Math.max(tallest, element.offsetHeight)
+        }
+      })
+      setMaxCardHeight(tallest)
+      rafRef.current = null
+    })
+  }, [])
+
+  const registerCardRef = useCallback(
+    (id: number) => (element: HTMLDivElement | null) => {
+      if (element) {
+        cardRefs.current.set(id, element)
+      } else {
+        cardRefs.current.delete(id)
+      }
+      recalcCardHeights()
+    },
+    [recalcCardHeights],
+  )
+
+  useLayoutEffect(() => {
+    recalcCardHeights()
+  }, [displayedListings, recalcCardHeights])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+    const handleResize = () => {
+      recalcCardHeights()
+    }
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [recalcCardHeights])
+
+  useEffect(() => {
+    return () => {
+      if (typeof window !== 'undefined' && rafRef.current) {
+        window.cancelAnimationFrame(rafRef.current)
+      }
+    }
+  }, [])
 
   return (
     <div className="page listings">
@@ -151,7 +213,11 @@ export const ListingsPage = () => {
         <div className="listing-grid">
           {displayedListings.map((listing) => {
             const card = (
-              <article className="card listing-card listing-card--interactive">
+              <article
+                ref={registerCardRef(listing.id)}
+                className="card listing-card listing-card--interactive"
+                style={listingCardStyle}
+              >
                 <div
                   className={
                     listing.pictureUrl
@@ -165,6 +231,8 @@ export const ListingsPage = () => {
                       alt={listing.description}
                       className="listing-card__image"
                       loading="lazy"
+                      onLoad={recalcCardHeights}
+                      onError={recalcCardHeights}
                     />
                   ) : (
                     <span>Nuotrauka ruošiama</span>
