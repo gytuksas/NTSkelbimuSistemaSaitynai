@@ -246,62 +246,62 @@ export const BrokerSchedulePage = () => {
             Pridėti laiką
           </button>
         </div>
+      </section>
 
-        <div className="card">
-          <h3>Peržiūrų užklausos</h3>
-          <p className="muted">Patvirtinkite ar atmeskite suplanuotas apžiūras.</p>
-          <div className="table">
-            <div className="table__row table__row--head table__row--viewings">
-              <span>Skelbimas</span>
-              <span>Laikas</span>
-              <span>Veiksmas</span>
-            </div>
-            {loading && <p className="muted">Kraunama...</p>}
-            {!loading &&
-              pendingViewings.map((viewing) => {
-                const relatedListing = listings.find((listing) => listing.idListing === viewing.fkListingidListing)
-                return (
-                  <div key={viewing.idViewing} className="table__row table__row--viewings">
-                    <span>
-                      <strong>{relatedListing?.description ?? 'Skelbimo duomenys nepasiekiami'}</strong>
-                      <p className="muted">
-                        {relatedListing
-                          ? relatedListing.rent
-                            ? 'Nuomos pasiūlymas'
-                            : 'Pardavimo pasiūlymas'
-                          : 'Patikrinkite ar skelbimas dar egzistuoja'}
-                      </p>
-                    </span>
-                    <span>
-                      <p>{formatFriendly(viewing.from)}</p>
-                      <p className="muted">iki {formatFriendly(viewing.to)}</p>
-                    </span>
-                    <span className="table__actions table__actions--stacked">
-                      <button
-                        className="btn"
-                        disabled={!relatedListing}
-                        onClick={() => handleListingView(relatedListing?.idListing)}
-                      >
-                        Peržiūrėti skelbimą
-                      </button>
-                      <button
-                        className="btn btn--ghost"
-                        onClick={() => handleViewingDecision(viewing.idViewing, VIEWING_STATUS.confirmed)}
-                      >
-                        Patvirtinti
-                      </button>
-                      <button
-                        className="btn btn--ghost"
-                        onClick={() => handleViewingDecision(viewing.idViewing, VIEWING_STATUS.rejected)}
-                      >
-                        Atmesti
-                      </button>
-                    </span>
-                  </div>
-                )
-              })}
-            {!loading && pendingViewings.length === 0 && <p className="muted">Šiuo metu neturite užklausų.</p>}
+      <section className="card">
+        <h3>Peržiūrų užklausos</h3>
+        <p className="muted">Patvirtinkite ar atmeskite suplanuotas apžiūras.</p>
+        <div className="table">
+          <div className="table__row table__row--head table__row--viewings">
+            <span>Skelbimas</span>
+            <span>Laikas</span>
+            <span>Veiksmas</span>
           </div>
+          {loading && <p className="muted">Kraunama...</p>}
+          {!loading &&
+            pendingViewings.map((viewing) => {
+              const relatedListing = listings.find((listing) => listing.idListing === viewing.fkListingidListing)
+              return (
+                <div key={viewing.idViewing} className="table__row table__row--viewings">
+                  <span>
+                    <strong>{relatedListing?.description ?? 'Skelbimo duomenys nepasiekiami'}</strong>
+                    <p className="muted">
+                      {relatedListing
+                        ? relatedListing.rent
+                          ? 'Nuomos pasiūlymas'
+                          : 'Pardavimo pasiūlymas'
+                        : 'Patikrinkite ar skelbimas dar egzistuoja'}
+                    </p>
+                  </span>
+                  <span>
+                    <p>{formatFriendly(viewing.from)}</p>
+                    <p className="muted">iki {formatFriendly(viewing.to)}</p>
+                  </span>
+                  <span className="table__actions table__actions--stacked">
+                    <button
+                      className="btn"
+                      disabled={!relatedListing}
+                      onClick={() => handleListingView(relatedListing?.idListing)}
+                    >
+                      Peržiūrėti skelbimą
+                    </button>
+                    <button
+                      className="btn btn--ghost"
+                      onClick={() => handleViewingDecision(viewing.idViewing, VIEWING_STATUS.confirmed)}
+                    >
+                      Patvirtinti
+                    </button>
+                    <button
+                      className="btn btn--ghost"
+                      onClick={() => handleViewingDecision(viewing.idViewing, VIEWING_STATUS.rejected)}
+                    >
+                      Atmesti
+                    </button>
+                  </span>
+                </div>
+              )
+            })}
+          {!loading && pendingViewings.length === 0 && <p className="muted">Šiuo metu neturite užklausų.</p>}
         </div>
       </section>
 
