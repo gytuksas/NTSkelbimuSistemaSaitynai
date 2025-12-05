@@ -173,6 +173,176 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         }
 
         /// <summary>
+        /// Create or update a public viewing for a listing owned by the broker.
+        /// </summary>
+        [HttpPost("{id}/public-viewing")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PublicViewingDto))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<ActionResult<PublicViewingDto>> UpsertPublicViewing(long id, [FromBody] PublicViewingRequest request)
+        {
+            if (!User.IsInRole("Administrator"))
+            {
+                var currentId = _ownership.GetCurrentUserId(User);
+                if (currentId == null || !await _ownership.BrokerOwnsListing(currentId.Value, id))
+                {
+                    return Forbid();
+                }
+            }
+
+            if (request == null)
+            {
+                return BadRequest("Missing request payload.");
+            }
+
+            DateTime from;
+            DateTime to;
+
+            try
+            {
+                from = DateTime.Parse(request.From);
+                to = DateTime.Parse(request.To);
+            }
+            catch (FormatException)
+            {
+                return BadRequest("Invalid date and time format - expecting yyyy-mm-dd hh:mm");
+            }
+
+            if (request.From.Split(' ').Length < 2 || request.To.Split(' ').Length < 2)
+            {
+                return UnprocessableEntity("Invalid date and time format - seems like there is no time value - expecting yyyy-mm-dd hh:mm");
+            }
+
+            if (from >= to)
+            {
+                return UnprocessableEntity("Pabaiga turi būti vėliau nei pradžia.");
+            }
+
+            from = DateTime.SpecifyKind(from, DateTimeKind.Utc);
+            to = DateTime.SpecifyKind(to, DateTimeKind.Utc);
+
+            var listing = await _context.Listings
+                .Include(l => l.Viewing)
+                .FirstOrDefaultAsync(l => l.IdListing == id);
+
+            if (listing == null)
+            {
+                return NotFound();
+            }
+
+            var publicStatusId = await ResolvePublicViewingStatusIdAsync();
+            if (!publicStatusId.HasValue)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Public viewing status is not configured.");
+            }
+
+            Viewing viewing;
+            if (listing.Viewing != null)
+            {
+                viewing = listing.Viewing;
+                viewing.From = from;
+                viewing.To = to;
+                viewing.Status = publicStatusId.Value;
+
+                var availability = await _context.Availabilities.FirstOrDefaultAsync(a => a.IdAvailability == viewing.FkAvailabilityidAvailability);
+                if (availability != null)
+                {
+                    availability.From = from;
+                    availability.To = to;
+                }
+            }
+            else
+            {
+                var brokerId = await ResolveListingBrokerIdAsync(id);
+                if (!brokerId.HasValue)
+                {
+                    return UnprocessableEntity("Listing broker is not configured.");
+                }
+
+                var availability = new Availability
+                {
+                    From = from,
+                    To = to,
+                    FkBrokeridUser = brokerId.Value
+                };
+
+                viewing = new Viewing
+                {
+                    From = from,
+                    To = to,
+                    Status = publicStatusId.Value,
+                    FkListingidListing = id,
+                    FkAvailabilityidAvailabilityNavigation = availability
+                };
+
+                availability.Viewings.Add(viewing);
+                _context.Availabilities.Add(availability);
+                _context.Viewings.Add(viewing);
+                listing.Viewing = viewing;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new PublicViewingDto
+            {
+                Id = viewing.IdViewing,
+                From = viewing.From,
+                To = viewing.To
+            });
+        }
+
+        /// <summary>
+        /// Delete an existing public viewing for a listing.
+        /// </summary>
+        [HttpDelete("{id}/public-viewing")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> DeletePublicViewing(long id)
+        {
+            if (!User.IsInRole("Administrator"))
+            {
+                var currentId = _ownership.GetCurrentUserId(User);
+                if (currentId == null || !await _ownership.BrokerOwnsListing(currentId.Value, id))
+                {
+                    return Forbid();
+                }
+            }
+
+            var listing = await _context.Listings
+                .Include(l => l.Viewing)
+                .FirstOrDefaultAsync(l => l.IdListing == id);
+
+            if (listing == null)
+            {
+                return NotFound();
+            }
+
+            if (listing.Viewing == null)
+            {
+                return NotFound();
+            }
+
+            var viewing = listing.Viewing;
+            var availability = await _context.Availabilities
+                .Include(a => a.Viewings)
+                .FirstOrDefaultAsync(a => a.IdAvailability == viewing.FkAvailabilityidAvailability);
+
+            _context.Viewings.Remove(viewing);
+
+            if (availability != null && availability.Viewings.Count <= 1)
+            {
+                _context.Availabilities.Remove(availability);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        /// <summary>
         /// Get all listings.
         /// </summary>
         /// <returns>List of listings.</returns>
@@ -410,10 +580,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
 
         private async Task<List<PublicViewingDto>> BuildPublicViewingsAsync(long listingId)
         {
-            var publicStatusId = await _context.Viewingstatuses
-                .Where(status => status.Name.ToLower() == "public")
-                .Select(status => (int?)status.IdViewingstatus)
-                .FirstOrDefaultAsync();
+            var publicStatusId = await ResolvePublicViewingStatusIdAsync();
 
             if (!publicStatusId.HasValue)
             {
@@ -432,6 +599,34 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                     To = v.To
                 })
                 .ToListAsync();
+        }
+
+        private async Task<int?> ResolvePublicViewingStatusIdAsync()
+        {
+            return await _context.Viewingstatuses
+                .Where(status => status.Name.ToLower() == "public")
+                .Select(status => (int?)status.IdViewingstatus)
+                .FirstOrDefaultAsync();
+        }
+
+        private async Task<long?> ResolveListingBrokerIdAsync(long listingId)
+        {
+            return await _context.Listings
+                .Where(l => l.IdListing == listingId)
+                .Join(_context.Pictures,
+                      l => l.FkPictureid,
+                      p => p.Id,
+                      (l, p) => new { l, p })
+                .Join(_context.Apartments,
+                      lp => lp.p.FkApartmentidApartment,
+                      a => a.IdApartment,
+                      (lp, a) => new { lp.l, a })
+                .Join(_context.Buildings,
+                      la => la.a.FkBuildingidBuilding,
+                      b => b.IdBuilding,
+                      (la, b) => b)
+                .Select(b => (long?)b.FkBrokeridUser)
+                .FirstOrDefaultAsync();
         }
 
         private bool ListingExists(long id)

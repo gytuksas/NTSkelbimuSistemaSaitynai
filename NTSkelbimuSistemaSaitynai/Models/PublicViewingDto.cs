@@ -6,3 +6,9 @@ public class PublicViewingDto
     public DateTime From { get; set; }
     public DateTime To { get; set; }
 }
+
+public class PublicViewingRequest
+{
+    public required string From { get; set; }
+    public required string To { get; set; }
+}

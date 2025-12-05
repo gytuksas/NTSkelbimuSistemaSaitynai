@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { client, baseURL } from '../api/client'
 import { PaginationControls } from '../components/PaginationControls'
 import { usePagination } from '../hooks/usePagination'
-import type { Apartment, Building, Listing, Picture } from '../types/api'
+import type { Apartment, Building, Listing, Picture, Viewing } from '../types/api'
 import { useAuth } from '../context/useAuth'
+import { formatFriendly, toDateTimeLocalInput, toUtcDateTimeString } from '../utils/dates'
 
 const defaultBuilding = {
   city: 'Vilnius',
@@ -97,6 +98,22 @@ const defaultPictureUpload: PictureUploadFormState = {
   public: true,
 }
 
+type PublicViewingFormState = {
+  from: string
+  to: string
+}
+
+const PUBLIC_VIEWING_STATUS = 5
+
+const createDefaultPublicViewingForm = (): PublicViewingFormState => {
+  const start = new Date(Date.now() + 1000 * 60 * 60 * 24)
+  const end = new Date(start.getTime() + 1000 * 60 * 60)
+  return {
+    from: toDateTimeLocalInput(start),
+    to: toDateTimeLocalInput(end),
+  }
+}
+
 type ViewMode = 'buildings' | 'apartments'
 export const BrokersPage = () => {
   const { user } = useAuth()
@@ -108,6 +125,7 @@ export const BrokersPage = () => {
   const [apartments, setApartments] = useState<Apartment[]>([])
   const [pictures, setPictures] = useState<Picture[]>([])
   const [listings, setListings] = useState<Listing[]>([])
+  const [viewings, setViewings] = useState<Viewing[]>([])
 
   const [buildingForm, setBuildingForm] = useState(defaultBuilding)
   const [buildingEditForm, setBuildingEditForm] = useState(defaultBuilding)
@@ -127,6 +145,10 @@ export const BrokersPage = () => {
   const [photoPreviewApartmentId, setPhotoPreviewApartmentId] = useState<number | null>(null)
   const [photoPreviewIndex, setPhotoPreviewIndex] = useState(0)
   const [photoWarning, setPhotoWarning] = useState<string | null>(null)
+  const [activePublicViewingApartmentId, setActivePublicViewingApartmentId] = useState<number | null>(null)
+  const [publicViewingListingId, setPublicViewingListingId] = useState<number | null>(null)
+  const [publicViewingForm, setPublicViewingForm] = useState<PublicViewingFormState>(createDefaultPublicViewingForm)
+  const [publicViewingSaving, setPublicViewingSaving] = useState(false)
   const [feedback, setFeedback] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -134,16 +156,18 @@ export const BrokersPage = () => {
     const loadBrokerData = async () => {
       if (!isBroker) return
       try {
-        const [buildingsRes, apartmentsRes, picturesRes, listingsRes] = await Promise.all([
+        const [buildingsRes, apartmentsRes, picturesRes, listingsRes, viewingsRes] = await Promise.all([
           client.get<Building[]>('/api/Buildings'),
           client.get<Apartment[]>('/api/Apartments'),
           client.get<Picture[]>('/api/Pictures'),
           client.get<Listing[]>('/api/Listings'),
+          client.get<Viewing[]>('/api/Viewings'),
         ])
         setBuildings(buildingsRes.data ?? [])
         setApartments(apartmentsRes.data ?? [])
         setPictures(picturesRes.data ?? [])
         setListings(listingsRes.data ?? [])
+        setViewings(viewingsRes.data ?? [])
       } catch (error) {
         console.error(error)
         setFeedback('Nepavyko gauti duomenų. Patikrinkite ar turite brokerio rolę.')
@@ -243,6 +267,16 @@ export const BrokersPage = () => {
     return map
   }, [listings, pictureDirectory])
 
+  const publicViewingsByListing = useMemo(() => {
+    const map = new Map<number, Viewing>()
+    viewings.forEach((viewing) => {
+      if (viewing.status === PUBLIC_VIEWING_STATUS) {
+        map.set(viewing.fkListingidListing, viewing)
+      }
+    })
+    return map
+  }, [viewings])
+
   const photoPreviewPictures = useMemo(
     () => (photoPreviewApartmentId ? picturesByApartment.get(photoPreviewApartmentId) ?? [] : []),
     [photoPreviewApartmentId, picturesByApartment],
@@ -281,6 +315,7 @@ export const BrokersPage = () => {
     setPhotoPreviewApartmentId(null)
     setPhotoPreviewIndex(0)
     setViewMode('apartments')
+    closePublicViewingPanel()
   }
 
   const handleBackToBuildings = () => {
@@ -290,6 +325,7 @@ export const BrokersPage = () => {
     setListingPictureId(null)
     setPhotoPreviewApartmentId(null)
     setPhotoPreviewIndex(0)
+    closePublicViewingPanel()
   }
 
   const startBuildingEdit = (building: Building) => {
@@ -446,6 +482,7 @@ export const BrokersPage = () => {
     setSelectedPictureIdInput(defaultPicture)
     setEditingListingId(null)
     setListingForm(defaultListing)
+    closePublicViewingPanel()
   }
 
   const startListingEdit = (apartment: Apartment, listing: Listing) => {
@@ -465,6 +502,7 @@ export const BrokersPage = () => {
       askingprice: listing.askingprice,
       rent: listing.rent,
     })
+    closePublicViewingPanel()
   }
 
   const handleListingView = (listingId: number) => {
@@ -478,8 +516,12 @@ export const BrokersPage = () => {
     try {
       await client.delete(`/api/Listings/${listingId}`)
       setListings((prev) => prev.filter((listing) => listing.idListing !== listingId))
+      setViewings((prev) => prev.filter((viewing) => viewing.fkListingidListing !== listingId))
       if (editingListingId === listingId || (apartmentId && activeListingApartmentId === apartmentId)) {
         closeListingPanel()
+      }
+      if (apartmentId && activePublicViewingApartmentId === apartmentId) {
+        closePublicViewingPanel()
       }
       setFeedback('Skelbimas pašalintas.')
     } catch (error) {
@@ -493,6 +535,78 @@ export const BrokersPage = () => {
     setListingPictureId(null)
     setEditingListingId(null)
     setListingForm(defaultListing)
+  }
+
+  const closePublicViewingPanel = () => {
+    setActivePublicViewingApartmentId(null)
+    setPublicViewingListingId(null)
+    setPublicViewingForm(createDefaultPublicViewingForm())
+    setPublicViewingSaving(false)
+  }
+
+  const startPublicViewingManagement = (apartmentId: number, listingId: number) => {
+    const existing = publicViewingsByListing.get(listingId)
+    setActivePublicViewingApartmentId(apartmentId)
+    setPublicViewingListingId(listingId)
+    if (existing) {
+      setPublicViewingForm({
+        from: toDateTimeLocalInput(existing.from),
+        to: toDateTimeLocalInput(existing.to),
+      })
+    } else {
+      setPublicViewingForm(createDefaultPublicViewingForm())
+    }
+  }
+
+  const reloadViewings = async () => {
+    try {
+      const { data } = await client.get<Viewing[]>('/api/Viewings')
+      setViewings(data ?? [])
+    } catch (error) {
+      console.error(error)
+      setFeedback('Nepavyko atnaujinti apžiūrų duomenų.')
+    }
+  }
+
+  const handlePublicViewingSave = async () => {
+    if (!publicViewingListingId) {
+      setFeedback('Pasirinkite skelbimą viešai apžiūrai.')
+      return
+    }
+    if (!publicViewingForm.from || !publicViewingForm.to) {
+      setFeedback('Nurodykite apžiūros pradžią ir pabaigą.')
+      return
+    }
+    setPublicViewingSaving(true)
+    try {
+      await client.post(`/api/Listings/${publicViewingListingId}/public-viewing`, {
+        from: toUtcDateTimeString(publicViewingForm.from),
+        to: toUtcDateTimeString(publicViewingForm.to),
+      })
+      await reloadViewings()
+      setFeedback('Vieša apžiūra užregistruota!')
+      closePublicViewingPanel()
+    } catch (error) {
+      console.error(error)
+      setFeedback('Nepavyko išsaugoti viešos apžiūros.')
+    } finally {
+      setPublicViewingSaving(false)
+    }
+  }
+
+  const handlePublicViewingDelete = async (listingId: number) => {
+    setPublicViewingSaving(true)
+    try {
+      await client.delete(`/api/Listings/${listingId}/public-viewing`)
+      await reloadViewings()
+      setFeedback('Vieša apžiūra pašalinta.')
+      closePublicViewingPanel()
+    } catch (error) {
+      console.error(error)
+      setFeedback('Nepavyko pašalinti viešos apžiūros.')
+    } finally {
+      setPublicViewingSaving(false)
+    }
   }
 
   const handleBuildingFormChange = (key: keyof typeof defaultBuilding, value: number | string) => {
@@ -858,6 +972,9 @@ export const BrokersPage = () => {
                 const listingForApartment = listingByApartment.get(apartment.idApartment)
                 const isEditingThisListing = listingForApartment ? editingListingId === listingForApartment.idListing : false
                 const hasApartmentPhotos = (picturesByApartment.get(apartment.idApartment)?.length ?? 0) > 0
+                const publicViewingForListing = listingForApartment
+                  ? publicViewingsByListing.get(listingForApartment.idListing)
+                  : undefined
                 return (
                   <div key={apartment.idApartment} className="table__group">
                   <div
@@ -882,6 +999,11 @@ export const BrokersPage = () => {
                     <span>
                       <p className="muted">{apartment.notes || 'Pastabų nėra'}</p>
                       <p className="muted">{apartment.isWholeBuilding ? 'Visas pastatas' : 'Individualus butas'}</p>
+                      {publicViewingForListing && (
+                        <p className="muted">
+                          Vieša apžiūra {formatFriendly(publicViewingForListing.from)}
+                        </p>
+                      )}
                     </span>
                     <span className="table__actions table__actions--stacked">
                       <button
@@ -932,6 +1054,15 @@ export const BrokersPage = () => {
                             }}
                           >
                             Redaguoti skelbimą
+                          </button>
+                          <button
+                            className="btn btn--ghost"
+                            onClick={(event) => {
+                              event.stopPropagation()
+                              startPublicViewingManagement(apartment.idApartment, listingForApartment.idListing)
+                            }}
+                          >
+                            {publicViewingForListing ? 'Redaguoti viešą apžiūrą' : 'Registruoti viešą apžiūrą'}
                           </button>
                           <button
                             className="btn btn--ghost"
@@ -1144,6 +1275,67 @@ export const BrokersPage = () => {
                         <button className="btn btn--ghost" onClick={closeListingPanel}>
                           Atšaukti
                         </button>
+                      </div>
+                    </div>
+                  )}
+                  {listingForApartment && activePublicViewingApartmentId === apartment.idApartment && (
+                    <div className="management-edit management-edit--highlight">
+                      <div className="management-edit__header">
+                        <h4>Viešos apžiūros grafikas</h4>
+                        <button className="btn btn--ghost" onClick={closePublicViewingPanel}>
+                          Užverti
+                        </button>
+                      </div>
+                      {publicViewingForListing ? (
+                        <p className="muted">
+                          Dabartinė apžiūra {formatFriendly(publicViewingForListing.from)} – {formatFriendly(publicViewingForListing.to)}
+                        </p>
+                      ) : (
+                        <p className="muted">Šis skelbimas dar neturi viešos apžiūros.</p>
+                      )}
+                      <div className="form-grid">
+                        <label>
+                          Pradžia
+                          <input
+                            type="datetime-local"
+                            lang="lt-LT"
+                            step="900"
+                            value={publicViewingForm.from}
+                            onChange={(event) =>
+                              setPublicViewingForm((prev) => ({ ...prev, from: event.target.value }))
+                            }
+                          />
+                        </label>
+                        <label>
+                          Pabaiga
+                          <input
+                            type="datetime-local"
+                            lang="lt-LT"
+                            step="900"
+                            value={publicViewingForm.to}
+                            onChange={(event) =>
+                              setPublicViewingForm((prev) => ({ ...prev, to: event.target.value }))
+                            }
+                          />
+                        </label>
+                      </div>
+                      <p className="muted">Laikas rodomas pagal jūsų kompiuterio laiko juostą.</p>
+                      <div className="management-edit__actions">
+                        <button className="btn" disabled={publicViewingSaving} onClick={handlePublicViewingSave}>
+                          Išsaugoti apžiūrą
+                        </button>
+                        <button className="btn btn--ghost" onClick={closePublicViewingPanel}>
+                          Atšaukti
+                        </button>
+                        {publicViewingForListing && (
+                          <button
+                            className="btn btn--ghost"
+                            disabled={publicViewingSaving}
+                            onClick={() => handlePublicViewingDelete(listingForApartment.idListing)}
+                          >
+                            Pašalinti apžiūrą
+                          </button>
+                        )}
                       </div>
                     </div>
                   )}
