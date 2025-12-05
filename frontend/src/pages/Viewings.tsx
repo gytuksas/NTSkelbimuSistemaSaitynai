@@ -1,18 +1,13 @@
-import axios from 'axios'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { client, publicClient } from '../api/client'
-import type { PublicListing, Viewing } from '../types/api'
-import { useAuth } from '../context/useAuth'
+import { publicClient } from '../api/client'
+import type { PublicListing } from '../types/api'
 import { formatFriendly } from '../utils/dates'
 import { resolvePictureSrc } from '../utils/pictures'
 import { usePagination } from '../hooks/usePagination'
 import { PaginationControls } from '../components/PaginationControls'
 
 export const ViewingsPage = () => {
-  const { user } = useAuth()
-  const canSeePrivateSchedule = Boolean(user && (user.role === 'Broker' || user.role === 'Administrator'))
-  const [viewings, setViewings] = useState<Viewing[]>([])
   const [publicListings, setPublicListings] = useState<PublicListing[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -20,41 +15,17 @@ export const ViewingsPage = () => {
   useEffect(() => {
     let cancelled = false
 
-    const fetchPublicListings = async () => {
-      const { data } = await publicClient.get<PublicListing[]>('/api/Listings/public')
-      if (!cancelled) {
-        setPublicListings(data ?? [])
-        setViewings([])
-      }
-    }
-
-    const fetchPrivateViewings = async () => {
-      const { data } = await client.get<Viewing[]>('/api/Viewings')
-      if (!cancelled) {
-        setViewings(data ?? [])
-        setPublicListings([])
-      }
-    }
-
     const loadData = async () => {
       setLoading(true)
       setError(null)
       try {
-        if (canSeePrivateSchedule) {
-          await fetchPrivateViewings()
-        } else {
-          await fetchPublicListings()
+        const { data } = await publicClient.get<PublicListing[]>('/api/Listings/public')
+        if (!cancelled) {
+          setPublicListings(data ?? [])
         }
       } catch (err) {
-        const isForbidden = axios.isAxiosError(err) && err.response?.status === 403
-        if (canSeePrivateSchedule && isForbidden) {
-          console.warn('Privatus grafikas nepasiekiamas – rodoma vieša versija.')
-          await fetchPublicListings()
-          setError('Nepavyko parodyti brokerio grafiko – rodoma vieša versija.')
-        } else {
-          console.error(err)
-          setError('Nepavyko gauti apžiūrų grafiko.')
-        }
+        console.error(err)
+        setError('Nepavyko gauti apžiūrų grafiko.')
       } finally {
         if (!cancelled) {
           setLoading(false)
@@ -66,7 +37,7 @@ export const ViewingsPage = () => {
     return () => {
       cancelled = true
     }
-  }, [canSeePrivateSchedule])
+  }, [])
 
   const publicViewingCards = useMemo(() => {
     const now = Date.now()
@@ -113,11 +84,8 @@ export const ViewingsPage = () => {
       <section className="hero">
         <div>
           <p className="hero__eyebrow">Atvirų durų grafikas</p>
-          <h2>Suplanuokite viešus ir privačius vizitus</h2>
-          <p>
-            Prisijungę brokeriai ir administratoriai mato pilną vidaus grafiką, o svečiai gali naršyti viešai
-            skelbiamas apžiūrų datas.
-          </p>
+          <h2>Suplanuokite viešus vizitus</h2>
+          <p>Visi lankytojai gali naršyti viešai skelbiamas apžiūrų datas ir įtraukti jas į savo planus.</p>
         </div>
         <div className="hero__card">
           <h3>Ieškote konkretaus skelbimo?</h3>
@@ -132,58 +100,45 @@ export const ViewingsPage = () => {
 
       <section>
         <div className="section-heading">
-          <h3>{canSeePrivateSchedule ? 'Mano suplanuotos apžiūros' : 'Viešos apžiūros'}</h3>
+          <h3>Viešos apžiūros</h3>
           {loading && <span>Kraunama...</span>}
         </div>
         <div className="timeline">
-          {canSeePrivateSchedule
-            ? viewings.map((viewing) => (
-                <div key={viewing.idViewing} className="timeline__item">
-                  <div>
-                    <p className="timeline__date">{formatFriendly(viewing.from)}</p>
-                    <p className="timeline__subtitle">Trukmė iki {formatFriendly(viewing.to)}</p>
-                  </div>
-                  <div className={`status status--${viewing.status}`}>Būsena #{viewing.status}</div>
+          {paginatedPublicViewings.map((viewing) => {
+            const coverStyle = viewing.pictureUrl
+              ? { backgroundImage: `url(${viewing.pictureUrl})` }
+              : undefined
+            return (
+              <Link key={viewing.id} to={`/skelbimai/${viewing.id}`} className="timeline__item timeline__item--link">
+                <div
+                  className={
+                    viewing.pictureUrl
+                      ? 'timeline__media'
+                      : 'timeline__media timeline__media--empty'
+                  }
+                  style={coverStyle}
+                >
+                  {!viewing.pictureUrl && <span>Nuotrauka ruošiama</span>}
                 </div>
-              ))
-            : paginatedPublicViewings.map((viewing) => {
-                const coverStyle = viewing.pictureUrl
-                  ? { backgroundImage: `url(${viewing.pictureUrl})` }
-                  : undefined
-                return (
-                  <Link key={viewing.id} to={`/skelbimai/${viewing.id}`} className="timeline__item timeline__item--link">
-                    <div
-                      className={
-                        viewing.pictureUrl
-                          ? 'timeline__media'
-                          : 'timeline__media timeline__media--empty'
-                      }
-                      style={coverStyle}
-                    >
-                      {!viewing.pictureUrl && <span>Nuotrauka ruošiama</span>}
-                    </div>
-                    <div className="timeline__content">
-                      <p className="timeline__date">{formatFriendly(viewing.from)}</p>
-                      <p className="timeline__subtitle">
-                        {viewing.city ? `${viewing.city} · ` : ''}
-                        {viewing.to ? `iki ${formatFriendly(viewing.to)}` : 'trukmė neviešinama'}
-                      </p>
-                      <p className="timeline__title">{viewing.description}</p>
-                    </div>
-                    <div className="timeline__cta">Žiūrėti skelbimą →</div>
-                  </Link>
-                )
-              })}
+                <div className="timeline__content">
+                  <p className="timeline__date">{formatFriendly(viewing.from)}</p>
+                  <p className="timeline__subtitle">
+                    {viewing.city ? `${viewing.city} · ` : ''}
+                    {viewing.to ? `iki ${formatFriendly(viewing.to)}` : 'trukmė neviešinama'}
+                  </p>
+                  <p className="timeline__title">{viewing.description}</p>
+                </div>
+                <div className="timeline__cta">Žiūrėti skelbimą →</div>
+              </Link>
+            )
+          })}
 
-          {!loading && canSeePrivateSchedule && viewings.length === 0 && (
-            <p className="muted">Šiuo metu neturite suplanuotų apžiūrų.</p>
-          )}
-          {!loading && !canSeePrivateSchedule && publicViewingCards.length === 0 && (
+          {!loading && publicViewingCards.length === 0 && (
             <p className="muted">Šiuo metu neviešinama jokių atvirų durų dienų.</p>
           )}
         </div>
 
-        {!canSeePrivateSchedule && totalItems > 0 && (
+        {totalItems > 0 && (
           <PaginationControls
             className="timeline__pagination"
             page={page}
