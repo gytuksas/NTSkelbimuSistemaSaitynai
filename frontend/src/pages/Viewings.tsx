@@ -6,6 +6,8 @@ import type { PublicListing, Viewing } from '../types/api'
 import { useAuth } from '../context/useAuth'
 import { formatFriendly } from '../utils/dates'
 import { resolvePictureSrc } from '../utils/pictures'
+import { usePagination } from '../hooks/usePagination'
+import { PaginationControls } from '../components/PaginationControls'
 
 export const ViewingsPage = () => {
   const { user } = useAuth()
@@ -67,6 +69,7 @@ export const ViewingsPage = () => {
   }, [canSeePrivateSchedule])
 
   const publicViewingCards = useMemo(() => {
+    const now = Date.now()
     return publicListings
       .filter((listing) => Boolean(listing.nextViewingFrom))
       .map((listing) => {
@@ -80,8 +83,30 @@ export const ViewingsPage = () => {
           pictureUrl,
         }
       })
+      .filter((viewing) => {
+        const fromTime = new Date(viewing.from).getTime()
+        return !Number.isNaN(fromTime) && fromTime >= now
+      })
       .sort((a, b) => new Date(a.from).getTime() - new Date(b.from).getTime())
   }, [publicListings])
+
+  const {
+    page,
+    pageSize,
+    totalItems,
+    totalPages,
+    rangeStart,
+    rangeEnd,
+    pageItems: paginatedPublicViewings,
+    pageSizeOptions,
+    goToPage,
+    setPageSize,
+    reset: resetPublicPagination,
+  } = usePagination(publicViewingCards)
+
+  useEffect(() => {
+    resetPublicPagination()
+  }, [publicViewingCards, resetPublicPagination])
 
   return (
     <div className="page viewings">
@@ -121,7 +146,7 @@ export const ViewingsPage = () => {
                   <div className={`status status--${viewing.status}`}>Būsena #{viewing.status}</div>
                 </div>
               ))
-            : publicViewingCards.map((viewing) => {
+            : paginatedPublicViewings.map((viewing) => {
                 const coverStyle = viewing.pictureUrl
                   ? { backgroundImage: `url(${viewing.pictureUrl})` }
                   : undefined
@@ -157,6 +182,21 @@ export const ViewingsPage = () => {
             <p className="muted">Šiuo metu neviešinama jokių atvirų durų dienų.</p>
           )}
         </div>
+
+        {!canSeePrivateSchedule && totalItems > 0 && (
+          <PaginationControls
+            className="timeline__pagination"
+            page={page}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            totalPages={totalPages}
+            rangeStart={rangeStart}
+            rangeEnd={rangeEnd}
+            pageSizeOptions={pageSizeOptions}
+            onPageChange={goToPage}
+            onPageSizeChange={setPageSize}
+          />
+        )}
       </section>
     </div>
   )
