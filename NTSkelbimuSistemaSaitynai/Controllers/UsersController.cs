@@ -5,6 +5,7 @@ using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using NTSkelbimuSistemaSaitynai.Models;
 using NTSkelbimuSistemaSaitynai.Security;
+using System.ComponentModel.DataAnnotations;
 
 namespace NTSkelbimuSistemaSaitynai.Controllers
 {
@@ -140,6 +141,97 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         }
 
         /// <summary>
+    /// Update a user's contact information (email and phone).
+        /// </summary>
+        /// <param name="id">User ID.</param>
+        /// <param name="payload">Contact update payload.</param>
+        [HttpPatch("{id}/contact")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> PatchUserContact(long id, [FromBody] UserContactUpdateDto payload)
+        {
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            var currentId = _ownership.GetCurrentUserId(User);
+            if (!(User.IsInRole("Administrator") || currentId == id))
+            {
+                return Forbid();
+            }
+
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var normalizedEmail = payload.Email.Trim();
+            var isEmailTaken = await _context.Users
+                .AnyAsync(u => u.IdUser != id && u.Email == normalizedEmail);
+
+            if (isEmailTaken)
+            {
+                return Conflict("Email is already in use by another user.");
+            }
+
+            user.Email = normalizedEmail;
+            user.Phone = payload.Phone.Trim();
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Update a user's password.
+        /// </summary>
+        /// <param name="id">User ID.</param>
+        /// <param name="payload">Password update payload.</param>
+        [HttpPatch("{id}/password")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> PatchUserPassword(long id, [FromBody] UserPasswordUpdateDto payload)
+        {
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            var currentId = _ownership.GetCurrentUserId(User);
+            var isAdmin = User.IsInRole("Administrator");
+            var isSelf = currentId == id;
+            if (!(isAdmin || isSelf))
+            {
+                return Forbid();
+            }
+
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            if (!PasswordHasher.Verify(payload.CurrentPassword, user.Password))
+            {
+                return BadRequest("Current password is incorrect.");
+            }
+
+            var password = PasswordHasher.IsHashed(payload.Password)
+                ? payload.Password
+                : PasswordHasher.Hash(payload.Password);
+
+            user.Password = password;
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        /// <summary>
         /// Create a new user.
         /// </summary>
         /// <param name="userDto">User payload.</param>
@@ -221,5 +313,26 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         {
             return _context.Users.Any(e => e.IdUser == id);
         }
+    }
+
+    public class UserContactUpdateDto
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = null!;
+
+        [Required]
+        [Phone]
+        public string Phone { get; set; } = null!;
+    }
+
+    public class UserPasswordUpdateDto
+    {
+        [Required]
+        public string CurrentPassword { get; set; } = null!;
+
+        [Required]
+        [MinLength(8, ErrorMessage = "Password must be at least 8 characters long.")]
+        public string Password { get; set; } = null!;
     }
 }

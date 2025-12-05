@@ -39,6 +39,7 @@ async function fetchProfile(id: number): Promise<Partial<Identity>> {
       name: data.name,
       surname: data.surname,
       email: data.email,
+      phone: data.phone,
     }
   } catch (error) {
     console.warn('Nepavyko įkelti naudotojo profilio', error)
@@ -97,6 +98,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [])
 
+  const refreshProfile = useCallback(async () => {
+    await syncProfile(tokenStore.getTokens())
+  }, [syncProfile])
+
   const value = useMemo<AuthContextValue>(
     () => ({
       isAuthenticated: Boolean(user),
@@ -104,8 +109,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       loading,
       login,
       logout,
+      refreshProfile,
     }),
-    [user, loading, login, logout],
+    [user, loading, login, logout, refreshProfile],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
