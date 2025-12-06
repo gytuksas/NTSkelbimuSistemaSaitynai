@@ -15,6 +15,7 @@ services:
     secrets:
       - dbpass
       - config
+    restart: unless-stopped
   frontend:
     environment:
       - VITE_API_BASE_URL=http://localhost:8080
@@ -24,6 +25,7 @@ services:
       - "4173:80"
     networks:
       - bridged
+    restart: unless-stopped
   db:
     networks:
 #      - bridged
@@ -36,6 +38,7 @@ services:
       - POSTGRES_PASSWORD_FILE=/run/secrets/dbpass
     secrets:
       - dbpass
+    restart: unless-stopped
 
 networks:
   bridged:
