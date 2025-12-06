@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
+import { isAxiosError } from 'axios'
 import { useAuth } from '../../context/useAuth'
 
 export const LoginPanel = () => {
@@ -17,6 +18,21 @@ export const LoginPanel = () => {
       setPassword('')
     } catch (err) {
       console.error(err)
+      if (isAxiosError(err)) {
+        const headers = err.response?.headers as
+          | Record<string, string | string[] | undefined>
+          | undefined
+        const unconfirmedHeader = headers
+          ? headers['x-account-unconfirmed'] ?? headers['X-Account-Unconfirmed']
+          : undefined
+        const isUnconfirmed = Array.isArray(unconfirmedHeader)
+          ? unconfirmedHeader.includes('true')
+          : unconfirmedHeader === 'true'
+        if (err.response?.status === 401 && isUnconfirmed) {
+          setError('Jūsų paskyra dar nepatvirtinta. Palaukite administratoriaus patvirtinimo.')
+          return
+        }
+      }
       setError('Prisijungti nepavyko. Patikrinkite duomenis.')
     }
   }

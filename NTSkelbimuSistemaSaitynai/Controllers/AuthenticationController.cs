@@ -45,6 +45,12 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
                 return Unauthorized("Invalid email or password");
             }
 
+            if (!await IsUserConfirmedAsync(user.IdUser))
+            {
+                Response.Headers["X-Account-Unconfirmed"] = "true";
+                return Unauthorized("Account is pending confirmation by the administrator");
+            }
+
             if (await IsUserBlockedAsync(user.IdUser))
             {
                 Response.Headers["X-Account-Blocked"] = "true";
@@ -151,6 +157,14 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             if (user == null)
             {
                 return Unauthorized("Associated user not found");
+            }
+
+            if (!await IsUserConfirmedAsync(user.IdUser))
+            {
+                existing.Revoked = true;
+                Response.Headers["X-Account-Unconfirmed"] = "true";
+                await _context.SaveChangesAsync();
+                return Unauthorized("Account is pending confirmation by the administrator");
             }
 
             if (await IsUserBlockedAsync(user.IdUser))
@@ -344,6 +358,35 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
 
             var buyer = await _context.Buyers.AsNoTracking().FirstOrDefaultAsync(b => b.IdUser == userId);
             return buyer?.Blocked == true;
+        }
+
+        private async Task<bool> IsUserConfirmedAsync(long userId)
+        {
+            if (await _context.Administrators.AsNoTracking().AnyAsync(a => a.IdUser == userId))
+            {
+                return true;
+            }
+
+            var broker = await _context.Brokers.AsNoTracking()
+                .Where(b => b.IdUser == userId)
+                .Select(b => new { b.Confirmed })
+                .FirstOrDefaultAsync();
+            if (broker != null)
+            {
+                return broker.Confirmed;
+            }
+
+            var buyer = await _context.Buyers.AsNoTracking()
+                .Where(b => b.IdUser == userId)
+                .Select(b => new { b.Confirmed })
+                .FirstOrDefaultAsync();
+            if (buyer != null)
+            {
+                return buyer.Confirmed;
+            }
+
+            // If the user does not belong to a role requiring confirmation, treat them as confirmed.
+            return true;
         }
 
         private async Task RevokeActiveSessionsAsync(long userId, bool saveChanges = true)

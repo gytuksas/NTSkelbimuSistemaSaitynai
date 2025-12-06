@@ -71,7 +71,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
         policy.AllowAnyOrigin()
               .AllowAnyHeader()
-              .AllowAnyMethod());
+              .AllowAnyMethod()
+              .WithExposedHeaders("X-Account-Unconfirmed", "X-Account-Blocked"));
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
