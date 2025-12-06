@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
+import { isAxiosError } from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { client, baseURL } from '../api/client'
 import { PaginationControls } from '../components/PaginationControls'
@@ -762,6 +763,65 @@ export const BrokersPage = () => {
     }
   }
 
+  const handlePictureDelete = async (pictureId: string) => {
+    try {
+      await client.delete(`/api/Pictures/${pictureId}`)
+      setPictures((prev) => prev.filter((picture) => picture.id !== pictureId))
+      setSelectedPictureIdInput((prev) => (prev === pictureId ? null : prev))
+      setListingPictureId((prev) => (prev === pictureId ? null : prev))
+      setFeedback('Nuotrauka pašalinta.')
+    } catch (error) {
+      console.error(error)
+      const fallbackMessage = 'Nepavyko pašalinti nuotraukos.'
+      if (isAxiosError(error)) {
+        const data = error.response?.data as { detail?: string; title?: string; message?: string } | string | undefined
+        if (typeof data === 'string' && data.trim().length > 0) {
+          setFeedback(data)
+          return
+        }
+        if (data && typeof data === 'object') {
+          const detail = data.detail ?? data.title ?? data.message
+          if (detail) {
+            setFeedback(detail)
+            return
+          }
+        }
+      }
+      setFeedback(fallbackMessage)
+    }
+  }
+
+  const requestPictureDelete = (picture: Picture) => {
+    const listingUsingPicture = listings.find((listing) => listing.fkPictureid === picture.id)
+    if (listingUsingPicture) {
+      setFeedback('Nuotrauka naudojama skelbimo viršelyje. Pasirinkite kitą nuotrauką prieš ją pašalindami.')
+      return
+    }
+    const apartment = apartments.find((entry) => entry.idApartment === picture.fkApartmentidApartment)
+    openConfirmation({
+      title: 'Pašalinti nuotrauką?',
+      description: (
+        <>
+          <p>Nuotrauka bus visam laikui pašalinta iš šio buto galerijos.</p>
+          <p className="muted">
+            {apartment ? (
+              <>
+                {apartment.rooms} kamb. · {apartment.area} m² ·{' '}
+                {apartment.apartmentnumber ? `Nr. ${apartment.apartmentnumber}` : 'Be numerio'}
+              </>
+            ) : (
+              <>Nuotraukos ID {picture.id}</>
+            )}
+          </p>
+        </>
+      ),
+      confirmLabel: 'Pašalinti nuotrauką',
+      illustration: 'trash',
+      tone: 'danger',
+      action: () => handlePictureDelete(picture.id),
+    })
+  }
+
   const handleUploadPicture = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!selectedApartmentId) {
@@ -1252,6 +1312,10 @@ export const BrokersPage = () => {
                             const coverStyle = { backgroundImage: `url(${baseURL}/uploads/${picture.id})` }
                             const isCoverPicture = listings.some((listing) => listing.fkPictureid === picture.id)
                             const toggleDisabled = picture.public && isCoverPicture
+                            const deleteDisabled = isCoverPicture
+                            const deleteTitle = deleteDisabled
+                              ? 'Nuotrauka naudojama skelbimo viršelyje. Nuimkite ją nuo viršelio arba pašalinkite skelbimą.'
+                              : undefined
                             return (
                               <div
                                 key={picture.id}
@@ -1272,6 +1336,7 @@ export const BrokersPage = () => {
                                     type="button"
                                     className="btn btn--ghost"
                                     disabled={toggleDisabled}
+                                    aria-disabled={toggleDisabled}
                                     title={toggleDisabled ? 'Nuotrauka naudojama skelbimo viršelyje ir negali būti paslėpta.' : undefined}
                                     onClick={(event) => {
                                       event.stopPropagation()
@@ -1280,7 +1345,25 @@ export const BrokersPage = () => {
                                   >
                                     {picture.public ? 'Slėpti viešai' : 'Skelbti viešai'}
                                   </button>
+                                  <button
+                                    type="button"
+                                    className="btn btn--ghost"
+                                    disabled={deleteDisabled}
+                                    aria-disabled={deleteDisabled}
+                                    title={deleteTitle}
+                                    onClick={(event) => {
+                                      event.stopPropagation()
+                                      requestPictureDelete(picture)
+                                    }}
+                                  >
+                                    Pašalinti
+                                  </button>
                                 </div>
+                                {deleteDisabled && (
+                                  <p className="picture-card__hint">
+                                    Ši nuotrauka naudojama kaip skelbimo viršelis. Nuimkite ją nuo viršelio arba pašalinkite skelbimą, kad galėtumėte ištrinti.
+                                  </p>
+                                )}
                               </div>
                             )
                           })}

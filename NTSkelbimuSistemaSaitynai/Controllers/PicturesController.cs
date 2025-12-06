@@ -360,6 +360,7 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<IActionResult> DeletePicture(string id)
         {
             if (!User.IsInRole("Administrator"))
@@ -375,6 +376,12 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             if (picture == null)
             {
                 return NotFound();
+            }
+
+            var usedByListing = await _context.Listings.AnyAsync(l => l.FkPictureid == id);
+            if (usedByListing)
+            {
+                return UnprocessableEntity("Nuotrauka naudojama aktyviame skelbime. Pakeiskite skelbimo viršelį prieš ją pašalindami.");
             }
 
             _context.Pictures.Remove(picture);

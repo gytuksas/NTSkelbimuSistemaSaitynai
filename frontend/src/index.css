@@ -1686,6 +1686,12 @@ textarea {
   flex-wrap: wrap;
 }
 
+.picture-card__hint {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: -0.25rem 0 0;
+}
+
 .upload-form {
   display: flex;
   flex-direction: column;
