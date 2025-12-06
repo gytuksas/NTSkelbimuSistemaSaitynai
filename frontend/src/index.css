@@ -560,6 +560,46 @@ a {
   border-radius: 12px;
 }
 
+.listing-card--placeholder {
+  border-style: dashed;
+  border-color: rgba(148, 163, 184, 0.35);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.listing-card__media--placeholder {
+  border-style: dashed;
+  border-color: rgba(148, 163, 184, 0.35);
+  font-size: 0.85rem;
+  color: rgba(148, 163, 184, 0.8);
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.listing-card__placeholder-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.listing-card__placeholder-line {
+  display: block;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.2);
+}
+
+.listing-card__placeholder-line--long {
+  width: 90%;
+}
+
+.listing-card__placeholder-line--medium {
+  width: 70%;
+}
+
+.listing-card__placeholder-line--short {
+  width: 45%;
+}
+
 .listing-card__badge {
   font-size: 0.75rem;
   color: var(--muted);

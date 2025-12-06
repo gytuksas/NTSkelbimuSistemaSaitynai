@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import type { MouseEvent, ReactNode } from 'react'
 
@@ -97,13 +97,6 @@ export const ConfirmModal = ({
   tone = 'danger',
   illustration = 'trash',
 }: ConfirmModalProps) => {
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-    return () => setMounted(false)
-  }, [])
-
   useEffect(() => {
     if (!open) return
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -122,7 +115,7 @@ export const ConfirmModal = ({
 
   const illustrationNode = useMemo(() => illustrationMap[illustration], [illustration])
 
-  if (!open || !mounted || typeof document === 'undefined') {
+  if (!open || typeof document === 'undefined') {
     return null
   }
 

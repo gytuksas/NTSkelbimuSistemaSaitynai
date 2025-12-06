@@ -104,6 +104,7 @@ export const ListingsPage = () => {
   const displayedListings = listingPagination.pageItems
   const showPagination = filteredListings.length > 0
   const listingCardStyle = useMemo(() => (maxCardHeight ? { minHeight: maxCardHeight } : undefined), [maxCardHeight])
+  const placeholderCount = filteredListings.length === 0 ? 0 : Math.max(0, listingPagination.pageSize - displayedListings.length)
 
   const recalcCardHeights = useCallback(() => {
     if (typeof window === 'undefined') {
@@ -267,6 +268,24 @@ export const ListingsPage = () => {
               </Link>
             )
           })}
+          {placeholderCount > 0 &&
+            Array.from({ length: placeholderCount }, (_, index) => (
+              <article
+                key={`listing-placeholder-${index}`}
+                className="card listing-card listing-card--placeholder"
+                style={listingCardStyle}
+                aria-hidden="true"
+              >
+                <div className="listing-card__media listing-card__media--empty listing-card__media--placeholder">
+                  <span></span>
+                </div>
+                <div className="listing-card__placeholder-lines">
+                  <span className="listing-card__placeholder-line listing-card__placeholder-line--long"></span>
+                  <span className="listing-card__placeholder-line listing-card__placeholder-line--medium"></span>
+                  <span className="listing-card__placeholder-line listing-card__placeholder-line--short"></span>
+                </div>
+              </article>
+            ))}
           {!loading && filteredListings.length === 0 && (
             <p className="muted">Nėra skelbimų, atitinkančių filtrus.</p>
           )}
