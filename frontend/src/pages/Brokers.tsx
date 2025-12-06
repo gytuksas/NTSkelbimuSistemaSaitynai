@@ -1153,8 +1153,7 @@ export const BrokersPage = () => {
                       </p>
                     </span>
                     <span>
-                      <p className="muted">{apartment.notes || 'Pastabų nėra'}</p>
-                      <p className="muted">{apartment.isWholeBuilding ? 'Visas pastatas' : 'Individualus butas'}</p>
+                      <p>{apartment.notes || 'Pastabų nėra'}</p>
                       {publicViewingForListing && (
                         <p className="muted">
                           Vieša apžiūra {formatFriendly(publicViewingForListing.from)}
