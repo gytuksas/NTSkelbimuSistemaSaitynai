@@ -32,7 +32,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
           </button>
           <div>
             <p className="brand__eyebrow">NT platforma</p>
-            <h1 className="brand__title">Atviri namai</h1>
+            <h1 className="brand__title">NT Saitynai</h1>
           </div>
         </div>
         <nav className="main-nav">
@@ -52,7 +52,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
       </header>
       <main className="app-main">{children}</main>
       <footer className="app-footer">
-        <p className="app-footer__text">2025</p>
+        <p className="app-footer__text">©2025</p>
         <a
           className="app-footer__link"
           href="https://github.com/gytuksas/NTSkelbimuSistemaSaitynai"
