@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { client, baseURL } from '../api/client'
 import { PaginationControls } from '../components/PaginationControls'
@@ -6,6 +6,8 @@ import { usePagination } from '../hooks/usePagination'
 import type { Apartment, Building, Listing, Picture, Viewing } from '../types/api'
 import { useAuth } from '../context/useAuth'
 import { formatFriendly, toDateTimeLocalInput, toUtcDateTimeString } from '../utils/dates'
+import { ConfirmModal } from '../components/ConfirmModal'
+import type { ConfirmIllustration } from '../components/ConfirmModal'
 
 const defaultBuilding = {
   city: 'Vilnius',
@@ -115,6 +117,16 @@ const createDefaultPublicViewingForm = (): PublicViewingFormState => {
 }
 
 type ViewMode = 'buildings' | 'apartments'
+
+type PendingConfirmation = {
+  title: string
+  description: ReactNode
+  confirmLabel?: string
+  cancelLabel?: string
+  tone?: 'default' | 'danger'
+  illustration?: ConfirmIllustration
+  action: () => void | Promise<void>
+}
 export const BrokersPage = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -150,6 +162,8 @@ export const BrokersPage = () => {
   const [publicViewingForm, setPublicViewingForm] = useState<PublicViewingFormState>(createDefaultPublicViewingForm)
   const [publicViewingSaving, setPublicViewingSaving] = useState(false)
   const [feedback, setFeedback] = useState<string | null>(null)
+  const [confirmation, setConfirmation] = useState<PendingConfirmation | null>(null)
+  const [confirmationBusy, setConfirmationBusy] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
@@ -184,6 +198,32 @@ export const BrokersPage = () => {
     const timeout = window.setTimeout(() => setPhotoWarning(null), 3000)
     return () => window.clearTimeout(timeout)
   }, [photoWarning])
+
+  const openConfirmation = (config: PendingConfirmation) => {
+    setConfirmation(config)
+  }
+
+  const closeConfirmation = () => {
+    if (confirmationBusy) {
+      return
+    }
+    setConfirmation(null)
+  }
+
+  const runConfirmation = async () => {
+    if (!confirmation) {
+      return
+    }
+    try {
+      setConfirmationBusy(true)
+      await Promise.resolve(confirmation.action())
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setConfirmationBusy(false)
+      setConfirmation(null)
+    }
+  }
 
 
   const effectiveViewMode: ViewMode = viewMode === 'apartments' && buildings.length === 0 ? 'buildings' : viewMode
@@ -375,9 +415,6 @@ export const BrokersPage = () => {
   }
 
   const handleBuildingDelete = async (buildingId: number) => {
-    if (typeof window !== 'undefined' && !window.confirm('Ar tikrai norite ištrinti pastatą?')) {
-      return
-    }
     const buildingApartmentIds = apartments
       .filter((apartment) => apartment.fkBuildingidBuilding === buildingId)
       .map((apartment) => apartment.idApartment)
@@ -398,6 +435,31 @@ export const BrokersPage = () => {
       console.error(error)
       setFeedback('Nepavyko pašalinti pastato.')
     }
+  }
+
+  const requestBuildingDelete = (buildingId: number) => {
+    const building = buildings.find((entry) => entry.idBuilding === buildingId)
+    openConfirmation({
+      title: 'Pašalinti pastatą?',
+      description: (
+        <>
+          <p>Pastato šalinimas pašalins ir visus susietus butus, nuotraukas bei skelbimus. Šis veiksmas yra negrįžtamas.</p>
+          <p className="muted">
+            {building ? (
+              <>
+                {building.city} · {building.address || 'Adresas nenurodytas'}
+              </>
+            ) : (
+              <>Pastato ID #{buildingId}</>
+            )}
+          </p>
+        </>
+      ),
+      confirmLabel: 'Taip, pašalinti',
+      illustration: 'building',
+      tone: 'danger',
+      action: () => handleBuildingDelete(buildingId),
+    })
   }
 
   const startApartmentEdit = (apartment: Apartment) => {
@@ -452,9 +514,6 @@ export const BrokersPage = () => {
   }
 
   const handleApartmentDelete = async (apartmentId: number) => {
-    if (typeof window !== 'undefined' && !window.confirm('Ar tikrai norite ištrinti butą?')) {
-      return
-    }
     try {
       await client.delete(`/api/Apartments/${apartmentId}`)
       setApartments((prev) => prev.filter((apartment) => apartment.idApartment !== apartmentId))
@@ -468,6 +527,31 @@ export const BrokersPage = () => {
       console.error(error)
       setFeedback('Nepavyko pašalinti buto.')
     }
+  }
+
+  const requestApartmentDelete = (apartmentId: number) => {
+    const apartment = apartments.find((entry) => entry.idApartment === apartmentId)
+    openConfirmation({
+      title: 'Pašalinti butą?',
+      description: (
+        <>
+          <p>Butas ir jo nuotraukos bus pašalinti iš sistemos. Šis veiksmas yra negrįžtamas.</p>
+          <p className="muted">
+            {apartment ? (
+              <>
+                {apartment.rooms} kamb. · {apartment.area} m² · {apartment.apartmentnumber ? `Nr. ${apartment.apartmentnumber}` : 'Be numerio'}
+              </>
+            ) : (
+              <>Buto ID #{apartmentId}</>
+            )}
+          </p>
+        </>
+      ),
+      confirmLabel: 'Pašalinti butą',
+      illustration: 'building',
+      tone: 'danger',
+      action: () => handleApartmentDelete(apartmentId),
+    })
   }
 
   const startListingCreation = (apartment: Apartment) => {
@@ -508,9 +592,6 @@ export const BrokersPage = () => {
   }
 
   const handleListingDelete = async (listingId: number, apartmentId?: number) => {
-    if (typeof window !== 'undefined' && !window.confirm('Ar tikrai norite pašalinti šį skelbimą?')) {
-      return
-    }
     try {
       await client.delete(`/api/Listings/${listingId}`)
       setListings((prev) => prev.filter((listing) => listing.idListing !== listingId))
@@ -526,6 +607,22 @@ export const BrokersPage = () => {
       console.error(error)
       setFeedback('Nepavyko pašalinti skelbimo.')
     }
+  }
+
+  const requestListingDelete = (listing: Listing, apartmentId?: number) => {
+    openConfirmation({
+      title: 'Pašalinti skelbimą?',
+      description: (
+        <>
+          <p>Skelbimas bus pašalintas iš sistemos. Šis veiksmas yra negrįžtamas.</p>
+          <p className="muted">{listing.description || `Skelbimas #${listing.idListing}`}</p>
+        </>
+      ),
+      confirmLabel: 'Pašalinti skelbimą',
+      illustration: 'trash',
+      tone: 'danger',
+      action: () => handleListingDelete(listing.idListing, apartmentId),
+    })
   }
 
   const closeListingPanel = () => {
@@ -826,7 +923,7 @@ export const BrokersPage = () => {
                       <button className="btn btn--ghost" onClick={() => startBuildingEdit(building)}>
                         Redaguoti
                       </button>
-                      <button className="btn btn--ghost" onClick={() => handleBuildingDelete(building.idBuilding)}>
+                      <button className="btn btn--ghost" onClick={() => requestBuildingDelete(building.idBuilding)}>
                         Pašalinti
                       </button>
                     </div>
@@ -1017,7 +1114,7 @@ export const BrokersPage = () => {
                         className="btn btn--ghost"
                         onClick={(event) => {
                           event.stopPropagation()
-                          handleApartmentDelete(apartment.idApartment)
+                          requestApartmentDelete(apartment.idApartment)
                         }}
                       >
                         Pašalinti
@@ -1066,7 +1163,7 @@ export const BrokersPage = () => {
                             className="btn btn--ghost"
                             onClick={(event) => {
                               event.stopPropagation()
-                              handleListingDelete(listingForApartment.idListing, apartment.idApartment)
+                              requestListingDelete(listingForApartment, apartment.idApartment)
                             }}
                           >
                             Pašalinti skelbimą
@@ -1456,6 +1553,20 @@ export const BrokersPage = () => {
             className="lightbox__image"
           />
         </div>
+      )}
+      {confirmation && (
+        <ConfirmModal
+          open
+          title={confirmation.title}
+          description={confirmation.description}
+          confirmLabel={confirmation.confirmLabel}
+          cancelLabel={confirmation.cancelLabel}
+          tone={confirmation.tone}
+          illustration={confirmation.illustration}
+          busy={confirmationBusy}
+          onCancel={closeConfirmation}
+          onConfirm={runConfirmation}
+        />
       )}
     </div>
   )

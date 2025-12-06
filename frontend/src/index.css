@@ -796,6 +796,117 @@ a {
   background: #000;
 }
 
+.confirm-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(2, 6, 23, 0.88);
+  backdrop-filter: blur(14px);
+  z-index: 1200;
+  animation: confirmModalFade 0.25s ease forwards;
+}
+
+.confirm-modal__card {
+  width: min(480px, 95vw);
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid var(--border);
+  border-radius: 32px;
+  padding: 2.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  box-shadow: 0 30px 80px rgba(2, 6, 23, 0.65);
+  animation: confirmModalRise 0.3s ease forwards;
+}
+
+.confirm-modal__card--danger .btn:last-child {
+  background: linear-gradient(135deg, #fb7185, #f43f5e);
+  color: #fff;
+}
+
+.confirm-modal__illustration {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(249, 115, 22, 0.2), rgba(2, 6, 23, 0.4));
+  margin: 0 auto;
+  display: grid;
+  place-items: center;
+  padding: 0.5rem;
+}
+
+.confirm-modal__illustration svg {
+  width: 100%;
+  height: 100%;
+  animation: confirmIllustrationPulse 6s ease-in-out infinite;
+}
+
+.confirm-modal__eyebrow {
+  margin: 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.85);
+}
+
+.confirm-modal__content h3 {
+  margin: 0.1rem 0 0.6rem;
+}
+
+.confirm-modal__description {
+  color: var(--muted);
+}
+
+.confirm-modal__description p {
+  margin: 0.2rem 0;
+}
+
+.confirm-modal__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.confirm-modal__actions .btn {
+  min-width: 140px;
+}
+
+@keyframes confirmModalFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes confirmModalRise {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes confirmIllustrationPulse {
+  0% {
+    filter: drop-shadow(0 0 0 rgba(249, 115, 22, 0.35));
+  }
+  50% {
+    filter: drop-shadow(0 10px 25px rgba(249, 115, 22, 0.45));
+  }
+  100% {
+    filter: drop-shadow(0 0 0 rgba(249, 115, 22, 0.35));
+  }
+}
+
 .pagination {
   display: flex;
   align-items: center;

@@ -4,6 +4,7 @@ import { client } from '../api/client'
 import type { Availability, Viewing, Listing } from '../types/api'
 import { useAuth } from '../context/useAuth'
 import { formatFriendly, toDateTimeLocalInput, toUtcDateTimeString } from '../utils/dates'
+import { ConfirmModal } from '../components/ConfirmModal'
 
 const VIEWING_STATUS = {
   pending: 1,
@@ -38,6 +39,12 @@ export const BrokerSchedulePage = () => {
   const [availabilityForm, setAvailabilityForm] = useState<AvailabilityFormState>(createDefaultAvailability)
   const [feedback, setFeedback] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [pendingAvailabilityDelete, setPendingAvailabilityDelete] = useState<{
+    id: number
+    from: string
+    to: string
+  } | null>(null)
+  const [availabilityDeleteBusy, setAvailabilityDeleteBusy] = useState(false)
 
   const viewingStatsByAvailability = useMemo(() => {
     const map = new Map<number, { total: number; confirmed: number }>()
@@ -81,6 +88,34 @@ export const BrokerSchedulePage = () => {
   )
 
   const availabilityValidationMessage = isAvailabilityFormValid ? null : 'Patikrinkite pradžios ir pabaigos laikus.'
+
+  const requestAvailabilityDelete = (slot: Availability) => {
+    if (!canDeleteAvailability(slot.idAvailability)) {
+      setFeedback('Negalite pašalinti šio laiko, nes yra patvirtintų apžiūrų.')
+      return
+    }
+    setPendingAvailabilityDelete({ id: slot.idAvailability, from: slot.from, to: slot.to })
+  }
+
+  const closeAvailabilityDeleteModal = () => {
+    if (availabilityDeleteBusy) {
+      return
+    }
+    setPendingAvailabilityDelete(null)
+  }
+
+  const confirmAvailabilityDelete = async () => {
+    if (!pendingAvailabilityDelete) {
+      return
+    }
+    try {
+      setAvailabilityDeleteBusy(true)
+      await handleAvailabilityDelete(pendingAvailabilityDelete.id)
+    } finally {
+      setAvailabilityDeleteBusy(false)
+      setPendingAvailabilityDelete(null)
+    }
+  }
 
   useEffect(() => {
     const loadScheduleData = async () => {
@@ -134,9 +169,6 @@ export const BrokerSchedulePage = () => {
   const handleAvailabilityDelete = async (availabilityId: number) => {
     if (!canDeleteAvailability(availabilityId)) {
       setFeedback('Negalite pašalinti šio laiko, nes yra patvirtintų apžiūrų.')
-      return
-    }
-    if (typeof window !== 'undefined' && !window.confirm('Ar tikrai norite pašalinti šį laiko langą?')) {
       return
     }
     try {
@@ -201,7 +233,7 @@ export const BrokerSchedulePage = () => {
                       <button
                         className="btn btn--ghost"
                         disabled={!deletable}
-                        onClick={() => handleAvailabilityDelete(slot.idAvailability)}
+                        onClick={() => requestAvailabilityDelete(slot)}
                       >
                         Pašalinti laiką
                       </button>
@@ -360,6 +392,26 @@ export const BrokerSchedulePage = () => {
           {!loading && confirmedViewings.length === 0 && <p className="muted">Šiuo metu neturite patvirtintų apžiūrų.</p>}
         </div>
       </section>
+      {pendingAvailabilityDelete && (
+        <ConfirmModal
+          open
+          title="Pašalinti laiko langą?"
+          description={(
+            <>
+              <p>Šis laikas bus pašalintas iš grafiko, todėl pirkėjai nebegalės jo rezervuoti.</p>
+              <p className="muted">
+                {formatFriendly(pendingAvailabilityDelete.from)} – {formatFriendly(pendingAvailabilityDelete.to)}
+              </p>
+            </>
+          )}
+          confirmLabel="Pašalinti laiką"
+          cancelLabel="Grįžti"
+          illustration="clock"
+          busy={availabilityDeleteBusy}
+          onCancel={closeAvailabilityDeleteModal}
+          onConfirm={confirmAvailabilityDelete}
+        />
+      )}
     </div>
   )
 }
