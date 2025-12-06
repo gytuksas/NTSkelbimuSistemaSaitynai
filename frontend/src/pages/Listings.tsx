@@ -182,6 +182,7 @@ export const ListingsPage = () => {
               listingPagination.reset()
             }}
           />
+          <br></br>
           <div className="chip-row">
             {rentFilterOptions.map((option) => (
               <button
@@ -283,14 +284,6 @@ export const ListingsPage = () => {
             onPageSizeChange={listingPagination.setPageSize}
           />
         )}
-      </section>
-
-      <section className="card">
-        <h3>Noriu pamatyti atvirų durų grafiką</h3>
-        <p>Viešos apžiūrų datos dabar perkeltos į atskirą puslapį.</p>
-        <Link className="btn" to="/apziuros">
-          Eiti į apžiūrų kalendorių
-        </Link>
       </section>
     </div>
   )

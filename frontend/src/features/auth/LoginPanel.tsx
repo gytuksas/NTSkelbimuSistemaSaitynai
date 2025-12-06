@@ -56,7 +56,7 @@ export const LoginPanel = () => {
       <div className="auth-panel__fields">
         <input
           type="email"
-          placeholder="Prisijungimo ID"
+          placeholder="El. paštas"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           required

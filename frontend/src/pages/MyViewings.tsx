@@ -166,13 +166,6 @@ export const MyViewingsPage = () => {
             brokerio kontaktus ir vizito laiką vienoje vietoje.
           </p>
         </div>
-        <div className="hero__card">
-          <h3>Naujas vizitas?</h3>
-          <p>Peržiūrėkite skelbimus ir išsirinkite jums tinkamą laiką.</p>
-          <Link className="btn" to="/skelbimai">
-            Naršyti skelbimus
-          </Link>
-        </div>
       </section>
 
       {error && <p className="error-banner">{error}</p>}

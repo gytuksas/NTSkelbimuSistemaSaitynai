@@ -84,12 +84,12 @@ export const ViewingsPage = () => {
       <section className="hero">
         <div>
           <p className="hero__eyebrow">Atvirų durų grafikas</p>
-          <h2>Suplanuokite viešus vizitus</h2>
+          <h2>Suplanuokite savo vizitą</h2>
           <p>Visi lankytojai gali naršyti viešai skelbiamas apžiūrų datas ir įtraukti jas į savo planus.</p>
         </div>
         <div className="hero__card">
           <h3>Ieškote konkretaus skelbimo?</h3>
-          <p>Pasinaudokite galerija ir raskite objektą, kurį norite aplankyti.</p>
+          <p>Pasinaudokite skelbimų galerija ir raskite objektą, kurį norite aplankyti.</p>
           <Link className="btn" to="/skelbimai">
             Peržiūrėti skelbimus
           </Link>

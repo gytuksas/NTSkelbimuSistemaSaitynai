@@ -1093,8 +1093,9 @@ export const BrokersPage = () => {
                 </select>
               </label>
             </div>
+            <br></br>
             <button className="btn" onClick={handleBuildingCreate}>
-              Išsaugoti pastatą
+              Pridėti pastatą
             </button>
           </section>
         </>
@@ -1589,6 +1590,7 @@ export const BrokersPage = () => {
                 </select>
               </label>
             </div>
+            <br></br>
             <button className="btn" onClick={handleApartmentCreate}>
               Pridėti butą
             </button>
