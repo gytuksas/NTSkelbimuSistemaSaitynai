@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
 
 export const LoginPanel = () => {
@@ -52,9 +53,14 @@ export const LoginPanel = () => {
           required
         />
       </div>
-      <button className="btn" type="submit" disabled={loading}>
-        {loading ? 'Jungiama...' : 'Prisijungti'}
-      </button>
+      <div className="auth-panel__actions">
+        <button className="btn" type="submit" disabled={loading}>
+          {loading ? 'Jungiama...' : 'Prisijungti'}
+        </button>
+        <Link className="btn btn--ghost" to="/registracija">
+          Registruotis
+        </Link>
+      </div>
       {error && <p className="auth-panel__error">{error}</p>}
     </form>
   )

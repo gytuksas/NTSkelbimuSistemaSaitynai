@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NTSkelbimuSistemaSaitynai.Models;
+using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
@@ -69,6 +70,54 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { accessToken, refreshToken });
+        }
+
+        /// <summary>
+        /// Registers a new buyer.
+        /// </summary>
+        /// <param name="request">Buyer registration payload.</param>
+        /// <returns>Created buyer identity.</returns>
+        [AllowAnonymous]
+        [HttpPost("register/buyer")]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(RegistrationResponseDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public Task<ActionResult<RegistrationResponseDto>> RegisterBuyer([FromBody] RegistrationRequestDto request)
+        {
+            return RegisterUserAsync(request, userId =>
+            {
+                _context.Buyers.Add(new Buyer
+                {
+                    IdUser = userId,
+                    Confirmed = false,
+                    Blocked = false
+                });
+                return Task.CompletedTask;
+            }, "Buyer");
+        }
+
+        /// <summary>
+        /// Registers a new broker.
+        /// </summary>
+        /// <param name="request">Broker registration payload.</param>
+        /// <returns>Created broker identity.</returns>
+        [AllowAnonymous]
+        [HttpPost("register/broker")]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(RegistrationResponseDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public Task<ActionResult<RegistrationResponseDto>> RegisterBroker([FromBody] RegistrationRequestDto request)
+        {
+            return RegisterUserAsync(request, userId =>
+            {
+                _context.Brokers.Add(new Broker
+                {
+                    IdUser = userId,
+                    Confirmed = false,
+                    Blocked = false
+                });
+                return Task.CompletedTask;
+            }, "Broker");
         }
 
         /// <summary>
@@ -196,6 +245,62 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
             return null;
         }
 
+        private async Task<ActionResult<RegistrationResponseDto>> RegisterUserAsync(
+            RegistrationRequestDto request,
+            Func<long, Task> attachRole,
+            string role)
+        {
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+            var emailExists = await _context.Users.AnyAsync(u => u.Email.ToLower() == normalizedEmail);
+            if (emailExists)
+            {
+                return Conflict("Nurodytas el. paštas jau naudojamas.");
+            }
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var now = DateTime.UtcNow;
+                var user = new User
+                {
+                    Name = request.Name.Trim(),
+                    Surname = request.Surname.Trim(),
+                    Email = normalizedEmail,
+                    Phone = request.Phone.Trim(),
+                    Password = PasswordHasher.IsHashed(request.Password)
+                        ? request.Password
+                        : PasswordHasher.Hash(request.Password),
+                    Registrationtime = now,
+                    Profilepicture = null
+                };
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
+                await attachRole(user.IdUser);
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                return Created($"/api/Users/{user.IdUser}", new RegistrationResponseDto
+                {
+                    UserId = user.IdUser,
+                    Role = role
+                });
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
         private async Task<string> GenerateJSONWebToken(User user)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.Jwt.Key));
@@ -269,4 +374,33 @@ namespace NTSkelbimuSistemaSaitynai.Controllers
 public class RefreshRequestDto
 {
     public string RefreshToken { get; set; } = null!;
+}
+
+public class RegistrationRequestDto
+{
+    [Required]
+    [StringLength(128, MinimumLength = 2)]
+    public string Name { get; set; } = null!;
+
+    [Required]
+    [StringLength(128, MinimumLength = 2)]
+    public string Surname { get; set; } = null!;
+
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = null!;
+
+    [Required]
+    [Phone]
+    public string Phone { get; set; } = null!;
+
+    [Required]
+    [MinLength(8)]
+    public string Password { get; set; } = null!;
+}
+
+public class RegistrationResponseDto
+{
+    public long UserId { get; set; }
+    public string Role { get; set; } = null!;
 }

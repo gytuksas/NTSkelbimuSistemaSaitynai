@@ -9,6 +9,7 @@ import { BrokerSchedulePage } from './pages/BrokerSchedule'
 import { AdminPage } from './pages/Admin'
 import { ListingDetailsPage } from './pages/ListingDetails'
 import { MyViewingsPage } from './pages/MyViewings'
+import { RegisterPage } from './pages/Register'
 
 const App = () => {
   return (
@@ -23,6 +24,7 @@ const App = () => {
   <Route path="/brokeriams/grafikas" element={<BrokerSchedulePage />} />
         <Route path="/administratoriams" element={<AdminPage />} />
         <Route path="/skelbimai/:id" element={<ListingDetailsPage />} />
+    <Route path="/registracija" element={<RegisterPage />} />
       </Routes>
     </AppLayout>
   )

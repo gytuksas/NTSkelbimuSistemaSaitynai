@@ -152,6 +152,21 @@ export interface AppUser {
   profilepicture?: string
 }
 
+export type RegistrationRole = 'buyer' | 'broker'
+
+export interface RegistrationPayload {
+  name: string
+  surname: string
+  email: string
+  phone: string
+  password: string
+}
+
+export interface RegistrationResponse {
+  userId: number
+  role: UserRole
+}
+
 export interface TokenPayload {
   id?: string
   sub?: string
