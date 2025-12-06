@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosHeaders } from 'axios'
-import type { AxiosRequestConfig } from 'axios'
+import type { AxiosRequestConfig, AxiosResponseHeaders, RawAxiosResponseHeaders } from 'axios'
 import { tokenStore } from './tokenStore'
 
 type RetriableConfig = AxiosRequestConfig & { _retry?: boolean }
@@ -8,6 +8,27 @@ const baseURL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
 
 const publicClient = axios.create({ baseURL })
 const client = axios.create({ baseURL })
+
+const forceLogoutIfBlocked = (headers?: RawAxiosResponseHeaders | AxiosResponseHeaders) => {
+  if (!headers) return false
+
+  const rawValue = headers instanceof AxiosHeaders ? headers.get('x-account-blocked') : headers['x-account-blocked']
+  let headerValue: string | null = null
+
+  if (Array.isArray(rawValue)) {
+    const firstTruthy = rawValue.find((entry) => Boolean(entry))
+    headerValue = firstTruthy != null ? String(firstTruthy) : null
+  } else if (rawValue != null) {
+    headerValue = String(rawValue)
+  }
+
+  if (headerValue?.toLowerCase() === 'true') {
+    tokenStore.clearTokens()
+    return true
+  }
+
+  return false
+}
 
 client.interceptors.request.use((config) => {
   const { accessToken } = tokenStore.getTokens()
@@ -54,9 +75,15 @@ const requestTokenRefresh = async () => {
 }
 
 client.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    forceLogoutIfBlocked(response.headers)
+    return response
+  },
   async (error: AxiosError) => {
     const status = error.response?.status
+    if (forceLogoutIfBlocked(error.response?.headers)) {
+      return Promise.reject(error)
+    }
     const originalRequest = error.config as RetriableConfig | undefined
     if (status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true
