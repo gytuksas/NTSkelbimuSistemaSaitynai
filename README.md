@@ -130,7 +130,7 @@ Sistemos sudedamosios dalys:
 <img width="2560" height="1281" alt="Screenshot 2025-12-06 at 19-57-20 NT Saitynai" src="https://github.com/user-attachments/assets/6d8ef374-db5e-4f78-980e-82bd5074d6ff" />
 
 ### OpenAPI specifikacija
-OpenAPI specifikacijos failas gali būti rastas šioje GitHub repozitorijoje [čia](https://github.com/gytuksas/NTSkelbimuSistemaSaitynai/blob/main/openapi.json).
+OpenAPI specifikacijos failas gali būti rastas šioje GitHub repozitorijoje [čia](https://github.com/gytuksas/NTSkelbimuSistemaSaitynai/blob/main/api-spec.yaml).
 
 ### Projekto išvados
 

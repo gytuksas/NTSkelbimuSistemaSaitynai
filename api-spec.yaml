@@ -1,0 +1,6248 @@
+---
+openapi: 3.0.4
+info:
+  title: NTSkelbimuSistemaSaitynai API
+  description: OpenAPI specification for the NTSkelbimuSistemaSaitynai service
+  version: v1
+paths:
+  "/api/Administrators":
+    get:
+      tags:
+      - Administrators
+      summary: Get all administrators.
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Administrator"
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Administrator"
+            text/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Administrator"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    post:
+      tags:
+      - Administrators
+      summary: Create a new administrator.
+      description: Returns 409 if the administrator already exists.
+      requestBody:
+        description: Administrator payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Administrator"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/Administrator"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/Administrator"
+      responses:
+        '201':
+          description: Created
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Administrator"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Administrator"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Administrator"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '409':
+          description: Conflict
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Administrators/{id}":
+    get:
+      tags:
+      - Administrators
+      summary: Get an administrator by ID.
+      parameters:
+      - name: id
+        in: path
+        description: User ID of the administrator.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Administrator"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Administrator"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Administrator"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    put:
+      tags:
+      - Administrators
+      summary: Update an administrator.
+      description: Returns 404 if the resource does not exist.
+      parameters:
+      - name: id
+        in: path
+        description: User ID of the administrator to update.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: Updated administrator payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Administrator"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/Administrator"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/Administrator"
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    delete:
+      tags:
+      - Administrators
+      summary: Delete an administrator by ID.
+      description: Returns 404 if the resource does not exist.
+      parameters:
+      - name: id
+        in: path
+        description: User ID of the administrator to delete.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Apartments":
+    get:
+      tags:
+      - Apartments
+      summary: Get all apartments.
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Apartment"
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Apartment"
+            text/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Apartment"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    post:
+      tags:
+      - Apartments
+      summary: Create a new apartment.
+      requestBody:
+        description: Apartment payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Apartment"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/Apartment"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/Apartment"
+      responses:
+        '201':
+          description: Created
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Apartment"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Apartment"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Apartment"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '422':
+          description: Unprocessable Content
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Apartments/{id}":
+    get:
+      tags:
+      - Apartments
+      summary: Get an apartment by ID.
+      parameters:
+      - name: id
+        in: path
+        description: Apartment ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Apartment"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Apartment"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Apartment"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    put:
+      tags:
+      - Apartments
+      summary: Update an apartment.
+      parameters:
+      - name: id
+        in: path
+        description: Apartment ID to update.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: Updated apartment payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Apartment"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/Apartment"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/Apartment"
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '422':
+          description: Unprocessable Content
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    delete:
+      tags:
+      - Apartments
+      summary: Delete an apartment by ID.
+      parameters:
+      - name: id
+        in: path
+        description: Apartment ID to delete.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Apartments/{id}/listing":
+    get:
+      tags:
+      - Apartments
+      summary: Get the listing associated with a specific apartment.
+      parameters:
+      - name: id
+        in: path
+        description: Apartment ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Listing"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Listing"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Listing"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Authentication/login":
+    post:
+      tags:
+      - Authentication
+      summary: Allows user to log onto the system.
+      requestBody:
+        description: Username and password
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UserLoginDto"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/UserLoginDto"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/UserLoginDto"
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Authentication/register/buyer":
+    post:
+      tags:
+      - Authentication
+      summary: Registers a new buyer.
+      requestBody:
+        description: Buyer registration payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/RegistrationRequestDto"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/RegistrationRequestDto"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/RegistrationRequestDto"
+      responses:
+        '201':
+          description: Created
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/RegistrationResponseDto"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/RegistrationResponseDto"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/RegistrationResponseDto"
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '409':
+          description: Conflict
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Authentication/register/broker":
+    post:
+      tags:
+      - Authentication
+      summary: Registers a new broker.
+      requestBody:
+        description: Broker registration payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/RegistrationRequestDto"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/RegistrationRequestDto"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/RegistrationRequestDto"
+      responses:
+        '201':
+          description: Created
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/RegistrationResponseDto"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/RegistrationResponseDto"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/RegistrationResponseDto"
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '409':
+          description: Conflict
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Authentication/refresh":
+    post:
+      tags:
+      - Authentication
+      summary: Exchanges a valid (non-revoked, unexpired) refresh token for a new
+        access token and refresh token.
+      requestBody:
+        description: Refresh token payload
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/RefreshRequestDto"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/RefreshRequestDto"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/RefreshRequestDto"
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Authentication/logout":
+    post:
+      tags:
+      - Authentication
+      summary: Logs out a user by revoking the provided refresh token and instructing
+        the client to remove access token.
+      requestBody:
+        description: Refresh token to revoke.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/RefreshRequestDto"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/RefreshRequestDto"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/RefreshRequestDto"
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Availabilities":
+    get:
+      tags:
+      - Availabilities
+      summary: Get all availabilities.
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Availability"
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Availability"
+            text/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Availability"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    post:
+      tags:
+      - Availabilities
+      summary: Create a new availability.
+      requestBody:
+        description: Availability payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/AvailabilityDto"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/AvailabilityDto"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/AvailabilityDto"
+      responses:
+        '201':
+          description: Created
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Availability"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Availability"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Availability"
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '422':
+          description: Unprocessable Content
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Availabilities/{id}":
+    get:
+      tags:
+      - Availabilities
+      summary: Get availability by ID.
+      parameters:
+      - name: id
+        in: path
+        description: Availability ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Availability"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Availability"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Availability"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    put:
+      tags:
+      - Availabilities
+      summary: Update an availability.
+      parameters:
+      - name: id
+        in: path
+        description: Availability ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: Updated availability payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/AvailabilityDto"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/AvailabilityDto"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/AvailabilityDto"
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '422':
+          description: Unprocessable Content
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    delete:
+      tags:
+      - Availabilities
+      summary: Delete an availability by ID.
+      parameters:
+      - name: id
+        in: path
+        description: Availability ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Brokers":
+    get:
+      tags:
+      - Brokers
+      summary: Get all brokers.
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Broker"
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Broker"
+            text/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Broker"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    post:
+      tags:
+      - Brokers
+      summary: Create a new broker.
+      requestBody:
+        description: Broker payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Broker"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/Broker"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/Broker"
+      responses:
+        '201':
+          description: Created
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Broker"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Broker"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Broker"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '409':
+          description: Conflict
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Brokers/{id}":
+    get:
+      tags:
+      - Brokers
+      summary: Get a broker by ID.
+      parameters:
+      - name: id
+        in: path
+        description: User ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Broker"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Broker"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Broker"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    patch:
+      tags:
+      - Brokers
+      summary: Partially update a broker's status.
+      parameters:
+      - name: id
+        in: path
+        description: User ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: One of confirmed or blocked must be provided.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/BrokerPatchDto"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/BrokerPatchDto"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/BrokerPatchDto"
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    put:
+      tags:
+      - Brokers
+      summary: Update a broker.
+      parameters:
+      - name: id
+        in: path
+        description: User ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: Updated broker payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Broker"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/Broker"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/Broker"
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    delete:
+      tags:
+      - Brokers
+      summary: Delete a broker by ID.
+      parameters:
+      - name: id
+        in: path
+        description: User ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Brokers/{id}/listings":
+    get:
+      tags:
+      - Brokers
+      summary: Get all listings managed by a broker.
+      parameters:
+      - name: id
+        in: path
+        description: Broker's user ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Listing"
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Listing"
+            text/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Listing"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Brokers/{id}/apartments":
+    get:
+      tags:
+      - Brokers
+      summary: Get all apartments managed by a broker.
+      parameters:
+      - name: id
+        in: path
+        description: Broker's user ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Apartment"
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Apartment"
+            text/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Apartment"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Brokers/{id}/building/{buildingId}/apartments":
+    get:
+      tags:
+      - Brokers
+      summary: Get apartments for a specific building managed by a broker.
+      parameters:
+      - name: id
+        in: path
+        description: Broker's user ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: buildingId
+        in: path
+        description: Building ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Apartment"
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Apartment"
+            text/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Apartment"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Brokers/{id}/viewings":
+    get:
+      tags:
+      - Brokers
+      summary: Get all viewings scheduled for a broker.
+      parameters:
+      - name: id
+        in: path
+        description: Broker's user ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Viewing"
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Viewing"
+            text/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Viewing"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Brokers/{id}/availability/{availabilityId}/viewings":
+    get:
+      tags:
+      - Brokers
+      summary: Get all viewings scheduled in a specific availability slot for a broker.
+      parameters:
+      - name: id
+        in: path
+        description: Broker's user ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: availabilityId
+        in: path
+        description: Availability ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Brokers/{id}/building/{buildingId}/apartment/{apartmentId}/listings":
+    get:
+      tags:
+      - Brokers
+      summary: Get all listings for an apartment within a building managed by a broker.
+      parameters:
+      - name: id
+        in: path
+        description: Broker's user ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: buildingId
+        in: path
+        description: Building ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: apartmentId
+        in: path
+        description: Apartment ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Brokers/{id}/building/{buildingId}/apartment/{apartmentId}/picture/{pictureId}/listing":
+    get:
+      tags:
+      - Brokers
+      summary: Check if a specific picture (within an apartment and building) is used
+        in any listing.
+      parameters:
+      - name: id
+        in: path
+        description: Broker's user ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: buildingId
+        in: path
+        description: Building ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: apartmentId
+        in: path
+        description: Apartment ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: pictureId
+        in: path
+        description: Picture ID.
+        required: true
+        schema:
+          type: string
+      responses:
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Buildings":
+    get:
+      tags:
+      - Buildings
+      summary: Get all buildings.
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Building"
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Building"
+            text/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Building"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    post:
+      tags:
+      - Buildings
+      summary: Create a new building.
+      requestBody:
+        description: Building payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Building"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/Building"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/Building"
+      responses:
+        '201':
+          description: Created
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Building"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Building"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Building"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '422':
+          description: Unprocessable Content
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Buildings/{id}":
+    get:
+      tags:
+      - Buildings
+      summary: Get a building by ID.
+      parameters:
+      - name: id
+        in: path
+        description: Building ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Building"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Building"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Building"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    put:
+      tags:
+      - Buildings
+      summary: Update a building.
+      parameters:
+      - name: id
+        in: path
+        description: Building ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: Updated building payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Building"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/Building"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/Building"
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '422':
+          description: Unprocessable Content
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    delete:
+      tags:
+      - Buildings
+      summary: Delete a building by ID.
+      parameters:
+      - name: id
+        in: path
+        description: Building ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Buildings/{id}/apartments":
+    get:
+      tags:
+      - Buildings
+      summary: Get apartments in a specific building.
+      parameters:
+      - name: id
+        in: path
+        description: Building ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Apartment"
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Apartment"
+            text/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Apartment"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Buildings/{id}/pictures":
+    get:
+      tags:
+      - Buildings
+      summary: Get all pictures in a specific building.
+      parameters:
+      - name: id
+        in: path
+        description: Building ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Picture"
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Picture"
+            text/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Picture"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Buildings/{id}/apartment/{apartmentId}/picture/{pictureId}":
+    get:
+      tags:
+      - Buildings
+      summary: Get a specific picture located in a specific apartment within a building.
+      parameters:
+      - name: id
+        in: path
+        description: Building ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: apartmentId
+        in: path
+        description: Apartment ID within the building.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: pictureId
+        in: path
+        description: Picture ID to fetch.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Picture"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Picture"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Picture"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Buyers":
+    get:
+      tags:
+      - Buyers
+      summary: Get all buyers.
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Buyer"
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Buyer"
+            text/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Buyer"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    post:
+      tags:
+      - Buyers
+      summary: Create a new buyer.
+      requestBody:
+        description: Buyer payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Buyer"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/Buyer"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/Buyer"
+      responses:
+        '201':
+          description: Created
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Buyer"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Buyer"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Buyer"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '409':
+          description: Conflict
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Buyers/{id}":
+    get:
+      tags:
+      - Buyers
+      summary: Get a buyer by ID.
+      parameters:
+      - name: id
+        in: path
+        description: User ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Buyer"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Buyer"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Buyer"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    patch:
+      tags:
+      - Buyers
+      summary: Partially update a buyer's status.
+      parameters:
+      - name: id
+        in: path
+        description: User ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: One of confirmed or blocked must be provided.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/BuyerPatchDto"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/BuyerPatchDto"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/BuyerPatchDto"
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    put:
+      tags:
+      - Buyers
+      summary: Update a buyer.
+      parameters:
+      - name: id
+        in: path
+        description: User ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: Updated buyer payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Buyer"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/Buyer"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/Buyer"
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    delete:
+      tags:
+      - Buyers
+      summary: Delete a buyer by ID.
+      parameters:
+      - name: id
+        in: path
+        description: User ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Confirmations":
+    get:
+      tags:
+      - Confirmations
+      summary: Get all confirmations.
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Confirmation"
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Confirmation"
+            text/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Confirmation"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    post:
+      tags:
+      - Confirmations
+      summary: Create a new confirmation.
+      requestBody:
+        description: Confirmation payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ConfirmationDto"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/ConfirmationDto"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/ConfirmationDto"
+      responses:
+        '201':
+          description: Created
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Confirmation"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Confirmation"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Confirmation"
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '409':
+          description: Conflict
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '422':
+          description: Unprocessable Content
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Confirmations/{id}":
+    get:
+      tags:
+      - Confirmations
+      summary: Get a confirmation by ID.
+      parameters:
+      - name: id
+        in: path
+        description: Confirmation ID.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Confirmation"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Confirmation"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Confirmation"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    put:
+      tags:
+      - Confirmations
+      summary: Update a confirmation.
+      parameters:
+      - name: id
+        in: path
+        description: Confirmation ID.
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: Updated confirmation payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ConfirmationDto"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/ConfirmationDto"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/ConfirmationDto"
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '422':
+          description: Unprocessable Content
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    delete:
+      tags:
+      - Confirmations
+      summary: Delete a confirmation by ID.
+      parameters:
+      - name: id
+        in: path
+        description: Confirmation ID.
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Listings/public":
+    get:
+      tags:
+      - Listings
+      summary: Public listings feed intended for guests (limited information, no contacts).
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/PublicListingDto"
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/PublicListingDto"
+            text/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/PublicListingDto"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Listings/public/{id}":
+    get:
+      tags:
+      - Listings
+      summary: Public listing details with basic apartment and broker info.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/PublicListingDetailsDto"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PublicListingDetailsDto"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/PublicListingDetailsDto"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Listings/{id}/public-viewing":
+    post:
+      tags:
+      - Listings
+      summary: Create or update a public viewing for a listing owned by the broker.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/PublicViewingRequest"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/PublicViewingRequest"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/PublicViewingRequest"
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/PublicViewingDto"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PublicViewingDto"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/PublicViewingDto"
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '422':
+          description: Unprocessable Content
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    delete:
+      tags:
+      - Listings
+      summary: Delete an existing public viewing for a listing.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Listings":
+    get:
+      tags:
+      - Listings
+      summary: Get all listings.
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Listing"
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Listing"
+            text/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Listing"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    post:
+      tags:
+      - Listings
+      summary: Create a new listing.
+      requestBody:
+        description: Listing payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Listing"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/Listing"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/Listing"
+      responses:
+        '201':
+          description: Created
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Listing"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Listing"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Listing"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Listings/{id}":
+    get:
+      tags:
+      - Listings
+      summary: Get a listing by ID.
+      parameters:
+      - name: id
+        in: path
+        description: Listing ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Listing"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Listing"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Listing"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    put:
+      tags:
+      - Listings
+      summary: Update a listing.
+      parameters:
+      - name: id
+        in: path
+        description: Listing ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: Updated listing payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Listing"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/Listing"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/Listing"
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '422':
+          description: Unprocessable Content
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    delete:
+      tags:
+      - Listings
+      summary: Delete a listing by ID.
+      parameters:
+      - name: id
+        in: path
+        description: Listing ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '422':
+          description: Unprocessable Content
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Pictures":
+    get:
+      tags:
+      - Pictures
+      summary: Get all pictures.
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Picture"
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Picture"
+            text/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Picture"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    post:
+      tags:
+      - Pictures
+      summary: Create a new picture.
+      requestBody:
+        description: Picture payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Picture"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/Picture"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/Picture"
+      responses:
+        '201':
+          description: Created
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Picture"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Picture"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Picture"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '409':
+          description: Conflict
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '422':
+          description: Unprocessable Content
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Pictures/{id}":
+    get:
+      tags:
+      - Pictures
+      summary: Get picture by ID.
+      parameters:
+      - name: id
+        in: path
+        description: Picture ID.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Picture"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Picture"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Picture"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    put:
+      tags:
+      - Pictures
+      summary: Update a picture.
+      parameters:
+      - name: id
+        in: path
+        description: Picture ID.
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: Updated picture payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Picture"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/Picture"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/Picture"
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '422':
+          description: Unprocessable Content
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    patch:
+      tags:
+      - Pictures
+      summary: Partially update a picture's public flag.
+      parameters:
+      - name: id
+        in: path
+        description: Picture ID.
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: New public visibility value.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/PicturePublicPatchDto"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/PicturePublicPatchDto"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/PicturePublicPatchDto"
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    delete:
+      tags:
+      - Pictures
+      summary: Delete a picture by ID.
+      parameters:
+      - name: id
+        in: path
+        description: Picture ID.
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '422':
+          description: Unprocessable Content
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Pictures/upload":
+    post:
+      tags:
+      - Pictures
+      summary: Upload a new picture file and create its record.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - ApartmentId
+              - Files
+              type: object
+              properties:
+                ApartmentId:
+                  type: integer
+                  format: int64
+                Public:
+                  type: boolean
+                Files:
+                  minItems: 1
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+            encoding:
+              ApartmentId:
+                style: form
+              Public:
+                style: form
+              Files:
+                style: form
+      responses:
+        '201':
+          description: Created
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Picture"
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Picture"
+            text/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Picture"
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '422':
+          description: Unprocessable Content
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Sessions":
+    get:
+      tags:
+      - Sessions
+      summary: Get all sessions.
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Session"
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Session"
+            text/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Session"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    post:
+      tags:
+      - Sessions
+      summary: Create a new session.
+      requestBody:
+        description: Session payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/SessionDto"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/SessionDto"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/SessionDto"
+      responses:
+        '201':
+          description: Created
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Session"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Session"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Session"
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '409':
+          description: Conflict
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '422':
+          description: Unprocessable Content
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Sessions/{id}":
+    get:
+      tags:
+      - Sessions
+      summary: Get a session by ID.
+      parameters:
+      - name: id
+        in: path
+        description: Session ID.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Session"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Session"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Session"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    put:
+      tags:
+      - Sessions
+      summary: Update a session.
+      parameters:
+      - name: id
+        in: path
+        description: Session ID.
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: Updated session payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/SessionDto"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/SessionDto"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/SessionDto"
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '422':
+          description: Unprocessable Content
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    delete:
+      tags:
+      - Sessions
+      summary: Delete a session by ID.
+      parameters:
+      - name: id
+        in: path
+        description: Session ID.
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Users":
+    get:
+      tags:
+      - Users
+      summary: Get all users.
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/User"
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/User"
+            text/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/User"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    post:
+      tags:
+      - Users
+      summary: Create a new user.
+      requestBody:
+        description: User payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UserDto"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/UserDto"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/UserDto"
+      responses:
+        '201':
+          description: Created
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/User"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/User"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/User"
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '422':
+          description: Unprocessable Content
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Users/{id}":
+    get:
+      tags:
+      - Users
+      summary: Get a user by ID.
+      parameters:
+      - name: id
+        in: path
+        description: User ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/User"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/User"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/User"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    put:
+      tags:
+      - Users
+      summary: Update a user.
+      parameters:
+      - name: id
+        in: path
+        description: User ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: Updated user payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UserDto"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/UserDto"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/UserDto"
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '422':
+          description: Unprocessable Content
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    delete:
+      tags:
+      - Users
+      summary: Delete a user by ID.
+      parameters:
+      - name: id
+        in: path
+        description: User ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Users/{id}/contact":
+    patch:
+      tags:
+      - Users
+      summary: Update a user's contact information (email and phone).
+      parameters:
+      - name: id
+        in: path
+        description: User ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: Contact update payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UserContactUpdateDto"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/UserContactUpdateDto"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/UserContactUpdateDto"
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Users/{id}/password":
+    patch:
+      tags:
+      - Users
+      summary: Update a user's password.
+      parameters:
+      - name: id
+        in: path
+        description: User ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: Password update payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UserPasswordUpdateDto"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/UserPasswordUpdateDto"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/UserPasswordUpdateDto"
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Viewings":
+    get:
+      tags:
+      - Viewings
+      summary: Get all viewings.
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Viewing"
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Viewing"
+            text/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Viewing"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    post:
+      tags:
+      - Viewings
+      summary: Create a new viewing.
+      requestBody:
+        description: Viewing payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Viewing"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/Viewing"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/Viewing"
+      responses:
+        '201':
+          description: Created
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Viewing"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Viewing"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Viewing"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '422':
+          description: Unprocessable Content
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Viewings/my":
+    get:
+      tags:
+      - Viewings
+      summary: Get the authenticated buyer's private viewings with statuses.
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/BuyerViewingDto"
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/BuyerViewingDto"
+            text/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/BuyerViewingDto"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+  "/api/Viewings/{id}":
+    get:
+      tags:
+      - Viewings
+      summary: Get a viewing by ID.
+      parameters:
+      - name: id
+        in: path
+        description: Viewing ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/Viewing"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Viewing"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/Viewing"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    patch:
+      tags:
+      - Viewings
+      summary: Partially update a viewing's status.
+      parameters:
+      - name: id
+        in: path
+        description: Viewing ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: Fields to update (currently only status).
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ViewingPatchDto"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/ViewingPatchDto"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/ViewingPatchDto"
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '422':
+          description: Unprocessable Content
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    put:
+      tags:
+      - Viewings
+      summary: Update a viewing.
+      parameters:
+      - name: id
+        in: path
+        description: Viewing ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: Updated viewing payload.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ViewingDto"
+          text/json:
+            schema:
+              "$ref": "#/components/schemas/ViewingDto"
+          application/*+json:
+            schema:
+              "$ref": "#/components/schemas/ViewingDto"
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '422':
+          description: Unprocessable Content
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+    delete:
+      tags:
+      - Viewings
+      summary: Delete a viewing by ID.
+      parameters:
+      - name: id
+        in: path
+        description: Viewing ID.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetails"
+components:
+  schemas:
+    Administrator:
+      type: object
+      properties:
+        idUser:
+          type: integer
+          format: int64
+      additionalProperties: false
+    Apartment:
+      type: object
+      properties:
+        apartmentnumber:
+          type: integer
+          format: int32
+          nullable: true
+        area:
+          type: number
+          format: double
+        floor:
+          type: integer
+          format: int32
+          nullable: true
+        rooms:
+          type: integer
+          format: int32
+        notes:
+          type: string
+          nullable: true
+        heating:
+          type: integer
+          format: int32
+          nullable: true
+        finish:
+          type: integer
+          format: int32
+        idApartment:
+          type: integer
+          format: int64
+        fkBuildingidBuilding:
+          type: integer
+          format: int64
+        iswholebuilding:
+          type: boolean
+      additionalProperties: false
+    Availability:
+      type: object
+      properties:
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+        idAvailability:
+          type: integer
+          format: int64
+        fkBrokeridUser:
+          type: integer
+          format: int64
+      additionalProperties: false
+    AvailabilityDto:
+      required:
+      - fkBrokeridUser
+      - from
+      - to
+      type: object
+      properties:
+        from:
+          type: string
+          nullable: true
+        to:
+          type: string
+          nullable: true
+        fkBrokeridUser:
+          type: integer
+          format: int64
+      additionalProperties: false
+    Broker:
+      type: object
+      properties:
+        confirmed:
+          type: boolean
+        blocked:
+          type: boolean
+        idUser:
+          type: integer
+          format: int64
+      additionalProperties: false
+    BrokerPatchDto:
+      type: object
+      properties:
+        confirmed:
+          type: boolean
+          nullable: true
+        blocked:
+          type: boolean
+          nullable: true
+      additionalProperties: false
+    Building:
+      type: object
+      properties:
+        city:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        area:
+          type: number
+          format: double
+        year:
+          type: integer
+          format: int32
+        lastrenovationyear:
+          type: integer
+          format: int32
+          nullable: true
+        floors:
+          type: integer
+          format: int32
+        energy:
+          type: integer
+          format: int32
+          nullable: true
+        idBuilding:
+          type: integer
+          format: int64
+        fkBrokeridUser:
+          type: integer
+          format: int64
+      additionalProperties: false
+    Buyer:
+      type: object
+      properties:
+        confirmed:
+          type: boolean
+        blocked:
+          type: boolean
+        idUser:
+          type: integer
+          format: int64
+      additionalProperties: false
+    BuyerPatchDto:
+      type: object
+      properties:
+        confirmed:
+          type: boolean
+          nullable: true
+        blocked:
+          type: boolean
+          nullable: true
+      additionalProperties: false
+    BuyerViewingDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        listingId:
+          type: integer
+          format: int64
+        listingTitle:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+        statusId:
+          type: integer
+          format: int32
+        status:
+          type: string
+          nullable: true
+        pictureId:
+          type: string
+          nullable: true
+        pictureUrl:
+          type: string
+          nullable: true
+        brokerName:
+          type: string
+          nullable: true
+        brokerPhone:
+          type: string
+          nullable: true
+      additionalProperties: false
+    Confirmation:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: true
+        expires:
+          type: string
+          format: date-time
+        fkBuyeridUser:
+          type: integer
+          format: int64
+      additionalProperties: false
+    ConfirmationDto:
+      required:
+      - expires
+      - fkBuyeridUser
+      type: object
+      properties:
+        expires:
+          type: string
+          nullable: true
+        fkBuyeridUser:
+          type: integer
+          format: int64
+      additionalProperties: false
+    Listing:
+      type: object
+      properties:
+        idListing:
+          type: integer
+          format: int64
+        description:
+          type: string
+          nullable: true
+        askingprice:
+          type: number
+          format: double
+        rent:
+          type: boolean
+        fkPictureid:
+          type: string
+          nullable: true
+      additionalProperties: false
+    Picture:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: true
+        public:
+          type: boolean
+        fkApartmentidApartment:
+          type: integer
+          format: int64
+      additionalProperties: false
+    PicturePublicPatchDto:
+      required:
+      - public
+      type: object
+      properties:
+        public:
+          type: boolean
+      additionalProperties: false
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          nullable: true
+        title:
+          type: string
+          nullable: true
+        status:
+          type: integer
+          format: int32
+          nullable: true
+        detail:
+          type: string
+          nullable: true
+        instance:
+          type: string
+          nullable: true
+      additionalProperties: {}
+    PublicAvailabilityDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+      additionalProperties: false
+    PublicAvailabilitySlotDto:
+      type: object
+      properties:
+        availabilityId:
+          type: integer
+          format: int64
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+      additionalProperties: false
+    PublicListingDetailsDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        description:
+          type: string
+          nullable: true
+        askingPrice:
+          type: number
+          format: double
+        rent:
+          type: boolean
+        buildingCity:
+          type: string
+          nullable: true
+        buildingAddress:
+          type: string
+          nullable: true
+        pictureId:
+          type: string
+          nullable: true
+        pictureUrl:
+          type: string
+          nullable: true
+        nextViewingFrom:
+          type: string
+          format: date-time
+          nullable: true
+        nextViewingTo:
+          type: string
+          format: date-time
+          nullable: true
+        apartmentArea:
+          type: number
+          format: double
+          nullable: true
+        rooms:
+          type: integer
+          format: int32
+          nullable: true
+        apartmentId:
+          type: integer
+          format: int64
+          nullable: true
+        buildingId:
+          type: integer
+          format: int64
+          nullable: true
+        buildingEnergyClass:
+          type: string
+          nullable: true
+        buildingFloors:
+          type: integer
+          format: int32
+          nullable: true
+        buildingYear:
+          type: integer
+          format: int32
+          nullable: true
+        buildingLastRenovationYear:
+          type: integer
+          format: int32
+          nullable: true
+        apartmentNumber:
+          type: integer
+          format: int32
+          nullable: true
+        apartmentFloor:
+          type: integer
+          format: int32
+          nullable: true
+        apartmentIsWholeBuilding:
+          type: boolean
+          nullable: true
+        apartmentNotes:
+          type: string
+          nullable: true
+        apartmentHeating:
+          type: string
+          nullable: true
+        apartmentFinish:
+          type: string
+          nullable: true
+        brokerName:
+          type: string
+          nullable: true
+        brokerPhone:
+          type: string
+          nullable: true
+        galleryPictureIds:
+          type: array
+          items:
+            type: string
+          nullable: true
+        galleryPictureUrls:
+          type: array
+          items:
+            type: string
+          nullable: true
+        availabilities:
+          type: array
+          items:
+            "$ref": "#/components/schemas/PublicAvailabilityDto"
+          nullable: true
+        availableSlots:
+          type: array
+          items:
+            "$ref": "#/components/schemas/PublicAvailabilitySlotDto"
+          nullable: true
+        publicViewings:
+          type: array
+          items:
+            "$ref": "#/components/schemas/PublicViewingDto"
+          nullable: true
+      additionalProperties: false
+    PublicListingDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        description:
+          type: string
+          nullable: true
+        askingPrice:
+          type: number
+          format: double
+        rent:
+          type: boolean
+        buildingCity:
+          type: string
+          nullable: true
+        buildingAddress:
+          type: string
+          nullable: true
+        pictureId:
+          type: string
+          nullable: true
+        pictureUrl:
+          type: string
+          nullable: true
+        nextViewingFrom:
+          type: string
+          format: date-time
+          nullable: true
+        nextViewingTo:
+          type: string
+          format: date-time
+          nullable: true
+      additionalProperties: false
+    PublicViewingDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+      additionalProperties: false
+    PublicViewingRequest:
+      required:
+      - from
+      - to
+      type: object
+      properties:
+        from:
+          type: string
+          nullable: true
+        to:
+          type: string
+          nullable: true
+      additionalProperties: false
+    RefreshRequestDto:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+          nullable: true
+      additionalProperties: false
+    RegistrationRequestDto:
+      required:
+      - email
+      - name
+      - password
+      - phone
+      - surname
+      type: object
+      properties:
+        name:
+          maxLength: 128
+          minLength: 2
+          type: string
+        surname:
+          maxLength: 128
+          minLength: 2
+          type: string
+        email:
+          minLength: 1
+          type: string
+          format: email
+        phone:
+          minLength: 1
+          type: string
+          format: tel
+        password:
+          minLength: 8
+          type: string
+      additionalProperties: false
+    RegistrationResponseDto:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        role:
+          type: string
+          nullable: true
+      additionalProperties: false
+    Session:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: true
+        created:
+          type: string
+          format: date-time
+        remember:
+          type: boolean
+        lastactivity:
+          type: string
+          format: date-time
+        expires:
+          type: string
+          format: date-time
+        revoked:
+          type: boolean
+        fkUseridUser:
+          type: integer
+          format: int64
+      additionalProperties: false
+    SessionDto:
+      required:
+      - created
+      - fkUseridUser
+      - lastactivity
+      - remember
+      type: object
+      properties:
+        created:
+          type: string
+          nullable: true
+        remember:
+          type: boolean
+        lastactivity:
+          type: string
+          nullable: true
+        expires:
+          type: string
+          nullable: true
+        revoked:
+          type: boolean
+          nullable: true
+        fkUseridUser:
+          type: integer
+          format: int64
+      additionalProperties: false
+    User:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        surname:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        password:
+          type: string
+          nullable: true
+        registrationtime:
+          type: string
+          format: date-time
+        profilepicture:
+          type: string
+          nullable: true
+        idUser:
+          type: integer
+          format: int64
+      additionalProperties: false
+    UserContactUpdateDto:
+      required:
+      - email
+      - phone
+      type: object
+      properties:
+        email:
+          minLength: 1
+          type: string
+          format: email
+        phone:
+          minLength: 1
+          type: string
+          format: tel
+      additionalProperties: false
+    UserDto:
+      required:
+      - email
+      - name
+      - password
+      - phone
+      - registrationtime
+      - surname
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        surname:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        password:
+          type: string
+          nullable: true
+        registrationtime:
+          type: string
+          nullable: true
+        profilepicture:
+          type: string
+          nullable: true
+      additionalProperties: false
+    UserLoginDto:
+      type: object
+      properties:
+        email:
+          type: string
+          nullable: true
+        password:
+          type: string
+          nullable: true
+      additionalProperties: false
+    UserPasswordUpdateDto:
+      required:
+      - currentPassword
+      - password
+      type: object
+      properties:
+        currentPassword:
+          minLength: 1
+          type: string
+        password:
+          minLength: 8
+          type: string
+      additionalProperties: false
+    Viewing:
+      type: object
+      properties:
+        idViewing:
+          type: integer
+          format: int64
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          format: int32
+        fkAvailabilityidAvailability:
+          type: integer
+          format: int64
+        fkListingidListing:
+          type: integer
+          format: int64
+        fkBuyeridUser:
+          type: integer
+          format: int64
+          nullable: true
+      additionalProperties: false
+    ViewingDto:
+      required:
+      - from
+      - status
+      - to
+      type: object
+      properties:
+        from:
+          type: string
+          nullable: true
+        to:
+          type: string
+          nullable: true
+        status:
+          type: integer
+          format: int32
+        fkAvailabilityidAvailability:
+          type: integer
+          format: int64
+        fkListingidListing:
+          type: integer
+          format: int64
+      additionalProperties: false
+    ViewingPatchDto:
+      required:
+      - status
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+      additionalProperties: false
+tags:
+- name: Administrators
+  description: Manages administrator resources.
+- name: Apartments
+  description: Manages apartment resources.
+- name: Availabilities
+  description: Manages broker availabilities.
+- name: Brokers
+  description: Manages broker resources.
+- name: Buildings
+  description: Manages building resources.
+- name: Buyers
+  description: Manages buyer resources.
+- name: Confirmations
+  description: Manages buyer email/identity confirmations.
+- name: Listings
+  description: Manages property listings.
+- name: Pictures
+  description: Manages apartment pictures.
+- name: Sessions
+  description: Manages user sessions.
+- name: Users
+  description: Manages user resources.
+- name: Viewings
+  description: Manages viewings of listings.
