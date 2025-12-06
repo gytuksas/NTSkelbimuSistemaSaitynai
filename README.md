@@ -34,14 +34,10 @@ Toliau esančios komandos turėtų būti vykdomos atsidarius PowerShell (Windows
     ```
 1. Grįžkite į pradinę direktoriją.\
 ```cd ..```
-1. Sukompiliuokite programą. Šis veiksmas gali užtrukti iki 10min ar ilgiau priklausomai nuo Jūsų interneto ir kompiuterio spartos.\
-```docker-compose build```\
-arba, jeigu praėjusi komanda nesuveikė, kartais būna tokia sintaksė\
-```docker compose build```
 1. Paleiskite programą.\
-```docker-compose up -d```\
+```docker-compose up -d --build```\
 arba\
-```docker compose up -d```
+```docker compose up -d --build```
 1. Duomenų bazė automatiškai susikurią reikalingą struktūrą ir įkelia netikrus duomenis. Jeigu netikrų duomenų nereikia, iš failo `PGSQLDockerfile` ištrinkite eilutę `COPY fake_db_data.sql /docker-entrypoint-initdb.d/` ir iš naujo įvykdykite praėjusius du veiksmus. Jeigu netikri duomenys Jums tinka, galite praleisti šį žingsnį. Papildoma informacija:
     - Duomenų bazės prisijungimo adresas: `localhost:5432`, Vartotojas: `postgres`, slaptažodis toks, kokį nurodėte kuriant `pgpass.txt` failą.
     - Duomenų bazė yra nepasiekiama ją talpinančiam kompiuteriui, tačiau, jeigu reikia daryti kažkokius pakeitimus ranka, faile `docker-compose.override.yml` reikia įjungti duomenų bazės ryšį su išore. Tai galima padarytį atkomentuojant šią eilutę:
@@ -55,6 +51,7 @@ arba\
 1. Programa dabar turėtų būti pasiekiama.\
     - API taškai: ```http://localhost:8080/api```
     - Swagger sąsaja: ```http://localhost:8080/swagger```
+    - Vartotojo sąsaja (tinklapis) ```http://localhost:4173/```
 1. Norint išjungti programą, paleiskite šią komandą.\
 ```docker-compose down```\
 arba\
@@ -106,3 +103,39 @@ Administratorius galės:
 - Blokuoti sistemos naudotojus;
 - Patvirtinti NT brokerių registracijas;
 - Naikinti skelbimus;
+
+### Sistemos architektūra
+
+Sistemos sudedamosios dalys:
+- Kliento pusė (front-end) – React.JS;
+- Serverio pusė (back-end) – C#;
+- Duomenų bazė – PostgreSQL.
+
+Žemiau esančiame paveikslėlyje pavaizduota kuriamos sistemos diegimo diagrama. Sistemai talpinti būtų naudojamas Linux serveris arba Windows Linux posistemė, kurioje veiktų Docker konteineriai. Kiekviena sistemos dalis diegiama tame pačiame serveryje, bet skirtinguose konteineriuose, kurie tarpusavyje komunikuoja vidiniu tinklu. Internetinis tinklapis yra pasiekiamas per HTTP/HTTPS protokolą. Tinklapio veikimui reikalinga NT API sąsaja, kuri gražina bei manipuliuoja svetainės duomenis. Sistemos naudotojas su šiuo API taip pat komunikuoja per HTTP/HTTPS protokolą. NT API komunikuoja su PostgreSQL duomenų bazę per vidinį tinklą PostgreSQL protokolu per TCP/IP.
+<img width="642" height="361" alt="Picture" src="https://github.com/user-attachments/assets/36d22261-3c2a-4512-8ead-210f1f1698f1" />
+
+### Naudotojo sąsajos projektas
+
+Žemiau pateikta keletas sistemos langų „wireframe“ ir juos atitinkančios realizacijos.
+
+![NT Saitynai_page-0001](https://github.com/user-attachments/assets/b447cab7-1e65-49e3-995e-2e0c6a64288b)
+<img width="2560" height="1281" alt="Screenshot 2025-12-06 at 19-56-53 NT Saitynai" src="https://github.com/user-attachments/assets/2b551d0c-5471-4b79-9eef-9ea07cded408" />
+
+
+![NT Saitynai-1_page-0001](https://github.com/user-attachments/assets/9a2e59ef-d0b4-4967-8979-417a6dce4b18)
+<img width="2560" height="2257" alt="Screenshot 2025-12-06 at 19-57-02 NT Saitynai" src="https://github.com/user-attachments/assets/847b97a4-b0ae-4833-ab12-5e3c4a858290" />
+
+
+![NT Saitynai-4_page-0001](https://github.com/user-attachments/assets/bc9810af-b283-42ea-9b3f-e19e4e8d90b5)
+<img width="2560" height="1281" alt="Screenshot 2025-12-06 at 19-57-20 NT Saitynai" src="https://github.com/user-attachments/assets/6d8ef374-db5e-4f78-980e-82bd5074d6ff" />
+
+### OpenAPI specifikacija
+OpenAPI specifikacijos failas gali būti rastas šioje GitHub repozitorijoje [čia](https://github.com/gytuksas/NTSkelbimuSistemaSaitynai/blob/main/openapi.json).
+
+### Projekto išvados
+
+- Sėkmingai išmokta kurti pilną saitynų projektą su serverio ir naršyklės logika;
+- Sėkmingai išmokta kurti taisyklingus API metodus su pilna dokumentacija;
+- Sėkmingai išmokta JWT autentikacijos principų;
+- Sėkmingai išmokta įdiegti projektą į internetą naudojantis “Cloudflare Tunnels”.
+
