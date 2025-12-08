@@ -242,7 +242,7 @@ export const ListingsPage = () => {
                 </div>
                 <div className="listing-card__badge">{describeListingBadge(listing)}</div>
                 <h4>{listing.description}</h4>
-                <p className="listing-card__price">{formatPrice(listing.price)}</p>
+                <p className="listing-card__price">{formatPrice(listing.price, { rent: listing.rent })}</p>
                 <p className="listing-card__meta">{listing.rent ? 'Nuoma' : 'Pardavimas'}</p>
                 {listing.buildingCity && (
                   <p className="listing-card__meta">

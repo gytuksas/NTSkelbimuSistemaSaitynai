@@ -30,11 +30,16 @@ const viewingStatusTranslations: Record<string, string> = {
   public: 'Vieša apžiūra',
 }
 
-export const formatPrice = (value?: number) => {
+type PriceFormatOptions = {
+  rent?: boolean
+}
+
+export const formatPrice = (value?: number, options?: PriceFormatOptions) => {
   if (value === undefined || value === null) {
     return '—'
   }
-  return priceFormatter.format(value)
+  const formatted = priceFormatter.format(value)
+  return options?.rent ? `${formatted} / mėn.` : formatted
 }
 
 export const translateFinishType = (value?: string | null) => {

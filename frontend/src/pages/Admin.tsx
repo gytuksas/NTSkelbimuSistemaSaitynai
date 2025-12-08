@@ -328,7 +328,9 @@ export const AdminPage = () => {
                   {listing.rent ? 'Nuomos pasiūlymas' : 'Pardavimo pasiūlymas'}
                 </p>
                 <h4 className="listing-moderation-card__title">{listing.description || 'Skelbimas be aprašo'}</h4>
-                <p className="listing-moderation-card__price">{formatPrice(listing.askingprice)}</p>
+                <p className="listing-moderation-card__price">
+                  {formatPrice(listing.askingprice, { rent: listing.rent })}
+                </p>
               </div>
               <div className="listing-moderation-card__actions">
                 <button className="btn btn--ghost" onClick={() => handlePreview(listing.idListing)}>

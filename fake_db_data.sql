@@ -106,15 +106,15 @@ INSERT INTO Picture (id, public, fk_Apartmentid_Apartment) VALUES
 -- LISTINGS
 INSERT INTO Listing (description, askingPrice, rent, fk_Pictureid) VALUES
 ('Parduodamas šviesus butas centre', 120000, FALSE, 'pic1'),
-('Erdvus butas su balkonu', 95000, TRUE, 'pic2'),
+('Erdvus butas su balkonu', 850, TRUE, 'pic2'),
 ('Modernus penthouse', 250000, FALSE, 'pic3'),
-('Butas senamiestyje', 89000, TRUE, 'pic4'),
+('Butas senamiestyje', 780, TRUE, 'pic4'),
 ('Vila su sodu', 320000, FALSE, 'pic5'),
-('Būstas studentams', 55000, TRUE, 'pic6'),
+('Būstas studentams', 450, TRUE, 'pic6'),
 ('Butas su parkavimo vieta', 115000, FALSE, 'pic7'),
 ('Renovuotas būstas', 98000, FALSE, 'pic8'),
 ('Šeimos butas su terasa', 160000, FALSE, 'pic9'),
-('Erdvūs apartamentai', 140000, TRUE, 'pic10');
+('Erdvūs apartamentai', 950, TRUE, 'pic10');
 
 -- VIEWINGS
 INSERT INTO Viewing ("from", "to", status, fk_Availabilityid_Availability, fk_Listingid_Listing, fk_Buyerid_User) VALUES

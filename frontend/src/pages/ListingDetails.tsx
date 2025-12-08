@@ -403,7 +403,7 @@ export const ListingDetailsPage = () => {
             <div className="details-hero__content">
               <p className="hero__eyebrow">{heroEyebrow}</p>
               <h2>{listing.description}</h2>
-              <p className="details-price">{formatPrice(listing.askingPrice)}</p>
+              <p className="details-price">{formatPrice(listing.askingPrice, { rent: listing.rent })}</p>
               <p className="details-chip">{listing.rent ? 'Nuomai' : 'Pardavimui'}</p>
               <ul className="details-meta">
                 <li>
